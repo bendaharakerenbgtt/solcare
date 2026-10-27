@@ -456,9 +456,9 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 8px 14px;
   border-radius: 10px;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 600;
   border: 1px solid var(--line);
   background: #fff;
@@ -466,6 +466,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   text-decoration: none !important;
   transition: all 0.15s;
   cursor: pointer;
+  white-space: nowrap;
 }
 .dash-quick-btn:hover {
   background: var(--primary-50);
@@ -482,13 +483,19 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 }
 @media (max-width: 600px) {
   .dash-quick-menu {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    display: flex;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 2px;
+    scrollbar-width: none;
   }
-  .dash-quick-menu .dash-quick-btn.full {
-    grid-column: 1 / -1;
-    padding: 12px;
+  .dash-quick-menu::-webkit-scrollbar {
+    display: none;
+  }
+  .dash-quick-btn {
+    flex: 1 0 auto;
+    padding: 8px 12px;
+    font-size: 0.82rem;
   }
 }
 
@@ -568,7 +575,34 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
-  gap: 8px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.mini-cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+@media (max-width: 500px) {
+  .mini-cal-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .mini-cal-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    width: 100%;
+  }
+  .mini-cal-nav span {
+    flex: 1;
+    text-align: center;
+  }
 }
 .mini-cal-grid {
   display: grid;

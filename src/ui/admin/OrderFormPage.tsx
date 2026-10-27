@@ -582,7 +582,7 @@ export const OrderFormPage: React.FC = () => {
                     Klik tanggal pada kalender untuk menetapkan target selesai secara manual
                   </div>
                 </div>
-                <div className="row" style={{ gap: '6px' }}>
+                <div className="mini-cal-nav row" style={{ gap: '6px' }}>
                   <button
                     type="button"
                     className="btn secondary sm"

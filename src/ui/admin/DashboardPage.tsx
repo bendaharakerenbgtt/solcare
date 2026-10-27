@@ -93,14 +93,14 @@ export const DashboardPage: React.FC = () => {
 
       {/* Quick Menu Bar */}
       <div className="dash-quick-menu">
-        <Link to="/admin/orders/new" className="dash-quick-btn primary full">
-          ➕ Catat Pesanan Baru
-        </Link>
         <Link to="/admin/orders" className="dash-quick-btn">
           📦 Semua Pesanan ({orders?.length || 0})
         </Link>
         <Link to="/admin/calendar" className="dash-quick-btn">
           📅 Kalender Jadwal Penuh
+        </Link>
+        <Link to="/admin/customers" className="dash-quick-btn">
+          👥 Buku Pelanggan
         </Link>
       </div>
 
@@ -172,14 +172,14 @@ export const DashboardPage: React.FC = () => {
             </h3>
             <span className="small muted">Klik tanggal untuk melihat daftar pesanan yang selesai</span>
           </div>
-          <div className="row" style={{ gap: '6px' }}>
-            <button type="button" className="btn secondary sm" style={{ padding: '4px 8px' }} onClick={prevMonth}>
+          <div className="mini-cal-nav row" style={{ gap: '6px' }}>
+            <button type="button" className="btn secondary sm" style={{ padding: '4px 10px' }} onClick={prevMonth}>
               ←
             </button>
-            <span style={{ fontWeight: 700, fontSize: '0.88rem', minWidth: '110px', textAlign: 'center' }}>
+            <span style={{ fontWeight: 700, fontSize: '0.88rem', minWidth: '100px', textAlign: 'center' }}>
               {calMonth.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
             </span>
-            <button type="button" className="btn secondary sm" style={{ padding: '4px 8px' }} onClick={nextMonth}>
+            <button type="button" className="btn secondary sm" style={{ padding: '4px 10px' }} onClick={nextMonth}>
               →
             </button>
           </div>
