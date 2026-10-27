@@ -9,12 +9,11 @@ import type { Order, OrderStatus } from '../../data/types';
 
 const STAGE_CONFIG: Record<
   OrderStatus,
-  { label: string; shortLabel: string; icon: string; color: string; bg: string; border: string; desc: string }
+  { label: string; shortLabel: string; color: string; bg: string; border: string; desc: string }
 > = {
   menunggu: {
     label: 'Menunggu Antrean',
     shortLabel: 'Antrean',
-    icon: '⏳',
     color: '#0f766e',
     bg: '#f0fdfa',
     border: '#99f6e4',
@@ -23,7 +22,6 @@ const STAGE_CONFIG: Record<
   pencucian: {
     label: 'Sedang Dicuci',
     shortLabel: 'Cuci',
-    icon: '🧼',
     color: '#0369a1',
     bg: '#e0f2fe',
     border: '#7dd3fc',
@@ -32,7 +30,6 @@ const STAGE_CONFIG: Record<
   pengeringan: {
     label: 'Pengeringan',
     shortLabel: 'Kering',
-    icon: '💨',
     color: '#b45309',
     bg: '#fef3c7',
     border: '#fde68a',
@@ -41,16 +38,14 @@ const STAGE_CONFIG: Record<
   finishing: {
     label: 'Finishing & QC',
     shortLabel: 'Finishing',
-    icon: '✨',
     color: '#6d28d9',
     bg: '#ede9fe',
     border: '#ddd6fe',
-    desc: 'Quality control, parfum sepatu, dan packaging',
+    desc: 'Pengecekan kualitas, pewangi, dan packaging',
   },
   selesai: {
     label: 'Siap Diambil',
     shortLabel: 'Siap Ambil',
-    icon: '✅',
     color: '#15803d',
     bg: '#dcfce7',
     border: '#86efac',
@@ -59,7 +54,6 @@ const STAGE_CONFIG: Record<
   diambil: {
     label: 'Sudah Diambil',
     shortLabel: 'Diambil',
-    icon: '📦',
     color: '#475569',
     bg: '#f1f5f9',
     border: '#cbd5e1',
@@ -118,7 +112,7 @@ export const DashboardPage: React.FC = () => {
           className="btn primary sm"
           style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700 }}
         >
-          ➕ Pesanan Baru
+          + Pesanan Baru
         </Link>
       </div>
 
@@ -126,7 +120,6 @@ export const DashboardPage: React.FC = () => {
       <div className="dash-metrics-grid">
         <div className="dash-metric-card">
           <div className="icon-label">
-            <span>📦</span>
             <span>Pesanan Aktif</span>
           </div>
           <div className="val" style={{ color: 'var(--primary)' }}>
@@ -137,7 +130,6 @@ export const DashboardPage: React.FC = () => {
 
         <div className="dash-metric-card">
           <div className="icon-label">
-            <span>⚡</span>
             <span>Target Hari Ini</span>
           </div>
           <div className="val" style={{ color: todayEst.length > 0 ? '#0284c7' : 'inherit' }}>
@@ -148,7 +140,6 @@ export const DashboardPage: React.FC = () => {
 
         <div className="dash-metric-card">
           <div className="icon-label">
-            <span>⚠️</span>
             <span>Terlambat</span>
           </div>
           <div className="val" style={{ color: lateOrders.length > 0 ? 'var(--danger)' : 'var(--ok)' }}>
@@ -159,7 +150,6 @@ export const DashboardPage: React.FC = () => {
 
         <div className="dash-metric-card">
           <div className="icon-label">
-            <span>✅</span>
             <span>Siap Diambil</span>
           </div>
           <div className="val" style={{ color: 'var(--ok)' }}>
@@ -173,13 +163,13 @@ export const DashboardPage: React.FC = () => {
       <div className="card" style={{ padding: '16px 14px' }}>
         <div className="row between" style={{ marginBottom: '12px', alignItems: 'center' }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.05rem' }}>📋 Aktivitas Pengerjaan Hari Ini</h3>
+            <h3 style={{ margin: 0, fontSize: '1.05rem' }}>Aktivitas Pengerjaan Hari Ini</h3>
             <span className="xs muted">Atur tahapan cuci, jemur, finishing, atau siap diambil</span>
           </div>
           <span className="badge teal">{activityList.length} Barang</span>
         </div>
 
-        {/* Activity Filter Grid - Fully Responsive, No Horizontal Scroll / No Clipping */}
+        {/* Activity Filter Grid - Clean text, no emoji, uniform box size */}
         <div className="activity-filter-grid">
           <button
             type="button"
@@ -193,35 +183,35 @@ export const DashboardPage: React.FC = () => {
             className={`activity-filter-btn filter-menunggu ${activityTab === 'menunggu' ? 'active' : ''}`}
             onClick={() => setActivityTab('menunggu')}
           >
-            ⏳ Antrean ({waitingOrders.length})
+            Antrean ({waitingOrders.length})
           </button>
           <button
             type="button"
             className={`activity-filter-btn filter-pencucian ${activityTab === 'pencucian' ? 'active' : ''}`}
             onClick={() => setActivityTab('pencucian')}
           >
-            🧼 Cuci ({washingOrders.length})
+            Cuci ({washingOrders.length})
           </button>
           <button
             type="button"
             className={`activity-filter-btn filter-pengeringan ${activityTab === 'pengeringan' ? 'active' : ''}`}
             onClick={() => setActivityTab('pengeringan')}
           >
-            💨 Kering ({dryingOrders.length})
+            Kering ({dryingOrders.length})
           </button>
           <button
             type="button"
             className={`activity-filter-btn filter-finishing ${activityTab === 'finishing' ? 'active' : ''}`}
             onClick={() => setActivityTab('finishing')}
           >
-            ✨ Finishing ({finishingOrders.length})
+            Finishing ({finishingOrders.length})
           </button>
           <button
             type="button"
             className={`activity-filter-btn filter-selesai ${activityTab === 'selesai' ? 'active' : ''}`}
             onClick={() => setActivityTab('selesai')}
           >
-            ✅ Siap ({completedOrders.length})
+            Siap ({completedOrders.length})
           </button>
         </div>
 
@@ -229,13 +219,12 @@ export const DashboardPage: React.FC = () => {
           <div className="empty">Memuat aktivitas operasional...</div>
         ) : activityList.length === 0 ? (
           <div className="empty" style={{ padding: '24px 16px' }}>
-            <div style={{ fontSize: '1.6rem', marginBottom: '6px' }}>🎉</div>
-            <strong>Tidak ada barang dalam tahap ini.</strong>
+            <strong style={{ display: 'block', marginBottom: '4px' }}>Tidak ada barang dalam tahap ini.</strong>
             <p className="small muted" style={{ margin: '4px 0 12px' }}>
               Semua sepatu di tahapan ini telah selesai diproses.
             </p>
             <Link to="/admin/orders/new" className="btn sm primary">
-              ➕ Input Pesanan Baru
+              + Input Pesanan Baru
             </Link>
           </div>
         ) : (
@@ -255,7 +244,7 @@ export const DashboardPage: React.FC = () => {
                   {/* Top Row: Customer Name & Stage Selector */}
                   <div className="order-card-top-row">
                     <div className="order-card-cust-name" title={o.customerName}>
-                      👤 {o.customerName}
+                      {o.customerName}
                     </div>
                     <button
                       type="button"
@@ -269,19 +258,18 @@ export const DashboardPage: React.FC = () => {
                       disabled={isUpdating}
                       title="Klik untuk memilih tahapan pengerjaan"
                     >
-                      <span className="stage-btn-icon">{stage.icon}</span>
                       <span className="stage-btn-text">{stage.shortLabel}</span>
                       <span className="stage-btn-arrow">▾</span>
                     </button>
                   </div>
 
-                  {/* Middle Box: Shoe Details & Services */}
+                  {/* Middle Box: Shoe Details & Services (Clean, No Emoji) */}
                   <div className="order-card-body-info">
                     <div className="order-card-item-title">
-                      👟 {o.brand} {o.model} {o.color ? `(${o.color})` : ''}
+                      {o.brand} {o.model} {o.color ? `(${o.color})` : ''}
                     </div>
                     <div className="order-card-service-desc">
-                      🏷️ {o.services.map((s) => s.name).join(', ')}
+                      Layanan: {o.services.map((s) => s.name).join(', ')}
                     </div>
                   </div>
 
@@ -289,18 +277,18 @@ export const DashboardPage: React.FC = () => {
                   <div className="order-card-meta-row">
                     {o.estimatedAt ? (
                       <span className={`order-card-est-pill ${late ? 'late' : ''}`}>
-                        {late ? '⚠️ Terlambat: ' : '🎯 Target: '}
+                        {late ? 'Terlambat: ' : 'Target: '}
                         {fmtDate(o.estimatedAt)}
                       </span>
                     ) : (
-                      <span className="order-card-est-pill">🎯 Target: -</span>
+                      <span className="order-card-est-pill">Target: -</span>
                     )}
                     <span className="order-card-received-date">
                       Masuk: {fmtDate(o.receivedAt)}
                     </span>
                   </div>
 
-                  {/* Bottom Action Row: Big Easy Touch WA & Detail Buttons */}
+                  {/* Bottom Action Row: Big Easy Touch WA & Detail Buttons (Uniform Size, No Emoji) */}
                   <div className="order-card-bottom-actions">
                     {waUrl ? (
                       <a
@@ -310,7 +298,7 @@ export const DashboardPage: React.FC = () => {
                         className="order-card-btn-wa"
                         title="Chat WhatsApp Pelanggan"
                       >
-                        💬 Chat WA
+                        WhatsApp
                       </a>
                     ) : (
                       <button
@@ -319,7 +307,7 @@ export const DashboardPage: React.FC = () => {
                         className="order-card-btn-wa"
                         style={{ opacity: 0.45, cursor: 'not-allowed' }}
                       >
-                        💬 No WA
+                        No WA
                       </button>
                     )}
                     <Link
@@ -327,7 +315,7 @@ export const DashboardPage: React.FC = () => {
                       className="order-card-btn-detail"
                       title="Buka Detail Pesanan"
                     >
-                      Detail Pesanan ✏️
+                      Detail Pesanan
                     </Link>
                   </div>
                 </div>
@@ -351,7 +339,7 @@ export const DashboardPage: React.FC = () => {
         <div className="row between" style={{ alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <div>
             <strong style={{ fontSize: '0.95rem', display: 'block', marginBottom: '2px' }}>
-              📦 Kelola & Daftar Semua Pesanan
+              Kelola & Daftar Semua Pesanan
             </strong>
             <div className="xs muted">
               Buka menu pencarian lengkap, nota, dan riwayat ({orders?.length || 0} pesanan).
@@ -367,7 +355,7 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom Sheet / Modal for Selecting Order Stage */}
+      {/* Bottom Sheet / Modal for Selecting Order Stage (Clean, No Emoji) */}
       {stageModalOrder && (
         <div className="modal-backdrop" onClick={() => setStageModalOrder(null)}>
           <div
@@ -407,7 +395,6 @@ export const DashboardPage: React.FC = () => {
                     onClick={() => void handleStatusChange(stageModalOrder.id, st)}
                     disabled={updatingId === stageModalOrder.id}
                   >
-                    <span className="stage-option-icon">{cfg.icon}</span>
                     <div className="stage-option-text">
                       <div className="stage-option-title" style={{ color: isCurrent ? cfg.color : 'var(--ink)' }}>
                         {cfg.label}

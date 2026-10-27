@@ -1174,24 +1174,24 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   border: 1.5px solid;
-  border-radius: 9px;
-  padding: 7px 11px;
-  font-size: 0.82rem;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  min-width: 98px;
+  width: 104px;
+  height: 32px;
+  box-sizing: border-box;
   transition: all 0.15s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 .stage-select-btn:hover {
   filter: brightness(0.95);
   transform: translateY(-1px);
-}
-.stage-btn-icon {
-  font-size: 0.95rem;
 }
 .stage-btn-text {
   font-weight: 700;
@@ -1443,41 +1443,35 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   padding-top: 10px;
   border-top: 1px dashed var(--line);
 }
-.order-card-btn-wa {
+.order-card-btn-wa, .order-card-btn-detail {
   flex: 1;
-  background: #16a34a;
-  color: #ffffff !important;
+  height: 38px;
+  box-sizing: border-box;
   font-size: 0.82rem;
   font-weight: 700;
-  padding: 9px 12px;
-  border-radius: 9px;
+  border-radius: 8px;
   text-decoration: none !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.order-card-btn-wa {
+  background: #16a34a;
+  color: #ffffff !important;
   border: none;
   cursor: pointer;
-  transition: background 0.15s;
 }
 .order-card-btn-wa:hover {
   background: #15803d;
 }
 .order-card-btn-detail {
-  flex: 1;
   background: #ffffff;
   color: var(--ink) !important;
   border: 1px solid var(--line);
-  font-size: 0.82rem;
-  font-weight: 700;
-  padding: 9px 12px;
-  border-radius: 9px;
-  text-decoration: none !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.15s;
+  cursor: pointer;
 }
 .order-card-btn-detail:hover {
   background: #f8fafc;
@@ -1494,8 +1488,10 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 .activity-filter-btn {
   background: #f8fafc;
   border: 1px solid var(--line);
-  border-radius: 9px;
-  padding: 8px 4px;
+  border-radius: 8px;
+  height: 36px;
+  box-sizing: border-box;
+  padding: 0 4px;
   font: inherit;
   font-size: 0.78rem;
   font-weight: 600;
