@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAsync, toLocalInput, fromLocalInput } from '../hooks';
 import { repo } from '../../data';
 import type { OrderServiceLine, OrderProductLine } from '../../data/types';
@@ -338,11 +338,34 @@ export const OrderFormPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <div className="admin-top">
+      <div className="admin-top" style={{ alignItems: 'flex-start', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
+        <Link
+          to="/admin/orders"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: '#475569',
+            fontSize: '0.82rem',
+            fontWeight: 600,
+            textDecoration: 'none',
+            padding: '5px 10px',
+            background: '#f1f5f9',
+            borderRadius: '7px',
+            border: '1px solid var(--line)',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          ← Kembali ke Pesanan
+        </Link>
         <div>
-          <h1>{isEdit ? 'Edit Data Pesanan' : 'Input Pesanan Baru'}</h1>
-          <p className="small muted">
-            Pencatatan langsung di toko. Pelanggan membayar penuh di tempat.
+          <h1 style={{ fontSize: '1.45rem', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
+            {isEdit ? 'Edit Data Pesanan' : 'Input Pesanan Baru'}
+          </h1>
+          <p className="small muted" style={{ margin: '4px 0 0', fontSize: '0.84rem' }}>
+            {isEdit
+              ? 'Perbarui rincian pesanan, layanan treatment, atau status pembayaran.'
+              : 'Pencatatan order treatment & penerbitan nota transaksi pelanggan.'}
           </p>
         </div>
       </div>
