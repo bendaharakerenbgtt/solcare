@@ -532,13 +532,8 @@ export const OrderFormPage: React.FC = () => {
 
         {/* Fragrance & Products */}
         <div className="card">
-          <div className="row between" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
-            <div>
-              <h3 style={{ margin: 0 }}>4. Aroma Parfum Finishing & Produk Tambahan</h3>
-              <p className="small muted" style={{ margin: '4px 0 0' }}>
-                Setiap cuci sudah termasuk gratis semprotan parfum. Pelanggan bebas memilih varian aroma:
-              </p>
-            </div>
+          <div className="row between" style={{ alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+            <h3 style={{ margin: 0 }}>4. Aroma Parfum Finishing & Produk Tambahan</h3>
             <span className="badge ok">Gratis Termasuk Cuci</span>
           </div>
 
