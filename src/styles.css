@@ -1056,3 +1056,296 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   .retention-action-row { flex-direction: column !important; align-items: stretch !important; gap: 10px; }
   .retention-action-row .btn, .retention-action-row button { width: 100%; justify-content: center; }
 }
+
+/* ---------- Compact Activity Card & Stage Picker Sheet ---------- */
+.activity-card-compact {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--primary);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.activity-card-compact:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.07);
+}
+.activity-card-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.activity-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.activity-cust-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+.activity-wa-pill {
+  background: #16a34a;
+  color: #ffffff !important;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-decoration: none !important;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: background 0.15s;
+}
+.activity-wa-pill:hover {
+  background: #15803d;
+}
+.activity-received-time {
+  font-size: 0.73rem;
+  color: #64748b;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.activity-card-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 0.82rem;
+  color: #334155;
+}
+.activity-shoe-info {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.84rem;
+}
+.activity-service-info {
+  color: #64748b;
+  font-size: 0.76rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.activity-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.activity-est-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 1px 7px;
+  border-radius: 5px;
+  display: inline-block;
+}
+.activity-est-badge.late {
+  color: #b91c1c;
+  background: #fee2e2;
+  border-color: #fecaca;
+}
+.activity-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.stage-select-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1.5px solid;
+  border-radius: 9px;
+  padding: 7px 11px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 98px;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.stage-select-btn:hover {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+.stage-btn-icon {
+  font-size: 0.95rem;
+}
+.stage-btn-text {
+  font-weight: 700;
+}
+.stage-btn-arrow {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+.activity-detail-link {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #475569;
+  text-decoration: none !important;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.activity-detail-link:hover {
+  color: var(--primary);
+  background: var(--primary-50);
+  border-color: var(--primary-100);
+}
+
+/* Stage Picker Sheet Modal */
+.stage-picker-sheet {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 440px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25);
+  animation: slideUpSheet 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  margin: auto;
+}
+@media (max-width: 600px) {
+  .stage-picker-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 20px 20px 0 0;
+    max-width: 100%;
+    max-height: 85vh;
+    margin: 0;
+  }
+}
+@keyframes slideUpSheet {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.stage-sheet-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+}
+.stage-sheet-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.stage-sheet-sub {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+.stage-sheet-close {
+  background: #e2e8f0;
+  border: 0;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #475569;
+  transition: background 0.15s;
+}
+.stage-sheet-close:hover {
+  background: #cbd5e1;
+  color: var(--ink);
+}
+.stage-sheet-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: calc(85vh - 80px);
+}
+.stage-option-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  font: inherit;
+  transition: all 0.15s ease;
+}
+.stage-option-row:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.stage-option-row.current {
+  box-shadow: 0 0 0 1px currentColor;
+}
+.stage-option-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+}
+.stage-option-text {
+  flex: 1;
+  min-width: 0;
+}
+.stage-option-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stage-current-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #dcfce7;
+  color: #166534;
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+.stage-option-desc {
+  font-size: 0.76rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+.stage-option-check {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #16a34a;
+  flex-shrink: 0;
+}
+

@@ -5,7 +5,67 @@ import { repo } from '../../data';
 import { fmtDateTime, STATUS_LABEL, whatsappLink } from '../../lib/format';
 import { isLate } from '../../lib/estimation';
 import { dateKey } from '../../lib/dates';
-import type { OrderStatus } from '../../data/types';
+import type { Order, OrderStatus } from '../../data/types';
+
+const STAGE_CONFIG: Record<
+  OrderStatus,
+  { label: string; shortLabel: string; icon: string; color: string; bg: string; border: string; desc: string }
+> = {
+  menunggu: {
+    label: 'Menunggu Antrean',
+    shortLabel: 'Antrean',
+    icon: '⏳',
+    color: '#0f766e',
+    bg: '#f0fdfa',
+    border: '#99f6e4',
+    desc: 'Sepatu baru masuk & belum mulai diproses',
+  },
+  pencucian: {
+    label: 'Sedang Dicuci',
+    shortLabel: 'Cuci',
+    icon: '🧼',
+    color: '#0369a1',
+    bg: '#e0f2fe',
+    border: '#7dd3fc',
+    desc: 'Pencucian upper, insole, outsole, unyellowing',
+  },
+  pengeringan: {
+    label: 'Pengeringan',
+    shortLabel: 'Kering',
+    icon: '💨',
+    color: '#b45309',
+    bg: '#fef3c7',
+    border: '#fde68a',
+    desc: 'Diangin-anginkan atau proses mesin pengering',
+  },
+  finishing: {
+    label: 'Finishing & QC',
+    shortLabel: 'Finishing',
+    icon: '✨',
+    color: '#6d28d9',
+    bg: '#ede9fe',
+    border: '#ddd6fe',
+    desc: 'Quality control, parfum sepatu, dan packaging',
+  },
+  selesai: {
+    label: 'Siap Diambil',
+    shortLabel: 'Siap Ambil',
+    icon: '✅',
+    color: '#15803d',
+    bg: '#dcfce7',
+    border: '#86efac',
+    desc: 'Selesai & menunggu dijemput pelanggan',
+  },
+  diambil: {
+    label: 'Sudah Diambil',
+    shortLabel: 'Diambil',
+    icon: '📦',
+    color: '#475569',
+    bg: '#f1f5f9',
+    border: '#cbd5e1',
+    desc: 'Sepatu telah diserahkan ke pelanggan',
+  },
+};
 
 export const DashboardPage: React.FC = () => {
   const { data: orders, loading, reload } = useAsync(() => repo.listOrders(), []);
@@ -16,6 +76,7 @@ export const DashboardPage: React.FC = () => {
 
   const [activityTab, setActivityTab] = useState<'all' | 'pencucian' | 'pengeringan' | 'finishing' | 'selesai' | 'menunggu'>('all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [stageModalOrder, setStageModalOrder] = useState<Order | null>(null);
 
   const activeOrders = (orders || []).filter((o) => o.status !== 'selesai' && o.status !== 'diambil');
   const todayEst = (orders || []).filter((o) => o.estimatedAt && o.estimatedAt.startsWith(todayStr) && o.status !== 'diambil');
@@ -39,6 +100,7 @@ export const DashboardPage: React.FC = () => {
     try {
       await repo.updateStatus(orderId, newStatus, `Tahapan diubah ke ${STATUS_LABEL[newStatus]}`);
       await reload();
+      setStageModalOrder(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal mengubah status');
     } finally {
@@ -177,134 +239,78 @@ export const DashboardPage: React.FC = () => {
             </Link>
           </div>
         ) : (
-          <div className="stack" style={{ gap: '10px' }}>
+          <div className="stack" style={{ gap: '8px' }}>
             {activityList.map((o) => {
               const late = isLate(o, now) && o.status !== 'diambil';
               const waUrl = whatsappLink(o.customerPhone, `Halo Kak ${o.customerName}, info pengerjaan pesanan Anda di Soleful Soaks!`);
               const isUpdating = updatingId === o.id;
+              const stage = STAGE_CONFIG[o.status] || STAGE_CONFIG.menunggu;
 
               return (
                 <div
                   key={o.id}
-                  className="mobile-order-card"
-                  style={{
-                    padding: '12px 14px',
-                    borderLeft: `4px solid ${
-                      o.status === 'selesai'
-                        ? '#16a34a'
-                        : o.status === 'pencucian'
-                        ? '#0284c7'
-                        : o.status === 'pengeringan'
-                        ? '#f59e0b'
-                        : o.status === 'finishing'
-                        ? '#8b5cf6'
-                        : '#0f766e'
-                    }`,
-                  }}
+                  className="activity-card-compact"
+                  style={{ borderLeftColor: stage.color }}
                 >
-                  {/* Row 1: Customer Name, WhatsApp Link, and Received Date */}
-                  <div className="row between" style={{ alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <strong style={{ fontSize: '1rem', color: 'var(--ink)' }}>
-                        {o.customerName}
-                      </strong>
+                  {/* Left: Customer Info, Shoe & Services */}
+                  <div className="activity-card-left">
+                    <div className="activity-card-header">
+                      <span className="activity-cust-name">{o.customerName}</span>
                       {waUrl && (
                         <a
                           href={waUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="btn wa sm"
-                          style={{ padding: '2px 8px', fontSize: '0.72rem', borderRadius: '6px' }}
+                          className="activity-wa-pill"
                           title="Chat WhatsApp Pelanggan"
                         >
                           💬 WA
                         </a>
                       )}
+                      <span className="activity-received-time">{fmtDateTime(o.receivedAt)}</span>
                     </div>
-                    <span className="xs muted">{fmtDateTime(o.receivedAt)}</span>
-                  </div>
 
-                  {/* Row 2: Item & Services */}
-                  <div style={{ margin: '4px 0' }}>
-                    <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>
-                      👟 {o.itemType}: {o.brand} {o.model} {o.color ? `(${o.color})` : ''}
+                    <div className="activity-card-item">
+                      <span className="activity-shoe-info">
+                        👟 {o.brand} {o.model} {o.color ? `(${o.color})` : ''}
+                      </span>
+                      <span className="activity-service-info">
+                        🏷️ {o.services.map((s) => s.name).join(', ')}
+                      </span>
                     </div>
-                    <div className="small muted" style={{ marginTop: '2px' }}>
-                      🏷️ {o.services.map((s) => s.name).join(', ')}
-                      {o.fragranceName ? ` • Aroma: ${o.fragranceName}` : ''}
-                    </div>
-                    {o.conditionNotes && (
-                      <div className="xs" style={{ background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', color: '#475569', marginTop: '4px' }}>
-                        📝 {o.conditionNotes}
+
+                    {o.estimatedAt && (
+                      <div className="activity-card-footer">
+                        <span className={`activity-est-badge ${late ? 'late' : ''}`}>
+                          {late ? '⚠️ Terlambat: ' : '🎯 Est: '}
+                          {fmtDateTime(o.estimatedAt)}
+                        </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Row 3: Target Estimation Date */}
-                  <div className="row between small" style={{ borderTop: '1px dashed var(--line)', paddingTop: '6px' }}>
-                    <span className="muted">Estimasi Selesai:</span>
-                    <strong className={late ? 'badge danger' : ''}>
-                      {o.estimatedAt ? fmtDateTime(o.estimatedAt) : '-'}
-                    </strong>
-                  </div>
+                  {/* Right: Stage Dropdown Trigger & Detail Link */}
+                  <div className="activity-card-right">
+                    <button
+                      type="button"
+                      className="stage-select-btn"
+                      style={{
+                        background: stage.bg,
+                        color: stage.color,
+                        borderColor: stage.border,
+                      }}
+                      onClick={() => setStageModalOrder(o)}
+                      disabled={isUpdating}
+                      title="Klik untuk memilih tahapan pengerjaan"
+                    >
+                      <span className="stage-btn-icon">{stage.icon}</span>
+                      <span className="stage-btn-text">{stage.shortLabel}</span>
+                      <span className="stage-btn-arrow">▾</span>
+                    </button>
 
-                  {/* Row 4: Status Stage Selector & Detail Button (No Confusion, 1-Click Control) */}
-                  <div style={{ borderTop: '1px solid var(--line)', paddingTop: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <div style={{ flex: 1.6 }}>
-                      <select
-                        value={o.status}
-                        onChange={(e) => void handleStatusChange(o.id, e.target.value as OrderStatus)}
-                        disabled={isUpdating}
-                        style={{
-                          fontWeight: 700,
-                          fontSize: '0.85rem',
-                          padding: '8px 10px',
-                          borderRadius: '8px',
-                          background:
-                            o.status === 'selesai'
-                              ? '#dcfce7'
-                              : o.status === 'pencucian'
-                              ? '#e0f2fe'
-                              : o.status === 'pengeringan'
-                              ? '#fef3c7'
-                              : o.status === 'finishing'
-                              ? '#ede9fe'
-                              : '#f0fdfa',
-                          borderColor:
-                            o.status === 'selesai'
-                              ? '#86efac'
-                              : o.status === 'pencucian'
-                              ? '#7dd3fc'
-                              : o.status === 'pengeringan'
-                              ? '#fde68a'
-                              : o.status === 'finishing'
-                              ? '#ddd6fe'
-                              : '#99f6e4',
-                          color:
-                            o.status === 'selesai'
-                              ? '#166534'
-                              : o.status === 'pencucian'
-                              ? '#0369a1'
-                              : o.status === 'pengeringan'
-                              ? '#92400e'
-                              : o.status === 'finishing'
-                              ? '#5b21b6'
-                              : '#115e59',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <option value="menunggu">⏳ Menunggu Antrean</option>
-                        <option value="pencucian">🧼 Sedang Dicuci</option>
-                        <option value="pengeringan">💨 Pengeringan</option>
-                        <option value="finishing">✨ Finishing & QC</option>
-                        <option value="selesai">✅ Siap Diambil</option>
-                        <option value="diambil">📦 Sudah Diambil</option>
-                      </select>
-                    </div>
                     <Link
                       to={`/admin/orders/${o.id}`}
-                      className="btn secondary sm"
-                      style={{ flex: 1, padding: '8px 10px', fontSize: '0.82rem', textAlign: 'center', justifyContent: 'center' }}
+                      className="activity-detail-link"
                     >
                       Detail ✏️
                     </Link>
@@ -345,6 +351,65 @@ export const DashboardPage: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {/* Bottom Sheet / Modal for Selecting Order Stage */}
+      {stageModalOrder && (
+        <div className="modal-backdrop" onClick={() => setStageModalOrder(null)}>
+          <div
+            className="stage-picker-sheet"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="stage-sheet-header">
+              <div>
+                <div className="stage-sheet-title">Pilih Tahapan Pesanan</div>
+                <div className="stage-sheet-sub">
+                  <strong>{stageModalOrder.customerName}</strong> • {stageModalOrder.brand} {stageModalOrder.model}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="stage-sheet-close"
+                onClick={() => setStageModalOrder(null)}
+                title="Tutup"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="stage-sheet-body">
+              {(Object.keys(STAGE_CONFIG) as OrderStatus[]).map((st) => {
+                const cfg = STAGE_CONFIG[st];
+                const isCurrent = stageModalOrder.status === st;
+                return (
+                  <button
+                    key={st}
+                    type="button"
+                    className={`stage-option-row ${isCurrent ? 'current' : ''}`}
+                    style={{
+                      borderColor: isCurrent ? cfg.color : 'var(--line)',
+                      background: isCurrent ? cfg.bg : '#ffffff',
+                    }}
+                    onClick={() => void handleStatusChange(stageModalOrder.id, st)}
+                    disabled={updatingId === stageModalOrder.id}
+                  >
+                    <span className="stage-option-icon">{cfg.icon}</span>
+                    <div className="stage-option-text">
+                      <div className="stage-option-title" style={{ color: isCurrent ? cfg.color : 'var(--ink)' }}>
+                        {cfg.label}
+                        {isCurrent && <span className="stage-current-tag">Sedang Berlangsung</span>}
+                      </div>
+                      <div className="stage-option-desc">{cfg.desc}</div>
+                    </div>
+                    <div className="stage-option-check">
+                      {isCurrent ? '✓' : '→'}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
