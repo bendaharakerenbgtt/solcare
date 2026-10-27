@@ -478,23 +478,68 @@ export const OrderFormPage: React.FC = () => {
           )}
         </div>
 
-        {/* Products & Fragrance */}
+        {/* Fragrance & Products */}
         <div className="card">
-          <h3>4. Produk Tambahan & Pewangi</h3>
-          <div className="grid grid-2" style={{ marginTop: '12px', marginBottom: '16px' }}>
-            <label className="field">
-              <span>Pilihan Pewangi / Deodorant</span>
-              <select value={fragranceId} onChange={(e) => setFragranceId(e.target.value)}>
-                <option value="">-- Tanpa Pewangi Khusus --</option>
-                {fragrances?.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="field">
-              <span>Tambah Produk (Tali, Parfum, dll.)</span>
+          <div className="row between" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+            <div>
+              <h3 style={{ margin: 0 }}>4. Aroma Parfum Finishing & Produk Tambahan</h3>
+              <p className="small muted" style={{ margin: '4px 0 0' }}>
+                Setiap cuci sudah termasuk gratis semprotan parfum. Pelanggan bebas memilih varian aroma:
+              </p>
+            </div>
+            <span className="badge ok">Gratis Termasuk Cuci</span>
+          </div>
+
+          {/* Modern Fragrance Picker Grid */}
+          <div style={{ marginBottom: '20px' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'block', marginBottom: '8px', color: '#334155' }}>
+              Pilihan Aroma Parfum Finishing:
+            </span>
+            <div className="fragrance-picker-grid">
+              <button
+                type="button"
+                className={`fragrance-card-btn ${!fragranceId ? 'active' : ''}`}
+                onClick={() => setFragranceId('')}
+              >
+                <div className="fragrance-card-header">
+                  <span className="fragrance-card-name">Tanpa Parfum</span>
+                  {!fragranceId && <span className="fragrance-card-check">Dipilih</span>}
+                </div>
+                <div className="fragrance-card-desc">Khusus pelanggan sensitif aroma wangi</div>
+              </button>
+
+              {fragrances?.map((f) => {
+                const isSelected = fragranceId === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    className={`fragrance-card-btn ${isSelected ? 'active' : ''}`}
+                    onClick={() => setFragranceId(f.id)}
+                  >
+                    <div className="fragrance-card-header">
+                      <span className="fragrance-card-name">{f.name}</span>
+                      {isSelected && <span className="fragrance-card-check">Dipilih</span>}
+                    </div>
+                    <div className="fragrance-card-desc">{f.description || 'Aroma parfum pilihan untuk sepatu'}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Retail Products to Buy */}
+          <div style={{ borderTop: '1px solid var(--line)', paddingTop: '16px' }}>
+            <div style={{ marginBottom: '10px' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'block', color: '#334155' }}>
+                Beli Produk Tambahan (Opsional)
+              </span>
+              <span className="xs muted">
+                Botol parfum 60ml untuk dibawa pulang atau tali sepatu pengganti
+              </span>
+            </div>
+
+            <label className="field" style={{ maxWidth: '440px', marginBottom: '12px' }}>
               <select
                 onChange={(e) => {
                   if (e.target.value) {
@@ -503,7 +548,7 @@ export const OrderFormPage: React.FC = () => {
                   }
                 }}
               >
-                <option value="">+ Pilih Produk untuk Ditambahkan</option>
+                <option value="">+ Tambah Produk untuk Dibeli</option>
                 {productsCatalog?.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name} ({rupiah(p.price)})
@@ -511,7 +556,6 @@ export const OrderFormPage: React.FC = () => {
                 ))}
               </select>
             </label>
-          </div>
 
           {selectedProducts.length > 0 && (
             <div className="stack" style={{ gap: '8px' }}>
@@ -537,6 +581,7 @@ export const OrderFormPage: React.FC = () => {
               ))}
             </div>
           )}
+          </div>
         </div>
 
         {/* Capacity-based Estimation */}

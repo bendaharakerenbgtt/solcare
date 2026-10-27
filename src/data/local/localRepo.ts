@@ -98,6 +98,7 @@ export class LocalRepo implements Repo {
     private clock: () => Date = () => new Date(),
   ) {
     this.ensureSeed();
+    this.ensureOfficialFragrancesAndProducts();
   }
 
   // ------------------------------------------------------------------ helpers
@@ -336,6 +337,48 @@ export class LocalRepo implements Repo {
     this.save('credentials', []);
     this.kv.set('seeded', true);
     this.kv.set('seeded_v3', true);
+
+    // Sync official 5 fragrances: Orchid Breeze, Vanila Latte, Green Apple, Mandarin Orange, Coffe
+    this.ensureOfficialFragrancesAndProducts();
+  }
+
+  private ensureOfficialFragrancesAndProducts() {
+    const now = this.now();
+    const currentFragrances = this.list<Fragrance>('fragrances');
+    const hasOfficial = currentFragrances.some((f) => f.name === 'Orchid Breeze');
+    if (!hasOfficial) {
+      const officialFragrances = [
+        { name: 'Orchid Breeze', desc: 'Aroma bunga anggrek segar & mewah' },
+        { name: 'Vanila Latte', desc: 'Aroma manis lembut kopi susu vanilla' },
+        { name: 'Green Apple', desc: 'Aroma apel hijau segar & renyah' },
+        { name: 'Mandarin Orange', desc: 'Aroma jeruk mandarin segar & ceria' },
+        { name: 'Coffe', desc: 'Aroma kopi hangat penetral bau membandel' },
+      ];
+      const updatedFragrances: Fragrance[] = officialFragrances.map((f) => ({
+        id: uid(),
+        name: f.name,
+        description: f.desc,
+        active: true,
+        createdAt: now,
+        updatedAt: now,
+      }));
+      this.save('fragrances', updatedFragrances);
+    }
+
+    // Ensure retail perfume bottles are available in products catalog
+    const currentProducts = this.list<Product>('products');
+    const hasPerfumeProduct = currentProducts.some((p) => p.name.includes('Orchid Breeze'));
+    if (!hasPerfumeProduct) {
+      const baseProducts = currentProducts.filter((p) => !p.name.includes('Parfum Sepatu Anti-Bacterial 60ml'));
+      const perfumeProducts: Product[] = [
+        { id: uid(), name: 'Parfum Sepatu 60ml - Orchid Breeze', price: 35000, description: 'Wangi anggrek segar mewah tahan lama', active: true, createdAt: now, updatedAt: now },
+        { id: uid(), name: 'Parfum Sepatu 60ml - Vanila Latte', price: 35000, description: 'Wangi lembut manis vanilla coffee', active: true, createdAt: now, updatedAt: now },
+        { id: uid(), name: 'Parfum Sepatu 60ml - Green Apple', price: 35000, description: 'Wangi segar apel hijau renyah', active: true, createdAt: now, updatedAt: now },
+        { id: uid(), name: 'Parfum Sepatu 60ml - Mandarin Orange', price: 35000, description: 'Wangi ceria segar buah jeruk mandarin', active: true, createdAt: now, updatedAt: now },
+        { id: uid(), name: 'Parfum Sepatu 60ml - Coffe', price: 35000, description: 'Wangi biji kopi hangat penetral bau', active: true, createdAt: now, updatedAt: now },
+      ];
+      this.save('products', [...baseProducts, ...perfumeProducts]);
+    }
   }
 
   private async requireStaff(): Promise<StaffUser> {
