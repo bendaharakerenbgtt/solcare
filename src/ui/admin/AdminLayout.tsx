@@ -25,7 +25,14 @@ export const AdminLayout: React.FC = () => {
         <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle Navigation">
           ☰
         </button>
-        <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Soleful Staff</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img
+            src="/solecare_logo.jpg"
+            alt="Solecare Logo"
+            style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }}
+          />
+          <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Soleful Staff</span>
+        </div>
         <button
           type="button"
           onClick={() => setCalDrawerOpen(true)}
@@ -51,7 +58,9 @@ export const AdminLayout: React.FC = () => {
       <div className="admin">
         <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="brand">
-            <div className="brand-mark">SS</div>
+            <div className="brand-mark">
+              <img src="/solecare_logo.jpg" alt="Solecare Logo" />
+            </div>
             <div>
               Soleful Soaks!
               <small>Staff Dashboard</small>

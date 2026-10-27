@@ -41,8 +41,8 @@ export const LoginPage: React.FC = () => {
     <div className="auth-wrap">
       <div className="card auth-card">
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <div className="brand-mark" style={{ margin: '0 auto 12px', width: '48px', height: '48px', fontSize: '1.25rem' }}>
-            SS
+          <div className="brand-mark" style={{ margin: '0 auto 12px', width: '56px', height: '56px', borderRadius: '14px', overflow: 'hidden' }}>
+            <img src="/solecare_logo.jpg" alt="Solecare Logo" />
           </div>
           <h2 style={{ fontSize: '1.6rem', marginBottom: '4px' }}>{needsSetup ? 'Inisialisasi Akun Admin' : 'Login Pegawai'}</h2>
           <p className="small muted" style={{ margin: 0 }}>

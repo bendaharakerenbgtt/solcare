@@ -18,7 +18,9 @@ export const PublicLayout: React.FC = () => {
       <header className="site-header">
         <div className="container">
           <Link to="/" className="brand">
-            <div className="brand-mark">SS</div>
+            <div className="brand-mark">
+              <img src="/solecare_logo.jpg" alt="Solecare Logo" />
+            </div>
             <div>
               Soleful Soaks!
               <small>Shoes Care</small>
