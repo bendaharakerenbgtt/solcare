@@ -109,9 +109,38 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   .table-scroll-hint { display: flex; }
 }
 
-.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; overflow-x: auto; }
-.tabs button { background: none; border: 0; padding: 10px 14px; font: inherit; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
-.tabs button.active { color: var(--primary); border-color: var(--primary); }
+.tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+.tabs button {
+  background: none;
+  border: 0;
+  padding: 8px 12px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.15s;
+}
+.tabs button.active {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-50);
+}
 
 .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 50; overflow-y: auto; }
 .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 640px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); overflow: hidden; }

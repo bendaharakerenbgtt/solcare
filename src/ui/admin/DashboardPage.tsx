@@ -5,25 +5,7 @@ import { repo } from '../../data';
 import { fmtDateTime, STATUS_LABEL, whatsappLink } from '../../lib/format';
 import { isLate } from '../../lib/estimation';
 import { dateKey } from '../../lib/dates';
-import type { Order, OrderStatus } from '../../data/types';
-
-const NEXT_STATUS: Record<OrderStatus, OrderStatus | null> = {
-  menunggu: 'pencucian',
-  pencucian: 'pengeringan',
-  pengeringan: 'finishing',
-  finishing: 'selesai',
-  selesai: 'diambil',
-  diambil: null,
-};
-
-const NEXT_STATUS_BTN: Record<OrderStatus, string> = {
-  menunggu: 'Mulai Cuci 🧼',
-  pencucian: 'Lanjut Keringkan 💨',
-  pengeringan: 'Lanjut Finishing ✨',
-  finishing: 'Siap Diambil ✅',
-  selesai: 'Tandai Diambil 📦',
-  diambil: '',
-};
+import type { OrderStatus } from '../../data/types';
 
 export const DashboardPage: React.FC = () => {
   const { data: orders, loading, reload } = useAsync(() => repo.listOrders(), []);
@@ -52,12 +34,10 @@ export const DashboardPage: React.FC = () => {
     return o.status === activityTab;
   });
 
-  const handleAdvanceStatus = async (order: Order) => {
-    const nextSt = NEXT_STATUS[order.status];
-    if (!nextSt) return;
-    setUpdatingId(order.id);
+  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+    setUpdatingId(orderId);
     try {
-      await repo.updateStatus(order.id, nextSt, `Diperbarui langsung dari dashboard aktivitas (${STATUS_LABEL[nextSt]})`);
+      await repo.updateStatus(orderId, newStatus, `Tahapan diubah ke ${STATUS_LABEL[newStatus]}`);
       await reload();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal mengubah status');
@@ -67,14 +47,14 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="stack" style={{ gap: '18px' }}>
+    <div className="stack" style={{ gap: '16px' }}>
       {/* Top Header Row: Clean title & compact Add button */}
-      <div className="row between" style={{ alignItems: 'center', gap: '12px' }}>
-        <h1 style={{ margin: 0, fontSize: '1.45rem' }}>Dashboard Operasional</h1>
+      <div className="row between" style={{ alignItems: 'center', gap: '10px' }}>
+        <h1 style={{ margin: 0, fontSize: '1.4rem' }}>Dashboard Operasional</h1>
         <Link
           to="/admin/orders/new"
           className="btn primary sm"
-          style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.85rem' }}
+          style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700 }}
         >
           ➕ Pesanan Baru
         </Link>
@@ -128,11 +108,11 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Section: Aktivitas & Pengerjaan Hari Ini */}
-      <div className="card" style={{ padding: '18px 16px' }}>
-        <div className="row between" style={{ marginBottom: '14px', alignItems: 'center' }}>
+      <div className="card" style={{ padding: '16px 14px' }}>
+        <div className="row between" style={{ marginBottom: '12px', alignItems: 'center' }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>📋 Aktivitas Pengerjaan Hari Ini</h3>
-            <span className="small muted">Pantau sepatu yang sedang dicuci, dikeringkan, atau siap diambil</span>
+            <h3 style={{ margin: 0, fontSize: '1.05rem' }}>📋 Aktivitas Pengerjaan Hari Ini</h3>
+            <span className="xs muted">Atur tahapan cuci, jemur, finishing, atau siap diambil</span>
           </div>
           <span className="badge teal">{activityList.length} Barang</span>
         </div>
@@ -186,8 +166,8 @@ export const DashboardPage: React.FC = () => {
         {loading ? (
           <div className="empty">Memuat aktivitas operasional...</div>
         ) : activityList.length === 0 ? (
-          <div className="empty" style={{ padding: '28px 16px' }}>
-            <div style={{ fontSize: '1.8rem', marginBottom: '6px' }}>🎉</div>
+          <div className="empty" style={{ padding: '24px 16px' }}>
+            <div style={{ fontSize: '1.6rem', marginBottom: '6px' }}>🎉</div>
             <strong>Tidak ada barang dalam tahap ini.</strong>
             <p className="small muted" style={{ margin: '4px 0 12px' }}>
               Semua sepatu di tahapan ini telah selesai diproses.
@@ -197,10 +177,9 @@ export const DashboardPage: React.FC = () => {
             </Link>
           </div>
         ) : (
-          <div className="stack" style={{ gap: '12px' }}>
+          <div className="stack" style={{ gap: '10px' }}>
             {activityList.map((o) => {
               const late = isLate(o, now) && o.status !== 'diambil';
-              const nextAction = NEXT_STATUS_BTN[o.status];
               const waUrl = whatsappLink(o.customerPhone, `Halo Kak ${o.customerName}, info pengerjaan pesanan Anda di Soleful Soaks!`);
               const isUpdating = updatingId === o.id;
 
@@ -208,87 +187,127 @@ export const DashboardPage: React.FC = () => {
                 <div
                   key={o.id}
                   className="mobile-order-card"
-                  style={{ borderLeft: `4px solid ${o.status === 'selesai' ? '#16a34a' : o.status === 'pencucian' ? '#0284c7' : '#0f766e'}` }}
+                  style={{
+                    padding: '12px 14px',
+                    borderLeft: `4px solid ${
+                      o.status === 'selesai'
+                        ? '#16a34a'
+                        : o.status === 'pencucian'
+                        ? '#0284c7'
+                        : o.status === 'pengeringan'
+                        ? '#f59e0b'
+                        : o.status === 'finishing'
+                        ? '#8b5cf6'
+                        : '#0f766e'
+                    }`,
+                  }}
                 >
-                  {/* Clean Card Top: Customer Name & WhatsApp directly accessible, without long codes */}
-                  <div className="mobile-order-card-top" style={{ alignItems: 'center' }}>
-                    <div>
+                  {/* Row 1: Customer Name, WhatsApp Link, and Received Date */}
+                  <div className="row between" style={{ alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <strong style={{ fontSize: '1rem', color: 'var(--ink)' }}>
                         {o.customerName}
                       </strong>
-                      <div className="xs muted">{fmtDateTime(o.receivedAt)}</div>
-                    </div>
-                    <div className="row" style={{ gap: '6px', alignItems: 'center' }}>
                       {waUrl && (
                         <a
                           href={waUrl}
                           target="_blank"
                           rel="noreferrer"
                           className="btn wa sm"
-                          style={{ padding: '4px 8px', fontSize: '0.75rem', borderRadius: '6px' }}
+                          style={{ padding: '2px 8px', fontSize: '0.72rem', borderRadius: '6px' }}
                           title="Chat WhatsApp Pelanggan"
                         >
                           💬 WA
                         </a>
                       )}
-                      <span className={`badge ${o.status === 'selesai' ? 'ok' : o.status === 'diambil' ? '' : 'teal'}`} style={{ fontSize: '0.75rem' }}>
-                        {STATUS_LABEL[o.status]}
-                      </span>
                     </div>
+                    <span className="xs muted">{fmtDateTime(o.receivedAt)}</span>
                   </div>
 
-                  <div className="mobile-order-card-body">
-                    <div>
-                      <strong>👟 {o.itemType}: {o.brand} {o.model}</strong>
-                      {o.color && <span className="xs muted" style={{ marginLeft: '6px' }}>({o.color})</span>}
+                  {/* Row 2: Item & Services */}
+                  <div style={{ margin: '4px 0' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>
+                      👟 {o.itemType}: {o.brand} {o.model} {o.color ? `(${o.color})` : ''}
                     </div>
-                    <div className="small">
-                      🏷️ <strong>Treatment:</strong> {o.services.map((s) => s.name).join(', ')}
+                    <div className="small muted" style={{ marginTop: '2px' }}>
+                      🏷️ {o.services.map((s) => s.name).join(', ')}
                       {o.fragranceName ? ` • Aroma: ${o.fragranceName}` : ''}
                     </div>
                     {o.conditionNotes && (
-                      <div className="xs" style={{ background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', color: '#475569' }}>
-                        📝 Catatan: {o.conditionNotes}
+                      <div className="xs" style={{ background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', color: '#475569', marginTop: '4px' }}>
+                        📝 {o.conditionNotes}
                       </div>
                     )}
-                    <div className="row between small" style={{ marginTop: '2px' }}>
-                      <span className="muted">Target Estimasi Selesai:</span>
-                      <strong className={late ? 'badge danger' : ''}>
-                        {o.estimatedAt ? fmtDateTime(o.estimatedAt) : '-'}
-                      </strong>
-                    </div>
                   </div>
 
-                  {/* Clean 2-Button Action Bar: Large Touch Targets, No Cramped Squeeze */}
-                  <div className="mobile-order-card-actions" style={{ gap: '8px', paddingTop: '6px' }}>
-                    {nextAction ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => void handleAdvanceStatus(o)}
-                          disabled={isUpdating}
-                          className="btn primary"
-                          style={{ flex: 1.4, padding: '10px 12px', fontSize: '0.88rem', fontWeight: 700 }}
-                        >
-                          {isUpdating ? 'Menyimpan...' : nextAction}
-                        </button>
-                        <Link
-                          to={`/admin/orders/${o.id}`}
-                          className="btn secondary"
-                          style={{ flex: 1, padding: '10px 12px', fontSize: '0.84rem', textAlign: 'center', justifyContent: 'center' }}
-                        >
-                          ✏️ Detail
-                        </Link>
-                      </>
-                    ) : (
-                      <Link
-                        to={`/admin/orders/${o.id}`}
-                        className="btn secondary"
-                        style={{ width: '100%', textAlign: 'center', justifyContent: 'center', padding: '10px 12px', fontSize: '0.88rem' }}
+                  {/* Row 3: Target Estimation Date */}
+                  <div className="row between small" style={{ borderTop: '1px dashed var(--line)', paddingTop: '6px' }}>
+                    <span className="muted">Estimasi Selesai:</span>
+                    <strong className={late ? 'badge danger' : ''}>
+                      {o.estimatedAt ? fmtDateTime(o.estimatedAt) : '-'}
+                    </strong>
+                  </div>
+
+                  {/* Row 4: Status Stage Selector & Detail Button (No Confusion, 1-Click Control) */}
+                  <div style={{ borderTop: '1px solid var(--line)', paddingTop: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ flex: 1.6 }}>
+                      <select
+                        value={o.status}
+                        onChange={(e) => void handleStatusChange(o.id, e.target.value as OrderStatus)}
+                        disabled={isUpdating}
+                        style={{
+                          fontWeight: 700,
+                          fontSize: '0.85rem',
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          background:
+                            o.status === 'selesai'
+                              ? '#dcfce7'
+                              : o.status === 'pencucian'
+                              ? '#e0f2fe'
+                              : o.status === 'pengeringan'
+                              ? '#fef3c7'
+                              : o.status === 'finishing'
+                              ? '#ede9fe'
+                              : '#f0fdfa',
+                          borderColor:
+                            o.status === 'selesai'
+                              ? '#86efac'
+                              : o.status === 'pencucian'
+                              ? '#7dd3fc'
+                              : o.status === 'pengeringan'
+                              ? '#fde68a'
+                              : o.status === 'finishing'
+                              ? '#ddd6fe'
+                              : '#99f6e4',
+                          color:
+                            o.status === 'selesai'
+                              ? '#166534'
+                              : o.status === 'pencucian'
+                              ? '#0369a1'
+                              : o.status === 'pengeringan'
+                              ? '#92400e'
+                              : o.status === 'finishing'
+                              ? '#5b21b6'
+                              : '#115e59',
+                          cursor: 'pointer',
+                        }}
                       >
-                        ✏️ Lihat Detail Pesanan
-                      </Link>
-                    )}
+                        <option value="menunggu">⏳ Menunggu Antrean</option>
+                        <option value="pencucian">🧼 Sedang Dicuci</option>
+                        <option value="pengeringan">💨 Pengeringan</option>
+                        <option value="finishing">✨ Finishing & QC</option>
+                        <option value="selesai">✅ Siap Diambil</option>
+                        <option value="diambil">📦 Sudah Diambil</option>
+                      </select>
+                    </div>
+                    <Link
+                      to={`/admin/orders/${o.id}`}
+                      className="btn secondary sm"
+                      style={{ flex: 1, padding: '8px 10px', fontSize: '0.82rem', textAlign: 'center', justifyContent: 'center' }}
+                    >
+                      Detail ✏️
+                    </Link>
                   </div>
                 </div>
               );
@@ -302,25 +321,25 @@ export const DashboardPage: React.FC = () => {
         className="card flat"
         style={{
           border: '1px solid var(--line)',
-          padding: '16px 18px',
+          padding: '14px 16px',
           background: '#ffffff',
           borderRadius: '14px',
           boxShadow: 'var(--shadow)',
         }}
       >
-        <div className="row between" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+        <div className="row between" style={{ alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <div>
-            <strong style={{ fontSize: '1rem', display: 'block', marginBottom: '2px' }}>
+            <strong style={{ fontSize: '0.95rem', display: 'block', marginBottom: '2px' }}>
               📦 Kelola & Daftar Semua Pesanan
             </strong>
             <div className="xs muted">
-              Buka menu untuk pencarian kode, filter status lengkap, nota, dan riwayat ({orders?.length || 0} pesanan tercatat).
+              Buka menu pencarian lengkap, nota, dan riwayat ({orders?.length || 0} pesanan).
             </div>
           </div>
           <Link
             to="/admin/orders"
             className="btn secondary sm"
-            style={{ padding: '8px 16px', fontWeight: 600, fontSize: '0.85rem' }}
+            style={{ padding: '8px 14px', fontWeight: 600, fontSize: '0.82rem' }}
           >
             Buka Kelola Pesanan →
           </Link>
