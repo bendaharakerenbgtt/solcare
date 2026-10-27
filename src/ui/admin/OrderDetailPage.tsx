@@ -188,36 +188,45 @@ export const OrderDetailPage: React.FC = () => {
   return (
     <div className="stack" style={{ gap: '24px', maxWidth: '1000px', margin: '0 auto' }}>
       {/* Top Header */}
-      <div className="admin-top">
-        <div>
-          <div className="row" style={{ gap: '8px', alignItems: 'center' }}>
-            <span className="badge teal" style={{ fontSize: '1rem' }}>
-              {displayCode(order.code)}
-            </span>
-            <span className={`badge ${order.status === 'selesai' ? 'ok' : 'blue'}`}>
-              {STATUS_LABEL[order.status]}
-            </span>
-            <span className={`badge ${order.payment.status === 'lunas' ? 'ok' : 'warn'}`}>
-              {order.payment.status === 'lunas' ? 'Lunas' : 'Belum Lunas'}
-            </span>
+      <div className="admin-top" style={{ alignItems: 'flex-start', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
+        <Link to="/admin/orders" className="admin-back-btn">
+          ← Kembali
+        </Link>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <div className="row" style={{ gap: '6px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '6px' }}>
+              <span className="badge teal" style={{ fontSize: '0.88rem', fontWeight: 700 }}>
+                {displayCode(order.code)}
+              </span>
+              <span className={`badge ${order.status === 'selesai' ? 'ok' : 'blue'}`}>
+                {STATUS_LABEL[order.status]}
+              </span>
+              <span className={`badge ${order.payment.status === 'lunas' ? 'ok' : 'warn'}`}>
+                {order.payment.status === 'lunas' ? 'Lunas' : 'Belum Lunas'}
+              </span>
+            </div>
+            <h1 style={{ fontSize: '1.45rem', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
+              {order.itemType}: {order.brand} {order.model}
+            </h1>
+            <p className="small muted" style={{ margin: '4px 0 0', fontSize: '0.84rem' }}>
+              Pelanggan: <strong>{order.customerName}</strong> ({order.customerPhone}) • Diterima: {fmtDateTime(order.receivedAt)}
+            </p>
           </div>
-          <h1 style={{ marginTop: '6px' }}>
-            {order.itemType}: {order.brand} {order.model}
-          </h1>
-        </div>
-        <div className="spacer" />
-        <div className="row" style={{ gap: '8px' }}>
-          {waCustomer && (
-            <a href={waCustomer} target="_blank" rel="noreferrer" className="btn wa sm">
-              💬 WA Pelanggan
-            </a>
-          )}
-          <Link to={`/admin/orders/${order.id}/edit`} className="btn secondary sm">
-            ✏️ Edit Pesanan
-          </Link>
-          <Link to={`/cek-pesanan?code=${order.code}`} target="_blank" className="btn secondary sm">
-            Tampilan Publik ↗
-          </Link>
+
+          <div className="order-detail-actions">
+            {waCustomer && (
+              <a href={waCustomer} target="_blank" rel="noreferrer" className="btn wa sm">
+                WhatsApp Pelanggan
+              </a>
+            )}
+            <Link to={`/admin/orders/${order.id}/edit`} className="btn secondary sm">
+              Edit Pesanan
+            </Link>
+            <Link to={`/cek-pesanan?code=${order.code}`} target="_blank" className="btn secondary sm">
+              Cek Publik ↗
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -249,20 +258,29 @@ export const OrderDetailPage: React.FC = () => {
         {/* Status & Estimate Controls */}
         <div className="card">
           <h3>Ubah Status Pengerjaan</h3>
-          <form onSubmit={handleUpdateStatus} className="stack" style={{ marginTop: '12px', gap: '10px' }}>
-            <label className="field">
-              <span>Status Sekarang:</span>
-              <select
-                value={targetStatus}
-                onChange={(e) => setTargetStatus(e.target.value as OrderStatus)}
-              >
-                {ORDER_STATUSES.map((st) => (
-                  <option key={st} value={st}>
-                    {STATUS_LABEL[st]}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <form onSubmit={handleUpdateStatus} className="stack" style={{ marginTop: '12px', gap: '12px' }}>
+            <div>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '8px' }}>
+                Pilih Tahapan Status:
+              </span>
+              <div className="status-pill-grid">
+                {ORDER_STATUSES.map((st) => {
+                  const isSelected = targetStatus === st;
+                  const isCurrent = order.status === st;
+                  return (
+                    <button
+                      type="button"
+                      key={st}
+                      className={`status-pill-btn ${isSelected ? 'active' : ''}`}
+                      onClick={() => setTargetStatus(st)}
+                    >
+                      {STATUS_LABEL[st]} {isCurrent ? '•' : ''}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <label className="field">
               <span>Catatan Pembaruan (Opsional)</span>
               <input
@@ -345,43 +363,44 @@ export const OrderDetailPage: React.FC = () => {
           </div>
         )}
 
-        <div className="table-scroll-hint" style={{ marginTop: '8px' }}>👉 Geser ke samping untuk melihat detail</div>
-        <div className="table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Layanan / Produk</th>
-                <th>Kategori</th>
-                <th>Beban</th>
-                <th className="right">Harga Saat Transaksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {order.services.map((s, idx) => (
-                <tr key={idx}>
-                  <td><strong>{s.name}</strong></td>
-                  <td>{s.category}</td>
-                  <td>{s.workloadWeight} unit</td>
-                  <td className="right">{rupiah(s.price)}</td>
-                </tr>
-              ))}
-              {order.products.map((p, idx) => (
-                <tr key={idx}>
-                  <td><strong>{p.name}</strong> (x{p.qty})</td>
-                  <td>Produk Tambahan</td>
-                  <td>-</td>
-                  <td className="right">{rupiah(p.subtotal)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div style={{ marginTop: '12px' }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'block', marginBottom: '8px', color: '#334155' }}>
+            Daftar Layanan & Produk Tambahan:
+          </span>
+          <div className="order-service-list">
+            {order.services.map((s, idx) => (
+              <div key={idx} className="order-service-card">
+                <div className="order-service-card-info">
+                  <span className="order-service-card-name">{s.name}</span>
+                  <div className="order-service-card-meta">
+                    <span className="badge sm">{s.category}</span>
+                    <span>• Beban: {s.workloadWeight} unit</span>
+                  </div>
+                </div>
+                <span className="order-service-card-price">{rupiah(s.price)}</span>
+              </div>
+            ))}
+
+            {order.products.map((p, idx) => (
+              <div key={idx} className="order-service-card">
+                <div className="order-service-card-info">
+                  <span className="order-service-card-name">{p.name} (x{p.qty})</span>
+                  <div className="order-service-card-meta">
+                    <span className="badge sm" style={{ background: '#f1f5f9', color: '#475569' }}>Produk Tambahan</span>
+                    <span>• {rupiah(p.unitPrice)}/item</span>
+                  </div>
+                </div>
+                <span className="order-service-card-price">{rupiah(p.subtotal)}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="totals" style={{ padding: '16px 8px 0', borderTop: '2px solid var(--line)' }}>
+        <div className="totals" style={{ padding: '16px 8px 0', borderTop: '2px solid var(--line)', marginTop: '14px' }}>
           <span>Total Pembayaran</span>
-          <span style={{ color: 'var(--primary)' }}>{rupiah(order.total)}</span>
+          <span style={{ color: 'var(--primary)', fontSize: '1.25rem', fontWeight: 800 }}>{rupiah(order.total)}</span>
         </div>
-        <div className="row between small muted" style={{ padding: '4px 8px' }}>
+        <div className="row between small muted" style={{ padding: '6px 8px 0', flexWrap: 'wrap', gap: '8px' }}>
           <div>
             Metode: <strong style={{ textTransform: 'uppercase' }}>{order.payment.method}</strong> • Dicatat oleh: {order.payment.recordedByName || 'Staff'}
           </div>
@@ -460,7 +479,7 @@ export const OrderDetailPage: React.FC = () => {
                     />
                   ) : (
                     <div className="small muted center">
-                      📷 Klik untuk pilih
+                      Klik untuk pilih
                       <br />
                       <strong>Foto {slotIdx + 1}</strong>
                     </div>
@@ -536,7 +555,7 @@ export const OrderDetailPage: React.FC = () => {
               <ul className="timeline">
                 {estimateHistory.map((eh) => (
                   <li key={eh.id} className="done">
-                    <div className="dot">⏱️</div>
+                    <div className="dot">✓</div>
                     <div>
                       <strong>
                         {eh.newAt ? fmtDateTime(eh.newAt) : 'Belum diatur'}

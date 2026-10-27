@@ -1905,6 +1905,114 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   box-shadow: 0 0 0 1px var(--primary);
 }
 
+/* Order Detail Page Modern Styles */
+.status-pill-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+@media (max-width: 480px) {
+  .status-pill-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.status-pill-btn {
+  background: #ffffff;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 6px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.status-pill-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.status-pill-btn.active {
+  background: #f0fdfa;
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 700;
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.order-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+  .order-detail-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .order-detail-actions .btn {
+    width: 100% !important;
+    text-align: center;
+    justify-content: center;
+    padding: 9px 12px !important;
+    font-size: 0.8rem !important;
+  }
+  .order-detail-actions .btn.wa {
+    grid-column: span 2;
+  }
+}
+
+.order-service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.order-service-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  gap: 12px;
+}
+.order-service-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.order-service-card-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.order-service-card-meta {
+  font-size: 0.74rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.order-service-card-price {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f766e;
+  background: #ccfbf1;
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
 
 
 
