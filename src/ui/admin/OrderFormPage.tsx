@@ -545,9 +545,6 @@ export const OrderFormPage: React.FC = () => {
                 <span style={{ fontSize: '0.88rem', fontWeight: 700, display: 'block', color: '#1e293b' }}>
                   Beli Produk Tambahan (Opsional)
                 </span>
-                <span className="xs muted">
-                  Klik untuk menambahkan parfum botol 60ml atau tali sepatu ke nota
-                </span>
               </div>
               {selectedProducts.length > 0 && (
                 <span className="badge ok" style={{ fontSize: '0.75rem' }}>
