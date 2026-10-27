@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { repo } from '../../data';
 
 export const AdminLayout: React.FC = () => {
   const { user, ready, signOut } = useAuth();
@@ -20,12 +19,6 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div>
-      {repo.mode === 'local' && (
-        <div className="demo-banner">
-          ⚠️ <strong>MODE LOKAL (DEMO):</strong> Data & foto disimpan di browser ini (localStorage & IndexedDB). Untuk produksi, konfigurasikan Supabase & Google Drive (lihat panduan di folder docs).
-        </div>
-      )}
-
       <div className="admin-mobile-bar">
         <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle Navigation">☰ Menu</button>
         <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Soleful Staff</span>
