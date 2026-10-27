@@ -478,12 +478,11 @@ export const OrderFormPage: React.FC = () => {
           <div key={item.id} className="card" style={{ border: items.length > 1 ? '1.5px solid #cbd5e1' : undefined }}>
             <div className="row between" style={{ alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid var(--line)', paddingBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span className="badge" style={{ background: 'var(--primary)', color: '#fff', fontSize: '0.82rem', fontWeight: 700 }}>
-                  {items.length > 1 ? `Barang ${itemIdx + 1}` : '2. Barang & Layanan'}
-                </span>
-                <strong style={{ fontSize: '1rem', color: 'var(--ink)' }}>
-                  {item.brand || item.model ? `${item.brand} ${item.model}` : item.itemTypeSelect}
-                </strong>
+                <h3 style={{ margin: 0 }}>
+                  {items.length > 1
+                    ? `Barang ${itemIdx + 1}${item.brand || item.model ? `: ${item.brand} ${item.model}` : ` (${item.itemTypeSelect})`}`
+                    : '2. Barang & Layanan Treatment'}
+                </h3>
                 {item.selectedServices.length > 0 && (
                   <span className="badge ok" style={{ fontSize: '0.75rem' }}>
                     {item.selectedServices.length} layanan ({rupiah(item.selectedServices.reduce((sum, s) => sum + s.price, 0))})
