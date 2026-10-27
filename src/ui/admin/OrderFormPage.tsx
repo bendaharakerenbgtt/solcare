@@ -9,6 +9,8 @@ import { lineFromService, computeTotal, validateServiceLines } from '../../lib/p
 import { rupiah, fmtDateTime } from '../../lib/format';
 import { dateKey, isOpenDay, atTime } from '../../lib/dates';
 
+const STANDARD_ITEM_TYPES = ['Sepatu', 'Tas', 'Topi', 'Helm', 'Sandal / Wedges'];
+
 export const OrderFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
@@ -23,7 +25,8 @@ export const OrderFormPage: React.FC = () => {
   // Form states
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [itemType, setItemType] = useState('Sepatu');
+  const [itemTypeSelect, setItemTypeSelect] = useState('Sepatu');
+  const [customItemType, setCustomItemType] = useState('');
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
   const [color, setColor] = useState('');
@@ -59,7 +62,13 @@ export const OrderFormPage: React.FC = () => {
         if (!ord) return;
         setCustomerName(ord.customerName);
         setCustomerPhone(ord.customerPhone);
-        setItemType(ord.itemType);
+        if (STANDARD_ITEM_TYPES.includes(ord.itemType)) {
+          setItemTypeSelect(ord.itemType);
+          setCustomItemType('');
+        } else {
+          setItemTypeSelect('Lainnya');
+          setCustomItemType(ord.itemType);
+        }
         setBrand(ord.brand);
         setModel(ord.model);
         setColor(ord.color);
@@ -188,6 +197,13 @@ export const OrderFormPage: React.FC = () => {
       return;
     }
 
+    if (itemTypeSelect === 'Lainnya' && !customItemType.trim()) {
+      setFormError('Silakan masukkan nama jenis barang (custom).');
+      return;
+    }
+
+    const finalItemType = itemTypeSelect === 'Lainnya' ? customItemType.trim() : itemTypeSelect;
+
     setSaving(true);
     try {
       const targetEstimate =
@@ -197,7 +213,7 @@ export const OrderFormPage: React.FC = () => {
 
       const orderInput: OrderInput = {
         customer: { name: customerName, phone: customerPhone },
-        itemType,
+        itemType: finalItemType,
         brand,
         model,
         color,
@@ -327,15 +343,37 @@ export const OrderFormPage: React.FC = () => {
           <div className="grid grid-2" style={{ marginTop: '12px' }}>
             <label className="field">
               <span>Jenis Barang *</span>
-              <select value={itemType} onChange={(e) => setItemType(e.target.value)}>
+              <select
+                value={itemTypeSelect}
+                onChange={(e) => {
+                  setItemTypeSelect(e.target.value);
+                  if (e.target.value !== 'Lainnya') {
+                    setCustomItemType('');
+                  }
+                }}
+              >
                 <option value="Sepatu">Sepatu</option>
                 <option value="Tas">Tas</option>
                 <option value="Topi">Topi</option>
                 <option value="Helm">Helm</option>
                 <option value="Sandal / Wedges">Sandal / Wedges</option>
-                <option value="Lainnya">Lainnya</option>
+                <option value="Lainnya">Lainnya (Custom Nama Sendiri)</option>
               </select>
             </label>
+
+            {itemTypeSelect === 'Lainnya' && (
+              <label className="field">
+                <span>Nama Jenis Barang (Custom) *</span>
+                <input
+                  type="text"
+                  placeholder="Contoh: Jaket Kulit, Koper, Stroller, dll."
+                  value={customItemType}
+                  onChange={(e) => setCustomItemType(e.target.value)}
+                  autoFocus
+                  required
+                />
+              </label>
+            )}
             <label className="field">
               <span>Merek (Brand)</span>
               <input
