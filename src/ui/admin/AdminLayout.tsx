@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { SlideCalendarDrawer } from './SlideCalendarDrawer';
 
 export const AdminLayout: React.FC = () => {
   const { user, ready, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [calDrawerOpen, setCalDrawerOpen] = useState(false);
   const location = useLocation();
 
   if (!ready) {
@@ -20,11 +22,19 @@ export const AdminLayout: React.FC = () => {
   return (
     <div>
       <div className="admin-mobile-bar">
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle Navigation">☰ Menu</button>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle Navigation">
+          ☰
+        </button>
         <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Soleful Staff</span>
-        <Link to="/" target="_blank" className="btn secondary sm" style={{ padding: '4px 10px', fontSize: '0.78rem' }}>
-          Web ↗
-        </Link>
+        <button
+          type="button"
+          onClick={() => setCalDrawerOpen(true)}
+          className="admin-cal-drawer-btn"
+          title="Buka Kalender Jadwal"
+          aria-label="Buka Kalender"
+        >
+          📅
+        </button>
       </div>
 
       {sidebarOpen && (
@@ -34,6 +44,20 @@ export const AdminLayout: React.FC = () => {
           aria-hidden="true"
         />
       )}
+
+      {/* Slide-out Calendar Drawer from Right */}
+      <SlideCalendarDrawer isOpen={calDrawerOpen} onClose={() => setCalDrawerOpen(false)} />
+
+      {/* Floating Quick Calendar Button on Bottom-Right */}
+      <button
+        type="button"
+        onClick={() => setCalDrawerOpen(true)}
+        className="floating-cal-trigger"
+        title="Buka Kalender Jadwal & Estimasi"
+      >
+        <span>📅</span>
+        <span>Kalender</span>
+      </button>
 
       <div className="admin">
         <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>

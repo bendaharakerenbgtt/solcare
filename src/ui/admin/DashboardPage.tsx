@@ -2,114 +2,87 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
-import { fmtDateTime, rupiah, STATUS_LABEL, displayCode, whatsappLink } from '../../lib/format';
+import { fmtDateTime, STATUS_LABEL, displayCode, whatsappLink } from '../../lib/format';
 import { isLate } from '../../lib/estimation';
-import { dateKey, isOpenDay } from '../../lib/dates';
-import type { Order } from '../../data/types';
+import { dateKey } from '../../lib/dates';
+import type { Order, OrderStatus } from '../../data/types';
+
+const NEXT_STATUS: Record<OrderStatus, OrderStatus | null> = {
+  menunggu: 'pencucian',
+  pencucian: 'pengeringan',
+  pengeringan: 'finishing',
+  finishing: 'selesai',
+  selesai: 'diambil',
+  diambil: null,
+};
+
+const NEXT_STATUS_BTN: Record<OrderStatus, string> = {
+  menunggu: 'Mulai Cuci 🧼',
+  pencucian: 'Lanjut Keringkan 💨',
+  pengeringan: 'Lanjut Finishing ✨',
+  finishing: 'Siap Diambil ✅',
+  selesai: 'Tandai Diambil 📦',
+  diambil: '',
+};
 
 export const DashboardPage: React.FC = () => {
-  const { data: orders, loading } = useAsync(() => repo.listOrders(), []);
+  const { data: orders, loading, reload } = useAsync(() => repo.listOrders(), []);
   const { data: settings } = useAsync(() => repo.getSettings(), []);
 
   const now = new Date();
   const todayStr = dateKey(now);
 
-  // States
-  const [filterType, setFilterType] = useState<'all' | 'active' | 'today' | 'late' | 'ready' | 'unpaid'>('all');
-  const [calMonth, setCalMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
-  const [selectedCalDate, setSelectedCalDate] = useState<string>(todayStr);
+  const [activityTab, setActivityTab] = useState<'all' | 'pencucian' | 'pengeringan' | 'finishing' | 'selesai' | 'menunggu'>('all');
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const activeOrders = (orders || []).filter((o) => o.status !== 'selesai' && o.status !== 'diambil');
   const todayEst = (orders || []).filter((o) => o.estimatedAt && o.estimatedAt.startsWith(todayStr) && o.status !== 'diambil');
   const completedOrders = (orders || []).filter((o) => o.status === 'selesai');
   const lateOrders = (orders || []).filter((o) => isLate(o, now) && o.status !== 'diambil');
-  const unpaidOrders = (orders || []).filter((o) => o.payment.status === 'belum_lunas');
 
-  // Month Calendar Matrix calculation
-  const cYear = calMonth.getFullYear();
-  const cMonth = calMonth.getMonth();
-  const firstDayIdx = new Date(cYear, cMonth, 1).getDay();
-  const totalDays = new Date(cYear, cMonth + 1, 0).getDate();
+  // Breakdown by activity status
+  const washingOrders = (orders || []).filter((o) => o.status === 'pencucian');
+  const dryingOrders = (orders || []).filter((o) => o.status === 'pengeringan');
+  const finishingOrders = (orders || []).filter((o) => o.status === 'finishing');
+  const waitingOrders = (orders || []).filter((o) => o.status === 'menunggu');
 
-  const calDays: { key: string; dayNum: number; inMonth: boolean }[] = [];
-  const prevMonthTotal = new Date(cYear, cMonth, 0).getDate();
-  for (let i = firstDayIdx - 1; i >= 0; i--) {
-    const dNum = prevMonthTotal - i;
-    const prevD = new Date(cYear, cMonth - 1, dNum);
-    calDays.push({ key: dateKey(prevD), dayNum: dNum, inMonth: false });
-  }
-  for (let i = 1; i <= totalDays; i++) {
-    const curD = new Date(cYear, cMonth, i);
-    calDays.push({ key: dateKey(curD), dayNum: i, inMonth: true });
-  }
-  let nextPad = 1;
-  while (calDays.length % 7 !== 0) {
-    const nextD = new Date(cYear, cMonth + 1, nextPad);
-    calDays.push({ key: dateKey(nextD), dayNum: nextPad, inMonth: false });
-    nextPad++;
-  }
-
-  // Map orders by estimation date
-  const ordersByEstDate = new Map<string, Order[]>();
-  (orders || []).forEach((o) => {
-    if (o.estimatedAt) {
-      const k = dateKey(new Date(o.estimatedAt));
-      const list = ordersByEstDate.get(k) || [];
-      list.push(o);
-      ordersByEstDate.set(k, list);
-    }
+  // Filtered activity items
+  const activityList = (orders || []).filter((o) => {
+    if (activityTab === 'all') return o.status !== 'diambil';
+    return o.status === activityTab;
   });
 
-  const selectedDateOrders = ordersByEstDate.get(selectedCalDate) || [];
-
-  // Filtered orders for table / cards
-  const displayedOrders = (orders || []).filter((o) => {
-    if (filterType === 'active') return o.status !== 'selesai' && o.status !== 'diambil';
-    if (filterType === 'today') return o.estimatedAt && o.estimatedAt.startsWith(todayStr) && o.status !== 'diambil';
-    if (filterType === 'late') return isLate(o, now) && o.status !== 'diambil';
-    if (filterType === 'ready') return o.status === 'selesai';
-    if (filterType === 'unpaid') return o.payment.status === 'belum_lunas';
-    return true;
-  }).slice(0, 8);
-
-  const prevMonth = () => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1));
-  const nextMonth = () => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1));
+  const handleAdvanceStatus = async (order: Order) => {
+    const nextSt = NEXT_STATUS[order.status];
+    if (!nextSt) return;
+    setUpdatingId(order.id);
+    try {
+      await repo.updateStatus(order.id, nextSt, `Diperbarui langsung dari dashboard aktivitas (${STATUS_LABEL[nextSt]})`);
+      await reload();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Gagal mengubah status');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   return (
-    <div className="stack" style={{ gap: '20px' }}>
-      {/* Top Header */}
-      <div className="admin-top admin-top-responsive">
-        <div>
-          <h1>Dashboard Operasional</h1>
-          <p className="small muted">
-            Ringkasan antrean, status pesanan, dan visual kalender estimasi selesai.
-          </p>
-        </div>
-        <div className="spacer" />
-        <Link to="/admin/orders/new" className="btn primary admin-header-action-btn">
-          ➕ Catat Pesanan Baru
-        </Link>
-      </div>
-
-      {/* Quick Menu Bar */}
-      <div className="dash-quick-menu">
-        <Link to="/admin/orders" className="dash-quick-btn">
-          📦 Semua Pesanan ({orders?.length || 0})
-        </Link>
-        <Link to="/admin/calendar" className="dash-quick-btn">
-          📅 Kalender Jadwal Penuh
-        </Link>
-        <Link to="/admin/customers" className="dash-quick-btn">
-          👥 Buku Pelanggan
+    <div className="stack" style={{ gap: '18px' }}>
+      {/* Top Header Row: Clean title & compact Add button */}
+      <div className="row between" style={{ alignItems: 'center', gap: '12px' }}>
+        <h1 style={{ margin: 0, fontSize: '1.45rem' }}>Dashboard Operasional</h1>
+        <Link
+          to="/admin/orders/new"
+          className="btn primary sm"
+          style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.85rem' }}
+        >
+          ➕ Pesanan Baru
         </Link>
       </div>
 
       {/* Modern Compact 2x2 Metrics Cards on Mobile (4 cols on Desktop) */}
       <div className="dash-metrics-grid">
-        <div
-          className={`dash-metric-card ${filterType === 'active' ? 'active' : ''}`}
-          onClick={() => setFilterType(filterType === 'active' ? 'all' : 'active')}
-        >
+        <div className="dash-metric-card">
           <div className="icon-label">
             <span>📦</span>
             <span>Pesanan Aktif</span>
@@ -120,10 +93,7 @@ export const DashboardPage: React.FC = () => {
           <div className="sub">Kapasitas: {settings?.dailyCapacity || 20} unit/hari</div>
         </div>
 
-        <div
-          className={`dash-metric-card ${filterType === 'today' ? 'active' : ''}`}
-          onClick={() => setFilterType(filterType === 'today' ? 'all' : 'today')}
-        >
+        <div className="dash-metric-card">
           <div className="icon-label">
             <span>⚡</span>
             <span>Target Hari Ini</span>
@@ -134,10 +104,7 @@ export const DashboardPage: React.FC = () => {
           <div className="sub">Perlu selesai hari ini</div>
         </div>
 
-        <div
-          className={`dash-metric-card ${filterType === 'late' ? 'active' : ''}`}
-          onClick={() => setFilterType(filterType === 'late' ? 'all' : 'late')}
-        >
+        <div className="dash-metric-card">
           <div className="icon-label">
             <span>⚠️</span>
             <span>Terlambat</span>
@@ -148,10 +115,7 @@ export const DashboardPage: React.FC = () => {
           <div className="sub">Melewati target estimasi</div>
         </div>
 
-        <div
-          className={`dash-metric-card ${filterType === 'ready' ? 'active' : ''}`}
-          onClick={() => setFilterType(filterType === 'ready' ? 'all' : 'ready')}
-        >
+        <div className="dash-metric-card">
           <div className="icon-label">
             <span>✅</span>
             <span>Siap Diambil</span>
@@ -163,324 +127,198 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Visual Calendar Widget: Jadwal Estimasi Selesai */}
-      <div className="card mini-cal-card">
-        <div className="mini-cal-header">
+      {/* Section: Aktivitas & Pengerjaan Hari Ini */}
+      <div className="card" style={{ padding: '18px 16px' }}>
+        <div className="row between" style={{ marginBottom: '14px', alignItems: 'center' }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.05rem' }}>
-              📅 Visual Kalender: Target Selesai
-            </h3>
-            <span className="small muted">Klik tanggal untuk melihat daftar pesanan yang selesai</span>
+            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>📋 Aktivitas Pengerjaan Hari Ini</h3>
+            <span className="small muted">Pantau sepatu yang sedang dicuci, dikeringkan, atau siap diambil</span>
           </div>
-          <div className="mini-cal-nav row" style={{ gap: '6px' }}>
-            <button type="button" className="btn secondary sm" style={{ padding: '4px 10px' }} onClick={prevMonth}>
-              ←
-            </button>
-            <span style={{ fontWeight: 700, fontSize: '0.88rem', minWidth: '100px', textAlign: 'center' }}>
-              {calMonth.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
-            </span>
-            <button type="button" className="btn secondary sm" style={{ padding: '4px 10px' }} onClick={nextMonth}>
-              →
-            </button>
-          </div>
+          <span className="badge teal">{activityList.length} Barang</span>
         </div>
 
-        {/* Calendar Day Grid */}
-        <div className="mini-cal-grid">
-          <div className="mini-cal-dow">Min</div>
-          <div className="mini-cal-dow">Sen</div>
-          <div className="mini-cal-dow">Sel</div>
-          <div className="mini-cal-dow">Rab</div>
-          <div className="mini-cal-dow">Kam</div>
-          <div className="mini-cal-dow">Jum</div>
-          <div className="mini-cal-dow">Sab</div>
-
-          {calDays.map((d) => {
-            const ords = ordersByEstDate.get(d.key) || [];
-            const isToday = d.key === todayStr;
-            const isSel = d.key === selectedCalDate;
-            const open = settings ? isOpenDay(d.key, settings) : true;
-            const hasLate = ords.some((o) => isLate(o, now) && o.status !== 'diambil');
-
-            return (
-              <div
-                key={d.key}
-                onClick={() => setSelectedCalDate(d.key)}
-                className={`mini-cal-day ${!d.inMonth ? 'out' : ''} ${!open ? 'closed' : ''} ${isToday ? 'today' : ''} ${isSel ? 'selected' : ''} ${hasLate ? 'late-order' : ''}`}
-                title={`${d.key} (${ords.length} pesanan)`}
-              >
-                <span>{d.dayNum}</span>
-                {ords.length > 0 && (
-                  <span className="mini-cal-badge">
-                    {ords.length}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Selected Date Orders Drawer / Box */}
-        <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px dashed var(--line)' }}>
-          <div className="row between" style={{ marginBottom: '8px' }}>
-            <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>
-              Target Selesai {selectedCalDate === todayStr ? 'Hari Ini' : ''} ({selectedCalDate}):
-            </span>
-            <span className="small muted">{selectedDateOrders.length} Pesanan</span>
-          </div>
-
-          {selectedDateOrders.length === 0 ? (
-            <div className="small muted" style={{ padding: '8px 0' }}>
-              Tidak ada pesanan dengan target selesai pada tanggal ini.
-            </div>
-          ) : (
-            <div className="stack" style={{ gap: '8px' }}>
-              {selectedDateOrders.map((o) => {
-                const late = isLate(o, now) && o.status !== 'diambil';
-                const waUrl = whatsappLink(o.customerPhone, `Halo Kak ${o.customerName}, info pesanan ${displayCode(o.code)}`);
-                return (
-                  <div
-                    key={o.id}
-                    className="card flat"
-                    style={{
-                      padding: '10px 12px',
-                      border: '1px solid var(--line)',
-                      borderRadius: '10px',
-                      background: '#f8fafc',
-                    }}
-                  >
-                    <div className="row between" style={{ marginBottom: '4px' }}>
-                      <div>
-                        <strong className="mono">{displayCode(o.code)}</strong>
-                        <span style={{ marginLeft: '8px', fontWeight: 600 }}>{o.customerName}</span>
-                      </div>
-                      <span className={`badge ${o.status === 'selesai' ? 'ok' : o.status === 'diambil' ? '' : 'teal'}`}>
-                        {STATUS_LABEL[o.status]}
-                      </span>
-                    </div>
-                    <div className="small muted">
-                      {o.itemType}: {o.brand} {o.model} • {rupiah(o.total)}
-                    </div>
-                    {late && <div className="xs" style={{ color: 'var(--danger)', fontWeight: 700, marginTop: '2px' }}>⚠️ Melewati estimasi</div>}
-                    <div className="row" style={{ marginTop: '8px', gap: '6px' }}>
-                      <Link to={`/admin/orders/${o.id}`} className="btn sm secondary" style={{ flex: 1, padding: '6px 8px' }}>
-                        ✏️ Edit / Detail Pesanan
-                      </Link>
-                      {waUrl && (
-                        <a
-                          href={waUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn sm wa"
-                          style={{ padding: '6px 12px' }}
-                        >
-                          WA
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Orders Management Section */}
-      <div className="card">
-        <div className="row between" style={{ marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
-          <div>
-            <h3 style={{ margin: 0 }}>Kelola Pesanan</h3>
-            <span className="small muted">
-              {filterType === 'all' ? 'Seluruh pesanan masuk' : `Filter: ${filterType.toUpperCase()}`}
-            </span>
-          </div>
-          <Link to="/admin/orders" className="btn sm secondary">
-            Lihat Semua Antrean ({orders?.length || 0}) →
-          </Link>
-        </div>
-
-        {/* Filter Tabs */}
-        <div className="tabs" style={{ marginBottom: '16px' }}>
+        {/* Activity Filter Tabs */}
+        <div className="tabs" style={{ marginBottom: '14px' }}>
           <button
             type="button"
-            className={filterType === 'all' ? 'active' : ''}
-            onClick={() => setFilterType('all')}
+            className={activityTab === 'all' ? 'active' : ''}
+            onClick={() => setActivityTab('all')}
           >
-            Semua ({orders?.length || 0})
+            Semua Aktif ({activeOrders.length + completedOrders.length})
           </button>
           <button
             type="button"
-            className={filterType === 'active' ? 'active' : ''}
-            onClick={() => setFilterType('active')}
+            className={activityTab === 'pencucian' ? 'active' : ''}
+            onClick={() => setActivityTab('pencucian')}
           >
-            Aktif ({activeOrders.length})
+            🧼 Sedang Dicuci ({washingOrders.length})
           </button>
           <button
             type="button"
-            className={filterType === 'today' ? 'active' : ''}
-            onClick={() => setFilterType('today')}
+            className={activityTab === 'pengeringan' ? 'active' : ''}
+            onClick={() => setActivityTab('pengeringan')}
           >
-            Hari Ini ({todayEst.length})
+            💨 Pengeringan ({dryingOrders.length})
           </button>
           <button
             type="button"
-            className={filterType === 'late' ? 'active' : ''}
-            onClick={() => setFilterType('late')}
+            className={activityTab === 'finishing' ? 'active' : ''}
+            onClick={() => setActivityTab('finishing')}
           >
-            Terlambat ({lateOrders.length})
+            ✨ Finishing ({finishingOrders.length})
           </button>
           <button
             type="button"
-            className={filterType === 'ready' ? 'active' : ''}
-            onClick={() => setFilterType('ready')}
+            className={activityTab === 'selesai' ? 'active' : ''}
+            onClick={() => setActivityTab('selesai')}
           >
-            Siap Ambil ({completedOrders.length})
+            ✅ Siap Diambil ({completedOrders.length})
           </button>
           <button
             type="button"
-            className={filterType === 'unpaid' ? 'active' : ''}
-            onClick={() => setFilterType('unpaid')}
+            className={activityTab === 'menunggu' ? 'active' : ''}
+            onClick={() => setActivityTab('menunggu')}
           >
-            Belum Lunas ({unpaidOrders.length})
+            ⏳ Antrean ({waitingOrders.length})
           </button>
         </div>
 
         {loading ? (
-          <div className="empty">Memuat data pesanan...</div>
-        ) : displayedOrders.length === 0 ? (
-          <div className="empty">Tidak ada pesanan untuk filter ini.</div>
+          <div className="empty">Memuat aktivitas operasional...</div>
+        ) : activityList.length === 0 ? (
+          <div className="empty" style={{ padding: '28px 16px' }}>
+            <div style={{ fontSize: '1.8rem', marginBottom: '6px' }}>🎉</div>
+            <strong>Tidak ada barang dalam tahap ini.</strong>
+            <p className="small muted" style={{ margin: '4px 0 12px' }}>
+              Semua sepatu di tahapan ini telah selesai diproses.
+            </p>
+            <Link to="/admin/orders/new" className="btn sm primary">
+              ➕ Input Pesanan Baru
+            </Link>
+          </div>
         ) : (
-          <>
-            {/* MOBILE ONLY: Modern Mobile Cards */}
-            <div className="mobile-only-cards mobile-order-cards">
-              {displayedOrders.map((o) => {
-                const late = isLate(o, now) && o.status !== 'diambil';
-                const waUrl = whatsappLink(o.customerPhone, `Halo Kak ${o.customerName}, info pesanan ${displayCode(o.code)}`);
-                return (
-                  <div key={o.id} className="mobile-order-card">
-                    <div className="mobile-order-card-top">
-                      <div>
-                        <strong className="mono" style={{ fontSize: '1rem', color: 'var(--primary)' }}>
-                          {displayCode(o.code)}
-                        </strong>
-                        <div className="xs muted">{fmtDateTime(o.receivedAt)}</div>
-                      </div>
-                      <div className="row" style={{ gap: '4px' }}>
-                        <span className={`badge ${o.status === 'selesai' ? 'ok' : o.status === 'diambil' ? '' : 'teal'}`}>
-                          {STATUS_LABEL[o.status]}
-                        </span>
-                        <span className={`badge ${o.payment.status === 'lunas' ? 'ok' : 'warn'}`}>
-                          {o.payment.status === 'lunas' ? 'Lunas' : 'Belum'}
-                        </span>
-                      </div>
-                    </div>
+          <div className="stack" style={{ gap: '12px' }}>
+            {activityList.map((o) => {
+              const late = isLate(o, now) && o.status !== 'diambil';
+              const nextAction = NEXT_STATUS_BTN[o.status];
+              const waUrl = whatsappLink(o.customerPhone, `Halo Kak ${o.customerName}, info pengerjaan ${displayCode(o.code)} di Soleful Soaks!`);
+              const isUpdating = updatingId === o.id;
 
-                    <div className="mobile-order-card-body">
-                      <div>
-                        <strong>{o.customerName}</strong>
-                        <span className="small muted" style={{ marginLeft: '6px' }}>({o.customerPhone})</span>
-                      </div>
-                      <div className="small">
-                        👟 <strong>{o.itemType}</strong>: {o.brand} {o.model}
-                      </div>
-                      <div className="xs muted">
-                        Layanan: {o.services.map((s) => s.name).join(', ')}
-                      </div>
-                      <div className="small row between" style={{ marginTop: '2px' }}>
-                        <span>Target Selesai:</span>
-                        <strong className={late ? 'badge danger' : ''}>
-                          {o.estimatedAt ? fmtDateTime(o.estimatedAt) : '-'}
-                        </strong>
-                      </div>
-                      <div className="small row between">
-                        <span>Total Biaya:</span>
-                        <strong style={{ color: 'var(--primary)', fontSize: '0.95rem' }}>{rupiah(o.total)}</strong>
-                      </div>
+              return (
+                <div
+                  key={o.id}
+                  className="mobile-order-card"
+                  style={{ borderLeft: `4px solid ${o.status === 'selesai' ? '#16a34a' : o.status === 'pencucian' ? '#0284c7' : '#0f766e'}` }}
+                >
+                  <div className="mobile-order-card-top">
+                    <div>
+                      <strong className="mono" style={{ fontSize: '0.95rem', color: 'var(--primary)' }}>
+                        {displayCode(o.code)}
+                      </strong>
+                      <div className="xs muted">{fmtDateTime(o.receivedAt)}</div>
                     </div>
-
-                    <div className="mobile-order-card-actions">
-                      <Link to={`/admin/orders/${o.id}`} className="btn secondary">
-                        ✏️ Edit / Detail Pesanan
-                      </Link>
-                      {waUrl && (
-                        <a
-                          href={waUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn wa"
-                          style={{ flex: '0 0 auto', padding: '9px 14px' }}
-                        >
-                          💬 WA
-                        </a>
-                      )}
+                    <div className="row" style={{ gap: '4px' }}>
+                      <span className={`badge ${o.status === 'selesai' ? 'ok' : o.status === 'diambil' ? '' : 'teal'}`}>
+                        {STATUS_LABEL[o.status]}
+                      </span>
+                      <span className={`badge ${o.payment.status === 'lunas' ? 'ok' : 'warn'}`}>
+                        {o.payment.status === 'lunas' ? 'Lunas' : 'Belum'}
+                      </span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
 
-            {/* DESKTOP ONLY: Full Table */}
-            <div className="desktop-only-table">
-              <div className="table-wrap">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Kode & Tanggal</th>
-                      <th>Pelanggan</th>
-                      <th>Barang</th>
-                      <th>Status</th>
-                      <th>Estimasi</th>
-                      <th>Pembayaran</th>
-                      <th className="right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayedOrders.map((o) => {
-                      const late = isLate(o, now) && o.status !== 'diambil';
-                      return (
-                        <tr key={o.id}>
-                          <td>
-                            <strong className="mono">{displayCode(o.code)}</strong>
-                            <div className="xs muted">{fmtDateTime(o.receivedAt)}</div>
-                          </td>
-                          <td>
-                            <strong>{o.customerName}</strong>
-                            <div className="xs muted">{o.customerPhone}</div>
-                          </td>
-                          <td>
-                            {o.itemType} - {o.brand} {o.model}
-                          </td>
-                          <td>
-                            <span className={`badge ${o.status === 'selesai' ? 'ok' : o.status === 'diambil' ? '' : 'teal'}`}>
-                              {STATUS_LABEL[o.status]}
-                            </span>
-                          </td>
-                          <td>
-                            <div className={late ? 'badge danger' : ''}>
-                              {o.estimatedAt ? fmtDateTime(o.estimatedAt) : '-'}
-                            </div>
-                          </td>
-                          <td>
-                            <div>{rupiah(o.total)}</div>
-                            <span className={`badge ${o.payment.status === 'lunas' ? 'ok' : 'warn'}`}>
-                              {o.payment.status === 'lunas' ? 'Lunas' : 'Belum Lunas'}
-                            </span>
-                          </td>
-                          <td className="right">
-                            <Link to={`/admin/orders/${o.id}`} className="btn secondary sm">
-                              Detail / Edit
-                            </Link>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </>
+                  <div className="mobile-order-card-body">
+                    <div>
+                      <strong>👟 {o.itemType}: {o.brand} {o.model}</strong>
+                      {o.color && <span className="xs muted" style={{ marginLeft: '6px' }}>({o.color})</span>}
+                    </div>
+                    <div className="small">
+                      🏷️ <strong>Treatment:</strong> {o.services.map((s) => s.name).join(', ')}
+                      {o.fragranceName ? ` • Aroma: ${o.fragranceName}` : ''}
+                    </div>
+                    <div className="small muted">
+                      👤 Pelanggan: <strong>{o.customerName}</strong> ({o.customerPhone})
+                    </div>
+                    {o.conditionNotes && (
+                      <div className="xs" style={{ background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', color: '#475569' }}>
+                        📝 Catatan: {o.conditionNotes}
+                      </div>
+                    )}
+                    <div className="row between small" style={{ marginTop: '2px' }}>
+                      <span>Target Estimasi:</span>
+                      <strong className={late ? 'badge danger' : ''}>
+                        {o.estimatedAt ? fmtDateTime(o.estimatedAt) : '-'}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className="mobile-order-card-actions">
+                    {/* Quick 1-tap status advance button */}
+                    {nextAction && (
+                      <button
+                        type="button"
+                        onClick={() => void handleAdvanceStatus(o)}
+                        disabled={isUpdating}
+                        className="btn primary"
+                        style={{ flex: 1.2, padding: '8px 10px', fontSize: '0.82rem' }}
+                      >
+                        {isUpdating ? 'Menyimpan...' : nextAction}
+                      </button>
+                    )}
+                    <Link
+                      to={`/admin/orders/${o.id}`}
+                      className="btn secondary"
+                      style={{ flex: 1, padding: '8px 10px', fontSize: '0.82rem' }}
+                    >
+                      ✏️ Detail
+                    </Link>
+                    {waUrl && (
+                      <a
+                        href={waUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn wa"
+                        style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+                      >
+                        💬 WA
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
+      </div>
+
+      {/* Shortcut Card to Full Orders Management */}
+      <div
+        className="card flat"
+        style={{
+          border: '1px solid var(--line)',
+          padding: '16px 18px',
+          background: '#ffffff',
+          borderRadius: '14px',
+          boxShadow: 'var(--shadow)',
+        }}
+      >
+        <div className="row between" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div>
+            <strong style={{ fontSize: '1rem', display: 'block', marginBottom: '2px' }}>
+              📦 Kelola & Daftar Semua Pesanan
+            </strong>
+            <div className="xs muted">
+              Buka menu untuk pencarian kode, filter status lengkap, nota, dan riwayat ({orders?.length || 0} pesanan tercatat).
+            </div>
+          </div>
+          <Link
+            to="/admin/orders"
+            className="btn secondary sm"
+            style={{ padding: '8px 16px', fontWeight: 600, fontSize: '0.85rem' }}
+          >
+            Buka Kelola Pesanan →
+          </Link>
+        </div>
       </div>
     </div>
   );
