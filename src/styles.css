@@ -1349,3 +1349,81 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   flex-shrink: 0;
 }
 
+/* Activity Filter Grid (No Horizontal Scroll / No Text Clipping on Mobile) */
+.activity-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.activity-filter-btn {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 8px 4px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.activity-filter-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+.activity-filter-btn.active {
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.activity-filter-btn.active.filter-all {
+  background: var(--primary-50);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.activity-filter-btn.active.filter-menunggu {
+  background: #f0fdfa;
+  border-color: #0f766e;
+  color: #0f766e;
+}
+.activity-filter-btn.active.filter-pencucian {
+  background: #e0f2fe;
+  border-color: #0284c7;
+  color: #0369a1;
+}
+.activity-filter-btn.active.filter-pengeringan {
+  background: #fef3c7;
+  border-color: #d97706;
+  color: #92400e;
+}
+.activity-filter-btn.active.filter-finishing {
+  background: #ede9fe;
+  border-color: #7c3aed;
+  color: #5b21b6;
+}
+.activity-filter-btn.active.filter-selesai {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #15803d;
+}
+
+@media (min-width: 680px) {
+  .activity-filter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .activity-filter-btn {
+    padding: 8px 14px;
+    font-size: 0.84rem;
+    border-radius: 999px;
+  }
+}
+
+

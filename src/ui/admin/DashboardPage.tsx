@@ -179,49 +179,49 @@ export const DashboardPage: React.FC = () => {
           <span className="badge teal">{activityList.length} Barang</span>
         </div>
 
-        {/* Activity Filter Tabs */}
-        <div className="tabs" style={{ marginBottom: '14px' }}>
+        {/* Activity Filter Grid - Fully Responsive, No Horizontal Scroll / No Clipping */}
+        <div className="activity-filter-grid">
           <button
             type="button"
-            className={activityTab === 'all' ? 'active' : ''}
+            className={`activity-filter-btn filter-all ${activityTab === 'all' ? 'active' : ''}`}
             onClick={() => setActivityTab('all')}
           >
             Semua ({activeOrders.length + completedOrders.length})
           </button>
           <button
             type="button"
-            className={activityTab === 'pencucian' ? 'active' : ''}
+            className={`activity-filter-btn filter-menunggu ${activityTab === 'menunggu' ? 'active' : ''}`}
+            onClick={() => setActivityTab('menunggu')}
+          >
+            ⏳ Antrean ({waitingOrders.length})
+          </button>
+          <button
+            type="button"
+            className={`activity-filter-btn filter-pencucian ${activityTab === 'pencucian' ? 'active' : ''}`}
             onClick={() => setActivityTab('pencucian')}
           >
             🧼 Cuci ({washingOrders.length})
           </button>
           <button
             type="button"
-            className={activityTab === 'pengeringan' ? 'active' : ''}
+            className={`activity-filter-btn filter-pengeringan ${activityTab === 'pengeringan' ? 'active' : ''}`}
             onClick={() => setActivityTab('pengeringan')}
           >
             💨 Kering ({dryingOrders.length})
           </button>
           <button
             type="button"
-            className={activityTab === 'finishing' ? 'active' : ''}
+            className={`activity-filter-btn filter-finishing ${activityTab === 'finishing' ? 'active' : ''}`}
             onClick={() => setActivityTab('finishing')}
           >
             ✨ Finishing ({finishingOrders.length})
           </button>
           <button
             type="button"
-            className={activityTab === 'selesai' ? 'active' : ''}
+            className={`activity-filter-btn filter-selesai ${activityTab === 'selesai' ? 'active' : ''}`}
             onClick={() => setActivityTab('selesai')}
           >
-            ✅ Siap Ambil ({completedOrders.length})
-          </button>
-          <button
-            type="button"
-            className={activityTab === 'menunggu' ? 'active' : ''}
-            onClick={() => setActivityTab('menunggu')}
-          >
-            ⏳ Antrean ({waitingOrders.length})
+            ✅ Siap ({completedOrders.length})
           </button>
         </div>
 
