@@ -11,6 +11,48 @@ import { dateKey, isOpenDay, atTime } from '../../lib/dates';
 
 const STANDARD_ITEM_TYPES = ['Sepatu', 'Tas', 'Topi', 'Helm', 'Sandal / Wedges'];
 
+const parseProductDisplay = (p: { name: string; description?: string }) => {
+  const name = p.name || '';
+
+  if (name.includes(' - ')) {
+    const parts = name.split(' - ');
+    const first = parts[0].trim();
+    const second = parts.slice(1).join(' - ').trim();
+
+    if (/ml|parfum|botol/i.test(first) && !/ml/i.test(second)) {
+      return {
+        title: second,
+        subtitle: first,
+      };
+    }
+    if (/ml|botol/i.test(second) && !/ml/i.test(first)) {
+      return {
+        title: first,
+        subtitle: second,
+      };
+    }
+    return {
+      title: second,
+      subtitle: first,
+    };
+  }
+
+  const mlMatch = name.match(/^(.*?)\s*(\(?\d+\s*ml\)?)(.*)$/i);
+  if (mlMatch) {
+    const cleanTitle = `${mlMatch[1]} ${mlMatch[3]}`.trim();
+    const ml = mlMatch[2].replace(/[()]/g, '').trim();
+    return {
+      title: cleanTitle || name,
+      subtitle: ml,
+    };
+  }
+
+  return {
+    title: name,
+    subtitle: p.description || null,
+  };
+};
+
 export const OrderFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
@@ -557,11 +599,22 @@ export const OrderFormPage: React.FC = () => {
             <div className="product-compact-list">
               {productsCatalog?.map((p) => {
                 const qty = getProductQty(p.id);
+                const display = parseProductDisplay(p);
                 return (
                   <div key={p.id} className={`product-compact-row ${qty > 0 ? 'selected' : ''}`}>
                     <div className="product-compact-info">
-                      <span className="product-compact-name">{p.name}</span>
-                      <span className="product-compact-price">{rupiah(p.price)}</span>
+                      <div className="product-compact-title-row">
+                        <span className="product-compact-name">{display.title}</span>
+                        <span className="product-compact-price">{rupiah(p.price)}</span>
+                      </div>
+                      {display.subtitle && (
+                        <div className="product-compact-sub">
+                          <span>{display.subtitle}</span>
+                          {p.description && p.description !== display.subtitle && !display.subtitle.includes(p.description) && (
+                            <span className="product-compact-desc">• {p.description}</span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="product-card-action">
