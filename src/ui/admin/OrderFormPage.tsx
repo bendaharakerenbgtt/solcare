@@ -7,6 +7,7 @@ import type { OrderInput } from '../../data/repo';
 import { estimateCompletion, type WorkLine } from '../../lib/estimation';
 import { lineFromService, computeTotal, validateServiceLines } from '../../lib/pricing';
 import { rupiah, fmtDateTime } from '../../lib/format';
+import { dateKey, isOpenDay, atTime } from '../../lib/dates';
 
 export const OrderFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,6 +41,7 @@ export const OrderFormPage: React.FC = () => {
   const [manualReason, setManualReason] = useState<string>('');
   const [estimateWarnings, setEstimateWarnings] = useState<string[]>([]);
   const [estimateError, setEstimateError] = useState<string | null>(null);
+  const [formCalMonth, setFormCalMonth] = useState(() => new Date());
 
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState<'tunai' | 'qris'>('qris');
@@ -231,6 +233,46 @@ export const OrderFormPage: React.FC = () => {
       setFormError(err instanceof Error ? err.message : 'Gagal menyimpan pesanan.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const currentTargetEstimate =
+    estimateMode === 'manual'
+      ? fromLocalInput(manualEstimatedAt)
+      : autoEstimatedAt;
+
+  const fYear = formCalMonth.getFullYear();
+  const fMonth = formCalMonth.getMonth();
+  const fFirstDayIdx = new Date(fYear, fMonth, 1).getDay();
+  const fTotalDays = new Date(fYear, fMonth + 1, 0).getDate();
+
+  const formCalDays: { key: string; dayNum: number; inMonth: boolean }[] = [];
+  const fPrevMonthTotal = new Date(fYear, fMonth, 0).getDate();
+  for (let i = fFirstDayIdx - 1; i >= 0; i--) {
+    const dNum = fPrevMonthTotal - i;
+    const prevD = new Date(fYear, fMonth - 1, dNum);
+    formCalDays.push({ key: dateKey(prevD), dayNum: dNum, inMonth: false });
+  }
+  for (let i = 1; i <= fTotalDays; i++) {
+    const curD = new Date(fYear, fMonth, i);
+    formCalDays.push({ key: dateKey(curD), dayNum: i, inMonth: true });
+  }
+  let fNextPad = 1;
+  while (formCalDays.length % 7 !== 0) {
+    const nextD = new Date(fYear, fMonth + 1, fNextPad);
+    formCalDays.push({ key: dateKey(nextD), dayNum: fNextPad, inMonth: false });
+    fNextPad++;
+  }
+
+  const recDateKey = receivedAt ? dateKey(new Date(fromLocalInput(receivedAt) || new Date())) : '';
+  const targetDateKey = currentTargetEstimate ? dateKey(new Date(currentTargetEstimate)) : '';
+
+  const handleSelectCalDate = (k: string) => {
+    const targetDt = atTime(k, settings?.closeTime || '18:00');
+    setManualEstimatedAt(toLocalInput(targetDt.toISOString()));
+    setEstimateMode('manual');
+    if (!manualReason) {
+      setManualReason('Dipilih dari kalender visual estimasi');
     }
   };
 
@@ -528,6 +570,87 @@ export const OrderFormPage: React.FC = () => {
                 </label>
               </div>
             )}
+
+            {/* Visual Mini Calendar for Delivery Estimation */}
+            <div className="mini-cal-card" style={{ marginTop: '16px', border: '1px solid var(--line)' }}>
+              <div className="mini-cal-header">
+                <div>
+                  <strong style={{ fontSize: '0.92rem' }}>
+                    📅 Visual Kalender: Target Selesai
+                  </strong>
+                  <div className="xs muted">
+                    Klik tanggal pada kalender untuk menetapkan target selesai secara manual
+                  </div>
+                </div>
+                <div className="row" style={{ gap: '6px' }}>
+                  <button
+                    type="button"
+                    className="btn secondary sm"
+                    style={{ padding: '3px 8px' }}
+                    onClick={() => setFormCalMonth(new Date(formCalMonth.getFullYear(), formCalMonth.getMonth() - 1, 1))}
+                  >
+                    ←
+                  </button>
+                  <span style={{ fontWeight: 700, fontSize: '0.85rem', minWidth: '90px', textAlign: 'center' }}>
+                    {formCalMonth.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn secondary sm"
+                    style={{ padding: '3px 8px' }}
+                    onClick={() => setFormCalMonth(new Date(formCalMonth.getFullYear(), formCalMonth.getMonth() + 1, 1))}
+                  >
+                    →
+                  </button>
+                </div>
+              </div>
+
+              <div className="mini-cal-grid">
+                <div className="mini-cal-dow">Min</div>
+                <div className="mini-cal-dow">Sen</div>
+                <div className="mini-cal-dow">Sel</div>
+                <div className="mini-cal-dow">Rab</div>
+                <div className="mini-cal-dow">Kam</div>
+                <div className="mini-cal-dow">Jum</div>
+                <div className="mini-cal-dow">Sab</div>
+
+                {formCalDays.map((d) => {
+                  const isRec = d.key === recDateKey;
+                  const isTarget = d.key === targetDateKey;
+                  const isToday = d.key === dateKey(new Date());
+                  const open = settings ? isOpenDay(d.key, settings) : true;
+
+                  return (
+                    <div
+                      key={d.key}
+                      onClick={() => handleSelectCalDate(d.key)}
+                      className={`mini-cal-day ${!d.inMonth ? 'out' : ''} ${!open ? 'closed' : ''} ${isToday ? 'today' : ''} ${isRec ? 'received-day' : ''} ${isTarget ? 'estimated-day' : ''}`}
+                      title={`${d.key} ${isRec ? '(Tanggal Masuk)' : isTarget ? '(Target Selesai)' : ''}`}
+                    >
+                      <span>{d.dayNum}</span>
+                      {isRec && <span className="mini-cal-badge" style={{ background: '#dbeafe', color: '#1e40af' }}>Masuk</span>}
+                      {isTarget && <span className="mini-cal-badge" style={{ background: '#ccfbf1', color: '#0f766e' }}>Selesai</span>}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="row between small" style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px dashed var(--line)', gap: '8px', flexWrap: 'wrap' }}>
+                <div className="row" style={{ gap: '10px' }}>
+                  <span className="row" style={{ gap: '4px' }}>
+                    <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: '#dbeafe', border: '1px solid #93c5fd' }} />
+                    <span className="xs">📥 Masuk ({recDateKey || '-'})</span>
+                  </span>
+                  <span className="row" style={{ gap: '4px' }}>
+                    <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: '#ccfbf1', border: '1px solid #14b8a6' }} />
+                    <span className="xs">✨ Target Selesai ({targetDateKey || '-'})</span>
+                  </span>
+                </div>
+                <span className="xs muted">
+                  Kapasitas: {settings?.dailyCapacity || 20} unit/hari
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
