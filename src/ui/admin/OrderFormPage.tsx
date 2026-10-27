@@ -342,28 +342,33 @@ export const OrderFormPage: React.FC = () => {
         {/* Item Data */}
         <div className="card">
           <h3>2. Barang yang Diterima</h3>
-          <div className="grid grid-2" style={{ marginTop: '12px' }}>
-            <label className="field">
-              <span>Jenis Barang *</span>
-              <select
-                value={itemTypeSelect}
-                onChange={(e) => {
-                  setItemTypeSelect(e.target.value);
-                  if (e.target.value !== 'Lainnya') {
-                    setCustomItemType('');
-                  }
-                }}
-              >
-                <option value="Sepatu">Sepatu</option>
-                <option value="Tas">Tas</option>
-                <option value="Topi">Topi</option>
-                <option value="Helm">Helm</option>
-                <option value="Sandal / Wedges">Sandal / Wedges</option>
-                <option value="Lainnya">Lainnya (Custom Nama Sendiri)</option>
-              </select>
-            </label>
 
-            {itemTypeSelect === 'Lainnya' && (
+          <div style={{ marginTop: '12px', marginBottom: '14px' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '8px' }}>
+              Jenis Barang *
+            </span>
+            <div className="item-type-grid">
+              {['Sepatu', 'Tas', 'Topi', 'Helm', 'Sandal / Wedges', 'Lainnya'].map((type) => {
+                const isSelected = itemTypeSelect === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    className={`item-type-chip ${isSelected ? 'active' : ''}`}
+                    onClick={() => {
+                      setItemTypeSelect(type);
+                      if (type !== 'Lainnya') setCustomItemType('');
+                    }}
+                  >
+                    {isSelected ? '✓ ' : ''}{type === 'Lainnya' ? 'Lainnya (Custom)' : type}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {itemTypeSelect === 'Lainnya' && (
+            <div style={{ marginBottom: '14px' }}>
               <label className="field">
                 <span>Nama Jenis Barang (Custom) *</span>
                 <input
@@ -375,7 +380,10 @@ export const OrderFormPage: React.FC = () => {
                   required
                 />
               </label>
-            )}
+            </div>
+          )}
+
+          <div className="grid grid-3" style={{ marginTop: '12px' }}>
             <label className="field">
               <span>Merek (Brand)</span>
               <input
@@ -609,16 +617,27 @@ export const OrderFormPage: React.FC = () => {
                 onChange={(e) => setReceivedAt(e.target.value)}
               />
             </label>
-            <label className="field">
-              <span>Metode Penentuan Estimasi</span>
-              <select
-                value={estimateMode}
-                onChange={(e) => setEstimateMode(e.target.value as 'auto' | 'manual')}
-              >
-                <option value="auto">Kalkulasi Otomatis (Antrean & Beban)</option>
-                <option value="manual">Penyesuaian Manual Pegawai</option>
-              </select>
-            </label>
+            <div className="field">
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                Metode Penentuan Estimasi
+              </span>
+              <div className="segmented-control">
+                <button
+                  type="button"
+                  className={`segmented-btn ${estimateMode === 'auto' ? 'active' : ''}`}
+                  onClick={() => setEstimateMode('auto')}
+                >
+                  Kalkulasi Otomatis
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-btn ${estimateMode === 'manual' ? 'active' : ''}`}
+                  onClick={() => setEstimateMode('manual')}
+                >
+                  Penyesuaian Manual
+                </button>
+              </div>
+            </div>
           </div>
 
           <div style={{ marginTop: '16px' }}>
@@ -759,30 +778,55 @@ export const OrderFormPage: React.FC = () => {
           </div>
 
           <div className="grid grid-2">
-            <label className="field">
-              <span>Metode Pembayaran</span>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as 'tunai' | 'qris')}
-              >
-                <option value="qris">QRIS (Langsung di Kasir)</option>
-                <option value="tunai">Tunai (Cash)</option>
-              </select>
-            </label>
-            <label className="field">
-              <span>Status Pembayaran</span>
-              <select
-                value={paymentStatus}
-                onChange={(e) => {
-                  const val = e.target.value as 'lunas' | 'belum_lunas';
-                  setPaymentStatus(val);
-                  setPaymentConfirmed(val === 'lunas');
-                }}
-              >
-                <option value="lunas">Lunas (Default saat drop-off)</option>
-                <option value="belum_lunas">Belum Lunas (Koreksi Administrasi)</option>
-              </select>
-            </label>
+            <div className="field">
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                Metode Pembayaran
+              </span>
+              <div className="segmented-control">
+                <button
+                  type="button"
+                  className={`segmented-btn ${paymentMethod === 'qris' ? 'active' : ''}`}
+                  onClick={() => setPaymentMethod('qris')}
+                >
+                  QRIS (Kasir)
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-btn ${paymentMethod === 'tunai' ? 'active' : ''}`}
+                  onClick={() => setPaymentMethod('tunai')}
+                >
+                  Tunai (Cash)
+                </button>
+              </div>
+            </div>
+
+            <div className="field">
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                Status Pembayaran
+              </span>
+              <div className="segmented-control">
+                <button
+                  type="button"
+                  className={`segmented-btn lunas ${paymentStatus === 'lunas' ? 'active' : ''}`}
+                  onClick={() => {
+                    setPaymentStatus('lunas');
+                    setPaymentConfirmed(true);
+                  }}
+                >
+                  ✓ Lunas
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-btn belum-lunas ${paymentStatus === 'belum_lunas' ? 'active' : ''}`}
+                  onClick={() => {
+                    setPaymentStatus('belum_lunas');
+                    setPaymentConfirmed(false);
+                  }}
+                >
+                  Belum Lunas
+                </button>
+              </div>
+            </div>
           </div>
 
           {paymentStatus === 'lunas' && (
