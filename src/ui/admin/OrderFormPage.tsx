@@ -549,15 +549,14 @@ export const OrderFormPage: React.FC = () => {
               )}
             </div>
 
-            <div className="product-picker-grid">
+            <div className="product-compact-list">
               {productsCatalog?.map((p) => {
                 const qty = getProductQty(p.id);
                 return (
-                  <div key={p.id} className={`product-card-picker ${qty > 0 ? 'selected' : ''}`}>
-                    <div className="product-card-left">
-                      <div className="product-card-title">{p.name}</div>
-                      <div className="product-card-price">{rupiah(p.price)}</div>
-                      {p.description && <div className="product-card-desc">{p.description}</div>}
+                  <div key={p.id} className={`product-compact-row ${qty > 0 ? 'selected' : ''}`}>
+                    <div className="product-compact-info">
+                      <span className="product-compact-name">{p.name}</span>
+                      <span className="product-compact-price">{rupiah(p.price)}</span>
                     </div>
 
                     <div className="product-card-action">

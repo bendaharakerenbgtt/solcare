@@ -25,7 +25,13 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
 a { color: var(--primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
 h1, h2, h3, h4 { line-height: 1.2; margin: 0 0 0.5em; }
@@ -311,7 +317,12 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 .sidebar-backdrop { display: none; }
 
 @media (max-width: 900px) {
-  .admin { grid-template-columns: 1fr; }
+  .admin {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
   .sidebar {
     position: fixed;
     z-index: 50;
@@ -320,10 +331,16 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
     bottom: 0;
     left: 0;
     transform: translateX(-100%);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s;
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.35);
+    visibility: hidden;
+    pointer-events: none;
   }
-  .sidebar.open { transform: translateX(0); }
+  .sidebar.open {
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+  }
   .sidebar-backdrop {
     display: block;
     position: fixed;
@@ -355,7 +372,14 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
     font-weight: 600;
     cursor: pointer;
   }
-  .admin-main { padding: 16px 12px 60px; min-width: 0; }
+  .admin-main {
+    padding: 16px 12px 60px;
+    min-width: 0;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
 
   /* Admin Header & Actions Responsive for ALL admin pages */
   .admin-top, .admin-top-responsive {
@@ -738,11 +762,15 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.28s;
   overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
 }
 .cal-drawer.open {
   transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
 }
 .cal-drawer-header {
   padding: 14px 16px;
@@ -1561,30 +1589,34 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 .fragrance-picker-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 @media (max-width: 640px) {
   .fragrance-picker-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: 6px;
   }
 }
 .fragrance-card-btn {
   background: #ffffff;
   border: 1.5px solid var(--line);
-  border-radius: 12px;
-  padding: 10px 12px;
+  border-radius: 10px;
+  padding: 8px 10px;
   cursor: pointer;
   text-align: left;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 6px;
+  gap: 4px;
   font: inherit;
   transition: all 0.15s ease;
-  min-height: 64px;
+  min-height: 56px;
   user-select: none;
   box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
 }
 .fragrance-card-btn:hover {
   background: #f8fafc;
@@ -1593,16 +1625,18 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 .fragrance-card-btn.active {
   background: #f0fdfa;
   border-color: var(--primary);
-  box-shadow: 0 0 0 1px var(--primary), 0 3px 8px rgba(15, 118, 110, 0.12);
+  box-shadow: 0 0 0 1px var(--primary), 0 2px 6px rgba(15, 118, 110, 0.12);
 }
 .fragrance-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
+  width: 100%;
+  min-width: 0;
 }
 .fragrance-card-name {
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   font-weight: 700;
   color: var(--ink);
   overflow: hidden;
@@ -1613,7 +1647,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   color: var(--primary);
 }
 .fragrance-card-check {
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 800;
   color: var(--primary);
   background: #ccfbf1;
@@ -1622,72 +1656,66 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   white-space: nowrap;
 }
 .fragrance-card-desc {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   color: #64748b;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
-/* Modern Product Card Picker (No Dropdown) */
-.product-picker-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+/* Compact Modern Product List */
+.product-compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
 }
-@media (max-width: 680px) {
-  .product-picker-grid {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-}
-.product-card-picker {
+.product-compact-row {
   background: #ffffff;
-  border: 1.5px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  transition: all 0.15s ease;
+  gap: 8px;
+  width: 100%;
   box-sizing: border-box;
+  transition: all 0.15s ease;
 }
-.product-card-picker:hover {
+.product-compact-row:hover {
   background: #f8fafc;
   border-color: #cbd5e1;
 }
-.product-card-picker.selected {
+.product-compact-row.selected {
   background: #f0fdfa;
   border-color: var(--primary);
-  box-shadow: 0 0 0 1px var(--primary), 0 2px 6px rgba(15, 118, 110, 0.12);
 }
-.product-card-left {
+.product-compact-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-wrap: wrap;
 }
-.product-card-title {
-  font-size: 0.88rem;
+.product-compact-name {
+  font-size: 0.84rem;
   font-weight: 700;
   color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.product-card-picker.selected .product-card-title {
+.product-compact-row.selected .product-compact-name {
   color: var(--primary);
 }
-.product-card-price {
-  font-size: 0.82rem;
+.product-compact-price {
+  font-size: 0.78rem;
   font-weight: 700;
   color: #0f766e;
-}
-.product-card-desc {
-  font-size: 0.72rem;
-  color: #64748b;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  background: #ccfbf1;
+  padding: 1px 6px;
+  border-radius: 6px;
   white-space: nowrap;
 }
 .product-card-action {
@@ -1698,10 +1726,10 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   border: 1.5px solid var(--primary);
   color: var(--primary);
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 6px 14px;
-  border-radius: 8px;
+  padding: 5px 12px;
+  border-radius: 7px;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s ease;
@@ -1715,18 +1743,18 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   align-items: center;
   background: #ffffff;
   border: 1.5px solid var(--primary);
-  border-radius: 8px;
+  border-radius: 7px;
   overflow: hidden;
 }
 .stepper-btn {
   background: transparent;
   border: none;
   font: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--primary);
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1737,9 +1765,9 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   background: var(--primary-50);
 }
 .stepper-val {
-  min-width: 28px;
+  min-width: 24px;
   text-align: center;
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   font-weight: 800;
   color: var(--ink);
 }

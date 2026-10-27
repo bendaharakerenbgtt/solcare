@@ -62,13 +62,15 @@ export const SlideCalendarDrawer: React.FC<SlideCalendarDrawerProps> = ({ isOpen
   const prevMonth = () => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1));
   const nextMonth = () => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1));
 
+  if (!isOpen) return null;
+
   return (
     <>
       {/* Backdrop */}
-      {isOpen && <div className="cal-drawer-backdrop" onClick={onClose} aria-hidden="true" />}
+      <div className="cal-drawer-backdrop" onClick={onClose} aria-hidden="true" />
 
       {/* Slide Drawer */}
-      <aside className={`cal-drawer ${isOpen ? 'open' : ''}`}>
+      <aside className="cal-drawer open">
         <div className="cal-drawer-header">
           <div className="row" style={{ gap: '8px', alignItems: 'center' }}>
             <span style={{ fontSize: '1.2rem' }}>📅</span>
