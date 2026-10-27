@@ -121,8 +121,10 @@ export const ServicesAdminPage: React.FC = () => {
         {loading ? (
           <div className="empty">Memuat katalog...</div>
         ) : (
-          <div className="table-wrap">
-            <table className="table">
+          <>
+            <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
+            <div className="table-wrap">
+              <table className="table">
               <thead>
                 <tr>
                   <th>Nama Layanan</th>
@@ -169,6 +171,7 @@ export const ServicesAdminPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </>
         )}
       </div>
 

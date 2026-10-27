@@ -125,8 +125,10 @@ export const ProductsAdminPage: React.FC = () => {
           {!products || products.length === 0 ? (
             <div className="empty">Belum ada produk tambahan.</div>
           ) : (
-            <div className="table-wrap">
-              <table className="table">
+            <>
+              <div className="table-scroll-hint">👉 Geser untuk melihat aksi</div>
+              <div className="table-wrap">
+                <table className="table" style={{ minWidth: '450px' }}>
                 <thead>
                   <tr>
                     <th>Nama & Ket.</th>
@@ -166,6 +168,7 @@ export const ProductsAdminPage: React.FC = () => {
                 </tbody>
               </table>
             </div>
+          </>
           )}
         </div>
 
@@ -184,45 +187,48 @@ export const ProductsAdminPage: React.FC = () => {
           {!fragrances || fragrances.length === 0 ? (
             <div className="empty">Belum ada pilihan pewangi.</div>
           ) : (
-            <div className="table-wrap">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Aroma Pewangi</th>
-                    <th>Status</th>
-                    <th className="right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fragrances.map((f) => (
-                    <tr key={f.id}>
-                      <td>
-                        <strong>{f.name}</strong>
-                        {f.description && <div className="xs muted">{f.description}</div>}
-                      </td>
-                      <td>
-                        <span className={`badge ${f.active ? 'ok' : 'danger'}`}>
-                          {f.active ? 'Aktif' : 'Nonaktif'}
-                        </span>
-                      </td>
-                      <td className="right">
-                        <button type="button" className="btn secondary sm" onClick={() => openEditFragrance(f)}>
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          className="btn danger sm"
-                          style={{ marginLeft: '4px' }}
-                          onClick={() => void deleteFragrance(f.id, f.name)}
-                        >
-                          ✕
-                        </button>
-                      </td>
+            <>
+              <div className="table-scroll-hint">👉 Geser untuk melihat aksi</div>
+              <div className="table-wrap">
+                <table className="table" style={{ minWidth: '400px' }}>
+                  <thead>
+                    <tr>
+                      <th>Aroma Pewangi</th>
+                      <th>Status</th>
+                      <th className="right">Aksi</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {fragrances.map((f) => (
+                      <tr key={f.id}>
+                        <td>
+                          <strong>{f.name}</strong>
+                          {f.description && <div className="xs muted">{f.description}</div>}
+                        </td>
+                        <td>
+                          <span className={`badge ${f.active ? 'ok' : 'danger'}`}>
+                            {f.active ? 'Aktif' : 'Nonaktif'}
+                          </span>
+                        </td>
+                        <td className="right">
+                          <button type="button" className="btn secondary sm" onClick={() => openEditFragrance(f)}>
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="btn danger sm"
+                            style={{ marginLeft: '4px' }}
+                            onClick={() => void deleteFragrance(f.id, f.name)}
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>

@@ -42,7 +42,7 @@ export const RetentionPage: React.FC = () => {
           <strong>{settings?.retentionMonths || 6} bulan</strong> sejak status pesanan Selesai atau Diambil. Riwayat transaksi, data pelanggan, dan nota pembayaran tetap tersimpan aman selamanya.
         </p>
 
-        <div className="row" style={{ gap: '12px' }}>
+        <div className="retention-action-row">
           <button
             type="button"
             className="btn secondary"
@@ -88,6 +88,7 @@ export const RetentionPage: React.FC = () => {
             </div>
           </div>
 
+          <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
           <div className="table-wrap">
             <table className="table">
               <thead>

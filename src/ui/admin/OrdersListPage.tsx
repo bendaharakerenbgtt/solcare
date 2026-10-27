@@ -66,8 +66,10 @@ export const OrdersListPage: React.FC = () => {
         ) : filtered.length === 0 ? (
           <div className="empty">Tidak ada pesanan yang sesuai dengan filter.</div>
         ) : (
-          <div className="table-wrap">
-            <table className="table">
+          <>
+            <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
+            <div className="table-wrap">
+              <table className="table">
               <thead>
                 <tr>
                   <th>Kode & Waktu Masuk</th>
@@ -133,6 +135,7 @@ export const OrdersListPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </>
         )}
       </div>
     </div>

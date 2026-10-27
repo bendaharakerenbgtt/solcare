@@ -110,9 +110,11 @@ export const DashboardPage: React.FC = () => {
         ) : recentOrders.length === 0 ? (
           <div className="empty">Belum ada pesanan dicatat. Silakan input pesanan baru.</div>
         ) : (
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
+          <>
+            <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
+            <div className="table-wrap">
+              <table className="table">
+                <thead>
                 <tr>
                   <th>Kode & Tanggal</th>
                   <th>Pelanggan</th>
@@ -166,6 +168,7 @@ export const DashboardPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </>
         )}
       </div>
     </div>

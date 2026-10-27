@@ -88,8 +88,10 @@ export const AnnouncementsAdminPage: React.FC = () => {
         {!list || list.length === 0 ? (
           <div className="empty">Belum ada pengumuman.</div>
         ) : (
-          <div className="table-wrap">
-            <table className="table">
+          <>
+            <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
+            <div className="table-wrap">
+              <table className="table">
               <thead>
                 <tr>
                   <th>Judul & Isi Singkat</th>
@@ -138,6 +140,7 @@ export const AnnouncementsAdminPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </>
         )}
       </div>
 

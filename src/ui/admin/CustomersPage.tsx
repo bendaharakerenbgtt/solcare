@@ -92,8 +92,10 @@ export const CustomersPage: React.FC = () => {
         ) : filtered.length === 0 ? (
           <div className="empty">Tidak ada data pelanggan yang cocok.</div>
         ) : (
-          <div className="table-wrap">
-            <table className="table">
+          <>
+            <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
+            <div className="table-wrap">
+              <table className="table">
               <thead>
                 <tr>
                   <th>Nama Pelanggan</th>
@@ -144,6 +146,7 @@ export const CustomersPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </>
         )}
       </div>
 

@@ -81,14 +81,14 @@ export const CalendarPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-3" style={{ gridTemplateColumns: '2fr 1fr' }}>
+      <div className="calendar-layout">
         {/* Calendar View */}
         <div className="card">
-          <div className="row between" style={{ marginBottom: '16px' }}>
+          <div className="calendar-header-nav">
             <h3 style={{ margin: 0 }}>
               {currentMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
             </h3>
-            <div className="row" style={{ gap: '8px' }}>
+            <div className="calendar-nav-buttons">
               <button type="button" className="btn secondary sm" onClick={prevMonth}>
                 ← Bulan Lalu
               </button>

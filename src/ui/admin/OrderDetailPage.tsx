@@ -310,7 +310,8 @@ export const OrderDetailPage: React.FC = () => {
       {/* Services and Bill Detail */}
       <div className="card">
         <h3>Rincian Layanan & Pembayaran</h3>
-        <div className="table-wrap" style={{ marginTop: '12px' }}>
+        <div className="table-scroll-hint" style={{ marginTop: '8px' }}>👉 Geser ke samping untuk melihat detail</div>
+        <div className="table-wrap">
           <table className="table">
             <thead>
               <tr>

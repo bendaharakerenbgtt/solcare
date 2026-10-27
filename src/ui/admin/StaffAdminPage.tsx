@@ -71,6 +71,7 @@ export const StaffAdminPage: React.FC = () => {
       </div>
 
       <div className="card">
+        <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
         <div className="table-wrap">
           <table className="table">
             <thead>
