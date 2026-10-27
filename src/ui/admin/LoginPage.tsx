@@ -40,12 +40,12 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="auth-wrap">
       <div className="card auth-card">
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div className="brand-mark" style={{ margin: '0 auto 12px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <div className="brand-mark" style={{ margin: '0 auto 12px', width: '48px', height: '48px', fontSize: '1.25rem' }}>
             SS
           </div>
-          <h2>{needsSetup ? 'Inisialisasi Akun Admin' : 'Login Pegawai'}</h2>
-          <p className="small muted">
+          <h2 style={{ fontSize: '1.6rem', marginBottom: '4px' }}>{needsSetup ? 'Inisialisasi Akun Admin' : 'Login Pegawai'}</h2>
+          <p className="small muted" style={{ margin: 0 }}>
             {needsSetup
               ? 'Belum ada akun terdaftar. Daftarkan akun Administrator pertama Anda.'
               : 'Masuk untuk mengelola operasional Soleful Soaks! Shoes Care.'}
@@ -94,7 +94,7 @@ export const LoginPage: React.FC = () => {
             />
           </label>
 
-          <button type="submit" className="btn" disabled={loading} style={{ marginTop: '8px' }}>
+          <button type="submit" className="btn" disabled={loading} style={{ marginTop: '8px', height: '46px', fontSize: '1rem' }}>
             {loading ? 'Memproses...' : needsSetup ? 'Buat Akun Administrator' : 'Masuk Dashboard'}
           </button>
         </form>
@@ -107,7 +107,7 @@ export const LoginPage: React.FC = () => {
           <button
             type="button"
             className="btn secondary sm"
-            style={{ width: '100%' }}
+            style={{ width: '100%', padding: '10px 12px', whiteSpace: 'normal', lineHeight: 1.4 }}
             onClick={() => {
               if (needsSetup) {
                 setName('Admin Solecare');
@@ -118,6 +118,12 @@ export const LoginPage: React.FC = () => {
           >
             ⚡ Isi Otomatis Akun Admin (admin@solefulsoaks.id / admin12345)
           </button>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: '18px', paddingTop: '12px', borderTop: '1px solid var(--line)' }}>
+          <a href="/" className="small muted" style={{ textDecoration: 'none' }}>
+            ← Kembali ke Website Pelanggan
+          </a>
         </div>
       </div>
     </div>

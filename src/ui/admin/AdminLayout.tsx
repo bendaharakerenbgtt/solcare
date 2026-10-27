@@ -27,9 +27,20 @@ export const AdminLayout: React.FC = () => {
       )}
 
       <div className="admin-mobile-bar">
-        <button onClick={() => setSidebarOpen(!sidebarOpen)}>☰ Menu</button>
-        <span style={{ fontWeight: 700 }}>Soleful Admin</span>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle Navigation">☰ Menu</button>
+        <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Soleful Staff</span>
+        <Link to="/" target="_blank" className="btn secondary sm" style={{ padding: '4px 10px', fontSize: '0.78rem' }}>
+          Web ↗
+        </Link>
       </div>
+
+      {sidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
       <div className="admin">
         <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>

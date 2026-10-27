@@ -24,7 +24,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '24px' }}>
-      <div className="admin-top">
+      <div className="admin-top admin-top-responsive">
         <div>
           <h1>Dashboard Operasional</h1>
           <p className="small muted">
@@ -32,7 +32,7 @@ export const DashboardPage: React.FC = () => {
           </p>
         </div>
         <div className="spacer" />
-        <Link to="/admin/orders/new" className="btn">
+        <Link to="/admin/orders/new" className="btn admin-header-action-btn">
           ➕ Catat Pesanan Baru
         </Link>
       </div>

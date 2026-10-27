@@ -28,20 +28,20 @@ export const OrdersListPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '20px' }}>
-      <div className="admin-top">
+      <div className="admin-top admin-top-responsive">
         <div>
           <h1>Manajemen Pesanan & Antrean</h1>
           <p className="small muted">Daftar seluruh pesanan masuk, status pengerjaan, dan riwayat pembayaran.</p>
         </div>
         <div className="spacer" />
-        <Link to="/admin/orders/new" className="btn">
+        <Link to="/admin/orders/new" className="btn admin-header-action-btn">
           ➕ Catat Pesanan Baru
         </Link>
       </div>
 
       <div className="card">
-        <div className="row" style={{ gap: '12px', marginBottom: '16px' }}>
-          <div style={{ flex: 1 }}>
+        <div className="order-filter-bar" style={{ gap: '12px', marginBottom: '16px' }}>
+          <div className="order-search-input">
             <input
               type="text"
               placeholder="Cari kode pesanan, nama pelanggan, no. WA, atau barang..."
@@ -49,7 +49,7 @@ export const OrdersListPage: React.FC = () => {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div style={{ width: '220px' }}>
+          <div className="order-status-select">
             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
               <option value="all">Semua Status ({orders?.length || 0})</option>
               {ORDER_STATUSES.map((st) => (
