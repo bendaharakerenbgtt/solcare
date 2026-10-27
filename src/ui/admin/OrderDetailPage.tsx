@@ -310,6 +310,41 @@ export const OrderDetailPage: React.FC = () => {
       {/* Services and Bill Detail */}
       <div className="card">
         <h3>Rincian Layanan & Pembayaran</h3>
+
+        {order.items && order.items.length > 1 && (
+          <div style={{ marginTop: '12px', marginBottom: '16px' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'block', marginBottom: '8px', color: '#334155' }}>
+              Daftar Rincian {order.items.length} Barang:
+            </span>
+            <div className="grid grid-2" style={{ gap: '10px' }}>
+              {order.items.map((it, idx) => (
+                <div key={it.id || idx} style={{ border: '1px solid var(--line)', borderRadius: '8px', padding: '10px 12px', background: '#f8fafc' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <strong style={{ fontSize: '0.88rem' }}>Barang {idx + 1}: {it.itemType}</strong>
+                    {it.color && <span className="badge sm">{it.color}</span>}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--ink)', marginTop: '2px' }}>
+                    {it.brand} {it.model}
+                  </div>
+                  {it.conditionNotes && (
+                    <div className="xs muted" style={{ marginTop: '4px' }}>
+                      Catatan: {it.conditionNotes}
+                    </div>
+                  )}
+                  <div style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px dashed var(--line)' }}>
+                    {it.services.map((s, sIdx) => (
+                      <div key={sIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', padding: '1px 0' }}>
+                        <span>• {s.name}</span>
+                        <strong style={{ color: 'var(--primary)' }}>{rupiah(s.price)}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="table-scroll-hint" style={{ marginTop: '8px' }}>👉 Geser ke samping untuk melihat detail</div>
         <div className="table-wrap">
           <table className="table">

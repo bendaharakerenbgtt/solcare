@@ -92,6 +92,48 @@ describe('LocalRepo', () => {
       expect((await repo.getOrder(o.id))!.products[0].unitPrice).toBe(15000);
     });
 
+    it('supports multiple items in a single order', async () => {
+      const basic = (await repo.listServices()).find((s) => s.name === 'Basic Clean')!;
+      const deep = (await repo.listServices()).find((s) => s.name === 'Deep Clean')!;
+      const item1 = {
+        id: 'it-1',
+        itemType: 'Sepatu',
+        brand: 'Nike',
+        model: 'Air Jordan 1',
+        color: 'Merah Putih',
+        conditionNotes: 'Kotor ringan',
+        services: [{ serviceId: basic.id, name: basic.name, category: basic.category, price: 35000, priceMin: 35000, priceMax: null, workloadWeight: 1, durationMinDays: 1, durationMaxDays: 2, expressHours: null }],
+      };
+      const item2 = {
+        id: 'it-2',
+        itemType: 'Sepatu',
+        brand: 'Converse',
+        model: 'Chuck 70',
+        color: 'Hitam',
+        conditionNotes: 'Midsole kotor',
+        services: [{ serviceId: deep.id, name: deep.name, category: deep.category, price: 50000, priceMin: 50000, priceMax: null, workloadWeight: 1.5, durationMinDays: 2, durationMaxDays: 3, expressHours: null }],
+      };
+
+      const orderInput = await draft({
+        itemType: '2 Barang',
+        brand: 'Nike, Converse',
+        model: 'Air Jordan 1, Chuck 70',
+        items: [item1, item2],
+        services: [...item1.services, ...item2.services],
+      });
+
+      const o = await repo.createOrder(orderInput);
+      expect(o.items?.length).toBe(2);
+      expect(o.total).toBe(85000);
+
+      const tracked = await repo.trackOrder(displayCode(o.code));
+      expect(tracked.ok).toBe(true);
+      if (tracked.ok) {
+        expect(tracked.order.items?.length).toBe(2);
+        expect(tracked.order.total).toBe(85000);
+      }
+    });
+
     it('status changes are recorded and visible to the customer', async () => {
       const o = await repo.createOrder(await draft());
       await repo.updateStatus(o.id, 'pencucian', '');

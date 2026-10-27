@@ -11,6 +11,7 @@ import type {
   ID,
   ISODateTime,
   Order,
+  OrderItem,
   OrderPhoto,
   OrderProductLine,
   OrderServiceLine,
@@ -28,6 +29,7 @@ import type {
 
 export interface OrderInput {
   customer: { id?: ID | null; name: string; phone: string };
+  items?: OrderItem[];
   itemType: string;
   brand: string;
   model: string;

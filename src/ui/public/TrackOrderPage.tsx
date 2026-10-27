@@ -238,22 +238,62 @@ export const TrackOrderPage: React.FC = () => {
           {/* Rincian Layanan & Biaya */}
           <div className="card">
             <h3 style={{ marginBottom: '16px' }}>Rincian Biaya & Pembayaran</h3>
-            <div className="price-list" style={{ marginBottom: '16px' }}>
-              {order.services.map((s, idx) => (
-                <div key={idx} className="price-item">
-                  <span>{s.name}</span>
-                  <span className="price">{rupiah(s.price)}</span>
+
+            {order.items && order.items.length > 1 ? (
+              <div style={{ marginBottom: '16px' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'block', marginBottom: '8px', color: '#334155' }}>
+                  Rincian {order.items.length} Barang:
+                </span>
+                <div className="stack" style={{ gap: '10px' }}>
+                  {order.items.map((it, idx) => (
+                    <div key={idx} style={{ background: '#f8fafc', border: '1px solid var(--line)', borderRadius: '8px', padding: '10px 14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <strong>Barang {idx + 1}: {it.itemType} {it.brand} {it.model}</strong>
+                        {it.color && <span className="badge sm">{it.color}</span>}
+                      </div>
+                      <div style={{ marginTop: '6px' }}>
+                        {it.services.map((s, sIdx) => (
+                          <div key={sIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '2px 0' }}>
+                            <span>• {s.name}</span>
+                            <strong>{rupiah(s.price)}</strong>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              {order.products.map((p, idx) => (
-                <div key={idx} className="price-item">
-                  <span>
-                    {p.name} (x{p.qty})
-                  </span>
-                  <span className="price">{rupiah(p.subtotal)}</span>
-                </div>
-              ))}
-            </div>
+                {order.products.length > 0 && (
+                  <div style={{ marginTop: '12px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'block', marginBottom: '6px', color: '#334155' }}>
+                      Produk Tambahan:
+                    </span>
+                    {order.products.map((p, idx) => (
+                      <div key={idx} className="price-item">
+                        <span>{p.name} (x{p.qty})</span>
+                        <span className="price">{rupiah(p.subtotal)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="price-list" style={{ marginBottom: '16px' }}>
+                {order.services.map((s, idx) => (
+                  <div key={idx} className="price-item">
+                    <span>{s.name}</span>
+                    <span className="price">{rupiah(s.price)}</span>
+                  </div>
+                ))}
+                {order.products.map((p, idx) => (
+                  <div key={idx} className="price-item">
+                    <span>
+                      {p.name} (x{p.qty})
+                    </span>
+                    <span className="price">{rupiah(p.subtotal)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="totals" style={{ borderTop: '2px solid var(--line)', paddingTop: '12px' }}>
               <span>Total Biaya</span>

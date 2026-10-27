@@ -112,6 +112,16 @@ export interface OrderProductLine {
   subtotal: number;
 }
 
+export interface OrderItem {
+  id: ID;
+  itemType: string;
+  brand: string;
+  model: string;
+  color: string;
+  conditionNotes: string;
+  services: OrderServiceLine[];
+}
+
 export interface Payment {
   method: PaymentMethod;
   status: PaymentStatus;
@@ -127,6 +137,7 @@ export interface Order {
   customerId: ID;
   customerName: string;
   customerPhone: string;
+  items?: OrderItem[];
   itemType: string;
   brand: string;
   model: string;
@@ -260,6 +271,15 @@ export interface Settings {
 export interface PublicOrderView {
   code: string;
   customerDisplayName: string;
+  items?: {
+    id?: ID;
+    itemType: string;
+    brand: string;
+    model: string;
+    color: string;
+    conditionNotes?: string;
+    services: { name: string; category: ServiceCategory; price: number }[];
+  }[];
   itemType: string;
   brand: string;
   model: string;

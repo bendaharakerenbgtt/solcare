@@ -691,12 +691,20 @@ export class LocalRepo implements Repo {
     while (codes.has(code)) code = generateCode();
     const now = this.now();
     const products = input.products.map((p) => ({ ...p, subtotal: p.unitPrice * p.qty }));
+    const items = input.items && input.items.length > 0
+      ? input.items.map((it) => ({
+          ...it,
+          id: it.id || uid(),
+          services: it.services.map((s) => ({ ...s })),
+        }))
+      : undefined;
     const order: Order = {
       id: uid(),
       code,
       customerId: customer.id,
       customerName: customer.name,
       customerPhone: customer.phone,
+      items,
       itemType: input.itemType.trim(),
       brand: input.brand.trim(),
       model: input.model.trim(),
@@ -748,6 +756,13 @@ export class LocalRepo implements Repo {
     const prev = orders[i];
     const customer = this.resolveCustomer(input.customer);
     const products = input.products.map((p) => ({ ...p, subtotal: p.unitPrice * p.qty }));
+    const items = input.items && input.items.length > 0
+      ? input.items.map((it) => ({
+          ...it,
+          id: it.id || uid(),
+          services: it.services.map((s) => ({ ...s })),
+        }))
+      : undefined;
     const total = computeTotal(input.services, products);
     const paymentChanged =
       prev.payment.method !== input.payment.method || prev.payment.status !== input.payment.status || prev.total !== total;
@@ -756,6 +771,7 @@ export class LocalRepo implements Repo {
       customerId: customer.id,
       customerName: customer.name,
       customerPhone: customer.phone,
+      items,
       itemType: input.itemType.trim(),
       brand: input.brand.trim(),
       model: input.model.trim(),
@@ -1093,6 +1109,15 @@ export class LocalRepo implements Repo {
     return {
       code: o.code,
       customerDisplayName: maskName(o.customerName),
+      items: o.items?.map((it) => ({
+        id: it.id,
+        itemType: it.itemType,
+        brand: it.brand,
+        model: it.model,
+        color: it.color,
+        conditionNotes: it.conditionNotes,
+        services: it.services.map((s) => ({ name: s.name, category: s.category, price: s.price })),
+      })),
       itemType: o.itemType,
       brand: o.brand,
       model: o.model,

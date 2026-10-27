@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAsync, toLocalInput, fromLocalInput } from '../hooks';
 import { repo } from '../../data';
-import type { OrderServiceLine, OrderProductLine } from '../../data/types';
+import type { OrderServiceLine, OrderProductLine, OrderItem } from '../../data/types';
 import type { OrderInput } from '../../data/repo';
 import { estimateCompletion, type WorkLine } from '../../lib/estimation';
 import { lineFromService, computeTotal, validateServiceLines } from '../../lib/pricing';
@@ -53,6 +53,28 @@ const parseProductDisplay = (p: { name: string; description?: string }) => {
   };
 };
 
+export interface FormOrderItem {
+  id: string;
+  itemTypeSelect: string;
+  customItemType: string;
+  brand: string;
+  model: string;
+  color: string;
+  conditionNotes: string;
+  selectedServices: OrderServiceLine[];
+}
+
+const createDefaultItem = (id?: string): FormOrderItem => ({
+  id: id || 'item-' + Math.random().toString(36).slice(2, 9),
+  itemTypeSelect: 'Sepatu',
+  customItemType: '',
+  brand: '',
+  model: '',
+  color: '',
+  conditionNotes: '',
+  selectedServices: [],
+});
+
 export const OrderFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
@@ -67,13 +89,7 @@ export const OrderFormPage: React.FC = () => {
   // Form states
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [itemTypeSelect, setItemTypeSelect] = useState('Sepatu');
-  const [customItemType, setCustomItemType] = useState('');
-  const [brand, setBrand] = useState('');
-  const [model, setModel] = useState('');
-  const [color, setColor] = useState('');
-  const [conditionNotes, setConditionNotes] = useState('');
-  const [selectedServices, setSelectedServices] = useState<OrderServiceLine[]>([]);
+  const [items, setItems] = useState<FormOrderItem[]>([createDefaultItem('item-1')]);
   const [selectedProducts, setSelectedProducts] = useState<OrderProductLine[]>([]);
   const [fragranceId, setFragranceId] = useState<string>('');
   const [receivedAt, setReceivedAt] = useState<string>(toLocalInput(new Date().toISOString()));
@@ -97,6 +113,46 @@ export const OrderFormPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  const allServices = items.flatMap((it) => it.selectedServices);
+
+  const updateItem = (index: number, patch: Partial<FormOrderItem>) => {
+    setItems((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], ...patch };
+      return next;
+    });
+  };
+
+  const addItem = () => {
+    setItems((prev) => [...prev, createDefaultItem()]);
+  };
+
+  const removeItem = (index: number) => {
+    if (items.length <= 1) return;
+    setItems((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const toggleItemService = (itemIndex: number, svcId: string) => {
+    const s = services?.find((x) => x.id === svcId);
+    if (!s) return;
+    const currentItem = items[itemIndex];
+    const exists = currentItem.selectedServices.find((x) => x.serviceId === svcId);
+    let nextServices: OrderServiceLine[];
+    if (exists) {
+      nextServices = currentItem.selectedServices.filter((x) => x.serviceId !== svcId);
+    } else {
+      nextServices = [...currentItem.selectedServices, lineFromService(s)];
+    }
+    updateItem(itemIndex, { selectedServices: nextServices });
+  };
+
+  const updateItemServicePrice = (itemIndex: number, svcIndex: number, newPrice: number) => {
+    const currentItem = items[itemIndex];
+    const nextServices = [...currentItem.selectedServices];
+    nextServices[svcIndex] = { ...nextServices[svcIndex], price: newPrice };
+    updateItem(itemIndex, { selectedServices: nextServices });
+  };
+
   // Load existing order if edit mode
   useEffect(() => {
     if (isEdit && id) {
@@ -104,18 +160,33 @@ export const OrderFormPage: React.FC = () => {
         if (!ord) return;
         setCustomerName(ord.customerName);
         setCustomerPhone(ord.customerPhone);
-        if (STANDARD_ITEM_TYPES.includes(ord.itemType)) {
-          setItemTypeSelect(ord.itemType);
-          setCustomItemType('');
+        if (ord.items && ord.items.length > 0) {
+          setItems(
+            ord.items.map((it) => ({
+              id: it.id,
+              itemTypeSelect: STANDARD_ITEM_TYPES.includes(it.itemType) ? it.itemType : 'Lainnya',
+              customItemType: STANDARD_ITEM_TYPES.includes(it.itemType) ? '' : it.itemType,
+              brand: it.brand,
+              model: it.model,
+              color: it.color,
+              conditionNotes: it.conditionNotes,
+              selectedServices: it.services,
+            }))
+          );
         } else {
-          setItemTypeSelect('Lainnya');
-          setCustomItemType(ord.itemType);
+          setItems([
+            {
+              id: 'item-1',
+              itemTypeSelect: STANDARD_ITEM_TYPES.includes(ord.itemType) ? ord.itemType : 'Lainnya',
+              customItemType: STANDARD_ITEM_TYPES.includes(ord.itemType) ? '' : ord.itemType,
+              brand: ord.brand,
+              model: ord.model,
+              color: ord.color,
+              conditionNotes: ord.conditionNotes,
+              selectedServices: ord.services,
+            },
+          ]);
         }
-        setBrand(ord.brand);
-        setModel(ord.model);
-        setColor(ord.color);
-        setConditionNotes(ord.conditionNotes);
-        setSelectedServices(ord.services);
         setSelectedProducts(ord.products);
         setFragranceId(ord.fragranceId || '');
         setReceivedAt(toLocalInput(ord.receivedAt));
@@ -133,7 +204,7 @@ export const OrderFormPage: React.FC = () => {
 
   // Recalculate automatic completion estimate
   useEffect(() => {
-    if (!settings || !selectedServices.length) {
+    if (!settings || !allServices.length) {
       setAutoEstimatedAt(null);
       setAutoEarliestAt(null);
       setEstimateWarnings([]);
@@ -142,7 +213,7 @@ export const OrderFormPage: React.FC = () => {
     }
 
     const recDate = receivedAt ? new Date(fromLocalInput(receivedAt) || new Date()) : new Date();
-    const workLines: WorkLine[] = selectedServices.map((s) => ({
+    const workLines: WorkLine[] = allServices.map((s) => ({
       category: s.category,
       workloadWeight: s.workloadWeight,
       durationMinDays: s.durationMinDays,
@@ -169,25 +240,7 @@ export const OrderFormPage: React.FC = () => {
       setEstimateError(est.reason);
       setEstimateWarnings(est.warnings);
     }
-  }, [selectedServices, settings, receivedAt, existingOrders, id]);
-
-  // Handle service selection
-  const toggleService = (svcId: string) => {
-    const s = services?.find((x) => x.id === svcId);
-    if (!s) return;
-    const exists = selectedServices.find((x) => x.serviceId === svcId);
-    if (exists) {
-      setSelectedServices(selectedServices.filter((x) => x.serviceId !== svcId));
-    } else {
-      setSelectedServices([...selectedServices, lineFromService(s)]);
-    }
-  };
-
-  const updateServicePrice = (index: number, newPrice: number) => {
-    const next = [...selectedServices];
-    next[index] = { ...next[index], price: newPrice };
-    setSelectedServices(next);
-  };
+  }, [allServices, settings, receivedAt, existingOrders, id]);
 
   // Handle product addition & quantity modification
   const getProductQty = (prodId: string) => {
@@ -218,17 +271,33 @@ export const OrderFormPage: React.FC = () => {
     }
   };
 
-  const currentTotal = computeTotal(selectedServices, selectedProducts);
+  const currentTotal = computeTotal(allServices, selectedProducts);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
     // Business validation
-    const lineValidation = validateServiceLines(selectedServices, services || []);
-    if (lineValidation.errors.length) {
-      setFormError(lineValidation.errors.join(' '));
+    if (!items.length) {
+      setFormError('Minimal harus ada 1 barang.');
       return;
+    }
+
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (it.itemTypeSelect === 'Lainnya' && !it.customItemType.trim()) {
+        setFormError(`Silakan masukkan nama jenis barang custom untuk Barang ${i + 1}.`);
+        return;
+      }
+      if (it.selectedServices.length === 0) {
+        setFormError(`Barang ${i + 1} (${it.brand || it.itemTypeSelect}) belum memiliki layanan treatment yang dipilih.`);
+        return;
+      }
+      const lineVal = validateServiceLines(it.selectedServices, services || []);
+      if (lineVal.errors.length) {
+        setFormError(`Barang ${i + 1}: ` + lineVal.errors.join(' '));
+        return;
+      }
     }
 
     if (estimateMode === 'manual' && !manualEstimatedAt) {
@@ -241,13 +310,6 @@ export const OrderFormPage: React.FC = () => {
       return;
     }
 
-    if (itemTypeSelect === 'Lainnya' && !customItemType.trim()) {
-      setFormError('Silakan masukkan nama jenis barang (custom).');
-      return;
-    }
-
-    const finalItemType = itemTypeSelect === 'Lainnya' ? customItemType.trim() : itemTypeSelect;
-
     setSaving(true);
     try {
       const targetEstimate =
@@ -255,14 +317,34 @@ export const OrderFormPage: React.FC = () => {
           ? fromLocalInput(manualEstimatedAt)
           : autoEstimatedAt;
 
+      const resolvedItems: OrderItem[] = items.map((it) => ({
+        id: it.id,
+        itemType: it.itemTypeSelect === 'Lainnya' ? it.customItemType.trim() : it.itemTypeSelect,
+        brand: it.brand.trim(),
+        model: it.model.trim(),
+        color: it.color.trim(),
+        conditionNotes: it.conditionNotes.trim(),
+        services: it.selectedServices,
+      }));
+
+      const first = resolvedItems[0];
+      const summaryType = resolvedItems.length === 1 ? first.itemType : `${resolvedItems.length} Barang`;
+      const summaryBrand = resolvedItems.length === 1 ? first.brand : resolvedItems.map((i) => i.brand).filter(Boolean).join(', ');
+      const summaryModel = resolvedItems.length === 1 ? first.model : resolvedItems.map((i) => i.model).filter(Boolean).join(', ');
+      const summaryColor = resolvedItems.length === 1 ? first.color : resolvedItems.map((i) => i.color).filter(Boolean).join(', ');
+      const summaryNotes = resolvedItems.length === 1
+        ? first.conditionNotes
+        : resolvedItems.map((it, idx) => `[Barang ${idx + 1} - ${it.itemType} ${it.brand} ${it.model}]: ${it.conditionNotes || '-'}`).join('\n');
+
       const orderInput: OrderInput = {
         customer: { name: customerName, phone: customerPhone },
-        itemType: finalItemType,
-        brand,
-        model,
-        color,
-        conditionNotes,
-        services: selectedServices,
+        items: resolvedItems,
+        itemType: summaryType,
+        brand: summaryBrand,
+        model: summaryModel,
+        color: summaryColor,
+        conditionNotes: summaryNotes,
+        services: allServices,
         products: selectedProducts,
         fragranceId: fragranceId || null,
         receivedAt: fromLocalInput(receivedAt) || new Date().toISOString(),
@@ -391,153 +473,217 @@ export const OrderFormPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Item Data */}
-        <div className="card">
-          <h3>2. Barang yang Diterima</h3>
+        {/* Items and Services */}
+        {items.map((item, itemIdx) => (
+          <div key={item.id} className="card" style={{ border: items.length > 1 ? '1.5px solid #cbd5e1' : undefined }}>
+            <div className="row between" style={{ alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid var(--line)', paddingBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span className="badge" style={{ background: 'var(--primary)', color: '#fff', fontSize: '0.82rem', fontWeight: 700 }}>
+                  {items.length > 1 ? `Barang ${itemIdx + 1}` : '2. Barang & Layanan'}
+                </span>
+                <strong style={{ fontSize: '1rem', color: 'var(--ink)' }}>
+                  {item.brand || item.model ? `${item.brand} ${item.model}` : item.itemTypeSelect}
+                </strong>
+                {item.selectedServices.length > 0 && (
+                  <span className="badge ok" style={{ fontSize: '0.75rem' }}>
+                    {item.selectedServices.length} layanan ({rupiah(item.selectedServices.reduce((sum, s) => sum + s.price, 0))})
+                  </span>
+                )}
+              </div>
 
-          <div style={{ marginTop: '12px', marginBottom: '14px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '8px' }}>
-              Jenis Barang *
-            </span>
-            <div className="item-type-grid">
-              {['Sepatu', 'Tas', 'Topi', 'Helm', 'Sandal / Wedges', 'Lainnya'].map((type) => {
-                const isSelected = itemTypeSelect === type;
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    className={`item-type-chip ${isSelected ? 'active' : ''}`}
-                    onClick={() => {
-                      setItemTypeSelect(type);
-                      if (type !== 'Lainnya') setCustomItemType('');
-                    }}
-                  >
-                    {isSelected ? '✓ ' : ''}{type === 'Lainnya' ? 'Lainnya (Custom)' : type}
-                  </button>
-                );
-              })}
+              {items.length > 1 && (
+                <button
+                  type="button"
+                  className="btn danger sm"
+                  onClick={() => removeItem(itemIdx)}
+                  style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+                >
+                  Hapus Barang {itemIdx + 1}
+                </button>
+              )}
             </div>
-          </div>
 
-          {itemTypeSelect === 'Lainnya' && (
+            {/* Detail Barang */}
             <div style={{ marginBottom: '14px' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '8px' }}>
+                Jenis Barang *
+              </span>
+              <div className="item-type-grid">
+                {['Sepatu', 'Tas', 'Topi', 'Helm', 'Sandal / Wedges', 'Lainnya'].map((type) => {
+                  const isSelected = item.itemTypeSelect === type;
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      className={`item-type-chip ${isSelected ? 'active' : ''}`}
+                      onClick={() => {
+                        updateItem(itemIdx, {
+                          itemTypeSelect: type,
+                          customItemType: type === 'Lainnya' ? item.customItemType : '',
+                        });
+                      }}
+                    >
+                      {isSelected ? '✓ ' : ''}{type === 'Lainnya' ? 'Lainnya (Custom)' : type}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {item.itemTypeSelect === 'Lainnya' && (
+              <div style={{ marginBottom: '14px' }}>
+                <label className="field">
+                  <span>Nama Jenis Barang (Custom) *</span>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Jaket Kulit, Koper, Stroller, dll."
+                    value={item.customItemType}
+                    onChange={(e) => updateItem(itemIdx, { customItemType: e.target.value })}
+                    required
+                  />
+                </label>
+              </div>
+            )}
+
+            <div className="grid grid-3" style={{ marginTop: '12px' }}>
               <label className="field">
-                <span>Nama Jenis Barang (Custom) *</span>
+                <span>Merek (Brand)</span>
                 <input
                   type="text"
-                  placeholder="Contoh: Jaket Kulit, Koper, Stroller, dll."
-                  value={customItemType}
-                  onChange={(e) => setCustomItemType(e.target.value)}
-                  autoFocus
-                  required
+                  placeholder="Nike, Adidas, Converse, dll."
+                  value={item.brand}
+                  onChange={(e) => updateItem(itemIdx, { brand: e.target.value })}
+                />
+              </label>
+              <label className="field">
+                <span>Model / Seri</span>
+                <input
+                  type="text"
+                  placeholder="Air Jordan 1, Chuck 70, dll."
+                  value={item.model}
+                  onChange={(e) => updateItem(itemIdx, { model: e.target.value })}
+                />
+              </label>
+              <label className="field">
+                <span>Warna Dominan</span>
+                <input
+                  type="text"
+                  placeholder="Putih / Hitam / Navy"
+                  value={item.color}
+                  onChange={(e) => updateItem(itemIdx, { color: e.target.value })}
                 />
               </label>
             </div>
-          )}
 
-          <div className="grid grid-3" style={{ marginTop: '12px' }}>
-            <label className="field">
-              <span>Merek (Brand)</span>
-              <input
-                type="text"
-                placeholder="Nike, Adidas, Converse, dll."
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-              />
-            </label>
-            <label className="field">
-              <span>Model / Seri</span>
-              <input
-                type="text"
-                placeholder="Air Jordan 1, Chuck 70, dll."
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-              />
-            </label>
-            <label className="field">
-              <span>Warna Dominan</span>
-              <input
-                type="text"
-                placeholder="Putih / Hitam / Navy"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-              />
-            </label>
-          </div>
-          <div style={{ marginTop: '12px' }}>
-            <label className="field">
-              <span>Catatan Kondisi Barang (Noda / Kerusakan)</span>
-              <textarea
-                placeholder="Contoh: Ada noda oli di bagian tumit, midsole menguning, sol kanan terbuka sedikit."
-                value={conditionNotes}
-                onChange={(e) => setConditionNotes(e.target.value)}
-              />
-            </label>
-          </div>
-        </div>
-
-        {/* Services & Pricing Snapshot */}
-        <div className="card">
-          <div className="row between" style={{ marginBottom: '12px' }}>
-            <h3>3. Layanan & Penentuan Harga Final</h3>
-            <span className="small muted">Pilih minimal 1 layanan</span>
-          </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
-            {services?.map((svc) => {
-              const active = selectedServices.some((x) => x.serviceId === svc.id);
-              return (
-                <button
-                  type="button"
-                  key={svc.id}
-                  onClick={() => toggleService(svc.id)}
-                  className={`btn sm ${active ? '' : 'secondary'}`}
-                >
-                  {active ? '✓ ' : '+ '} {svc.name}
-                </button>
-              );
-            })}
-          </div>
-
-          {selectedServices.length === 0 ? (
-            <div className="empty" style={{ border: '1px dashed var(--line)', borderRadius: '8px' }}>
-              Belum ada layanan dipilih. Silakan klik tombol layanan di atas.
+            <div style={{ marginTop: '12px', marginBottom: '16px' }}>
+              <label className="field">
+                <span>Catatan Kondisi Barang (Noda / Kerusakan)</span>
+                <textarea
+                  placeholder="Contoh: Ada noda oli di tumit, midsole menguning, sol kanan terbuka sedikit."
+                  value={item.conditionNotes}
+                  onChange={(e) => updateItem(itemIdx, { conditionNotes: e.target.value })}
+                />
+              </label>
             </div>
-          ) : (
-            <div className="stack" style={{ gap: '8px' }}>
-              <div className="small muted" style={{ marginBottom: '4px' }}>
-                Atur harga final yang disepakati (misal untuk layanan dengan rentang harga atau tingkat kotoran):
+
+            {/* Service Selection for this item */}
+            <div style={{ borderTop: '1px solid var(--line)', paddingTop: '14px' }}>
+              <div className="row between" style={{ marginBottom: '10px' }}>
+                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--ink)' }}>
+                  Pilih Layanan untuk {items.length > 1 ? `Barang ${itemIdx + 1}` : 'Barang Ini'} *
+                </span>
+                <span className="xs muted">Pilih minimal 1 layanan</span>
               </div>
-              {selectedServices.map((l, idx) => (
-                <div key={idx} className="line-row">
-                  <div>
-                    <strong>{l.name}</strong>
-                    <div className="xs muted">
-                      Kategori: {l.category} • Beban: {l.workloadWeight} unit
-                      {l.priceMax ? ` (Rentang: ${rupiah(l.priceMin)} - ${rupiah(l.priceMax)})` : ''}
-                    </div>
-                  </div>
-                  <div>
-                    <input
-                      type="number"
-                      value={l.price}
-                      onChange={(e) => updateServicePrice(idx, Number(e.target.value))}
-                      style={{ textAlign: 'right' }}
-                    />
-                  </div>
-                  <div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+                {services?.map((svc) => {
+                  const active = item.selectedServices.some((x) => x.serviceId === svc.id);
+                  return (
                     <button
                       type="button"
-                      className="btn danger sm"
-                      onClick={() => setSelectedServices(selectedServices.filter((_, i) => i !== idx))}
+                      key={svc.id}
+                      onClick={() => toggleItemService(itemIdx, svc.id)}
+                      className={`btn sm ${active ? '' : 'secondary'}`}
                     >
-                      ✕
+                      {active ? '✓ ' : '+ '} {svc.name}
                     </button>
-                  </div>
+                  );
+                })}
+              </div>
+
+              {item.selectedServices.length === 0 ? (
+                <div className="empty" style={{ border: '1px dashed var(--line)', borderRadius: '8px', padding: '12px' }}>
+                  Belum ada layanan dipilih untuk barang ini. Silakan klik tombol layanan di atas.
                 </div>
-              ))}
+              ) : (
+                <div className="stack" style={{ gap: '8px' }}>
+                  <div className="xs muted">
+                    Atur harga final yang disepakati jika terdapat tingkat kotoran khusus:
+                  </div>
+                  {item.selectedServices.map((l, sIdx) => (
+                    <div key={sIdx} className="line-row">
+                      <div>
+                        <strong>{l.name}</strong>
+                        <div className="xs muted">
+                          Kategori: {l.category} • Beban: {l.workloadWeight} unit
+                          {l.priceMax ? ` (Rentang: ${rupiah(l.priceMin)} - ${rupiah(l.priceMax)})` : ''}
+                        </div>
+                      </div>
+                      <div>
+                        <input
+                          type="number"
+                          value={l.price}
+                          onChange={(e) => updateItemServicePrice(itemIdx, sIdx, Number(e.target.value))}
+                          style={{ textAlign: 'right' }}
+                        />
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          className="btn danger sm"
+                          onClick={() => {
+                            const next = item.selectedServices.filter((_, i) => i !== sIdx);
+                            updateItem(itemIdx, { selectedServices: next });
+                          }}
+                          title="Hapus layanan"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
+        ))}
+
+        {/* Add Another Item Button */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-8px', marginBottom: '8px' }}>
+          <button
+            type="button"
+            className="btn"
+            onClick={addItem}
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              padding: '12px 20px',
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              background: '#f8fafc',
+              border: '2px dashed var(--primary)',
+              color: 'var(--primary)',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            + Tambah Barang Lagi (Sepatu / Tas Kedua)
+          </button>
         </div>
 
         {/* Fragrance & Products */}
