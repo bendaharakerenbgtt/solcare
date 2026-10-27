@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
-import { fmtDateTime, STATUS_LABEL, displayCode, whatsappLink } from '../../lib/format';
+import { fmtDateTime, STATUS_LABEL, whatsappLink } from '../../lib/format';
 import { isLate } from '../../lib/estimation';
 import { dateKey } from '../../lib/dates';
 import type { Order, OrderStatus } from '../../data/types';
@@ -144,21 +144,21 @@ export const DashboardPage: React.FC = () => {
             className={activityTab === 'all' ? 'active' : ''}
             onClick={() => setActivityTab('all')}
           >
-            Semua Aktif ({activeOrders.length + completedOrders.length})
+            Semua ({activeOrders.length + completedOrders.length})
           </button>
           <button
             type="button"
             className={activityTab === 'pencucian' ? 'active' : ''}
             onClick={() => setActivityTab('pencucian')}
           >
-            🧼 Sedang Dicuci ({washingOrders.length})
+            🧼 Cuci ({washingOrders.length})
           </button>
           <button
             type="button"
             className={activityTab === 'pengeringan' ? 'active' : ''}
             onClick={() => setActivityTab('pengeringan')}
           >
-            💨 Pengeringan ({dryingOrders.length})
+            💨 Kering ({dryingOrders.length})
           </button>
           <button
             type="button"
@@ -172,7 +172,7 @@ export const DashboardPage: React.FC = () => {
             className={activityTab === 'selesai' ? 'active' : ''}
             onClick={() => setActivityTab('selesai')}
           >
-            ✅ Siap Diambil ({completedOrders.length})
+            ✅ Siap Ambil ({completedOrders.length})
           </button>
           <button
             type="button"
@@ -201,7 +201,7 @@ export const DashboardPage: React.FC = () => {
             {activityList.map((o) => {
               const late = isLate(o, now) && o.status !== 'diambil';
               const nextAction = NEXT_STATUS_BTN[o.status];
-              const waUrl = whatsappLink(o.customerPhone, `Halo Kak ${o.customerName}, info pengerjaan ${displayCode(o.code)} di Soleful Soaks!`);
+              const waUrl = whatsappLink(o.customerPhone, `Halo Kak ${o.customerName}, info pengerjaan pesanan Anda di Soleful Soaks!`);
               const isUpdating = updatingId === o.id;
 
               return (
@@ -210,19 +210,29 @@ export const DashboardPage: React.FC = () => {
                   className="mobile-order-card"
                   style={{ borderLeft: `4px solid ${o.status === 'selesai' ? '#16a34a' : o.status === 'pencucian' ? '#0284c7' : '#0f766e'}` }}
                 >
-                  <div className="mobile-order-card-top">
+                  {/* Clean Card Top: Customer Name & WhatsApp directly accessible, without long codes */}
+                  <div className="mobile-order-card-top" style={{ alignItems: 'center' }}>
                     <div>
-                      <strong className="mono" style={{ fontSize: '0.95rem', color: 'var(--primary)' }}>
-                        {displayCode(o.code)}
+                      <strong style={{ fontSize: '1rem', color: 'var(--ink)' }}>
+                        {o.customerName}
                       </strong>
                       <div className="xs muted">{fmtDateTime(o.receivedAt)}</div>
                     </div>
-                    <div className="row" style={{ gap: '4px' }}>
-                      <span className={`badge ${o.status === 'selesai' ? 'ok' : o.status === 'diambil' ? '' : 'teal'}`}>
+                    <div className="row" style={{ gap: '6px', alignItems: 'center' }}>
+                      {waUrl && (
+                        <a
+                          href={waUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn wa sm"
+                          style={{ padding: '4px 8px', fontSize: '0.75rem', borderRadius: '6px' }}
+                          title="Chat WhatsApp Pelanggan"
+                        >
+                          💬 WA
+                        </a>
+                      )}
+                      <span className={`badge ${o.status === 'selesai' ? 'ok' : o.status === 'diambil' ? '' : 'teal'}`} style={{ fontSize: '0.75rem' }}>
                         {STATUS_LABEL[o.status]}
-                      </span>
-                      <span className={`badge ${o.payment.status === 'lunas' ? 'ok' : 'warn'}`}>
-                        {o.payment.status === 'lunas' ? 'Lunas' : 'Belum'}
                       </span>
                     </div>
                   </div>
@@ -236,52 +246,48 @@ export const DashboardPage: React.FC = () => {
                       🏷️ <strong>Treatment:</strong> {o.services.map((s) => s.name).join(', ')}
                       {o.fragranceName ? ` • Aroma: ${o.fragranceName}` : ''}
                     </div>
-                    <div className="small muted">
-                      👤 Pelanggan: <strong>{o.customerName}</strong> ({o.customerPhone})
-                    </div>
                     {o.conditionNotes && (
                       <div className="xs" style={{ background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', color: '#475569' }}>
                         📝 Catatan: {o.conditionNotes}
                       </div>
                     )}
                     <div className="row between small" style={{ marginTop: '2px' }}>
-                      <span>Target Estimasi:</span>
+                      <span className="muted">Target Estimasi Selesai:</span>
                       <strong className={late ? 'badge danger' : ''}>
                         {o.estimatedAt ? fmtDateTime(o.estimatedAt) : '-'}
                       </strong>
                     </div>
                   </div>
 
-                  <div className="mobile-order-card-actions">
-                    {/* Quick 1-tap status advance button */}
-                    {nextAction && (
-                      <button
-                        type="button"
-                        onClick={() => void handleAdvanceStatus(o)}
-                        disabled={isUpdating}
-                        className="btn primary"
-                        style={{ flex: 1.2, padding: '8px 10px', fontSize: '0.82rem' }}
+                  {/* Clean 2-Button Action Bar: Large Touch Targets, No Cramped Squeeze */}
+                  <div className="mobile-order-card-actions" style={{ gap: '8px', paddingTop: '6px' }}>
+                    {nextAction ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => void handleAdvanceStatus(o)}
+                          disabled={isUpdating}
+                          className="btn primary"
+                          style={{ flex: 1.4, padding: '10px 12px', fontSize: '0.88rem', fontWeight: 700 }}
+                        >
+                          {isUpdating ? 'Menyimpan...' : nextAction}
+                        </button>
+                        <Link
+                          to={`/admin/orders/${o.id}`}
+                          className="btn secondary"
+                          style={{ flex: 1, padding: '10px 12px', fontSize: '0.84rem', textAlign: 'center', justifyContent: 'center' }}
+                        >
+                          ✏️ Detail
+                        </Link>
+                      </>
+                    ) : (
+                      <Link
+                        to={`/admin/orders/${o.id}`}
+                        className="btn secondary"
+                        style={{ width: '100%', textAlign: 'center', justifyContent: 'center', padding: '10px 12px', fontSize: '0.88rem' }}
                       >
-                        {isUpdating ? 'Menyimpan...' : nextAction}
-                      </button>
-                    )}
-                    <Link
-                      to={`/admin/orders/${o.id}`}
-                      className="btn secondary"
-                      style={{ flex: 1, padding: '8px 10px', fontSize: '0.82rem' }}
-                    >
-                      ✏️ Detail
-                    </Link>
-                    {waUrl && (
-                      <a
-                        href={waUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn wa"
-                        style={{ padding: '8px 12px', fontSize: '0.82rem' }}
-                      >
-                        💬 WA
-                      </a>
+                        ✏️ Lihat Detail Pesanan
+                      </Link>
                     )}
                   </div>
                 </div>

@@ -48,17 +48,6 @@ export const AdminLayout: React.FC = () => {
       {/* Slide-out Calendar Drawer from Right */}
       <SlideCalendarDrawer isOpen={calDrawerOpen} onClose={() => setCalDrawerOpen(false)} />
 
-      {/* Floating Quick Calendar Button on Bottom-Right */}
-      <button
-        type="button"
-        onClick={() => setCalDrawerOpen(true)}
-        className="floating-cal-trigger"
-        title="Buka Kalender Jadwal & Estimasi"
-      >
-        <span>📅</span>
-        <span>Kalender</span>
-      </button>
-
       <div className="admin">
         <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="brand">
