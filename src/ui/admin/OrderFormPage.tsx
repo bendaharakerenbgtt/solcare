@@ -657,7 +657,7 @@ export const OrderFormPage: React.FC = () => {
 
         {/* Capacity-based Estimation */}
         <div className="card">
-          <h3>5. Estimasi Selesai (Kapasitas & Beban Kerja)</h3>
+          <h3>5. Estimasi Selesai</h3>
           <div className="grid grid-2" style={{ marginTop: '12px' }}>
             <label className="field">
               <span>Tanggal Masuk Pesanan</span>
