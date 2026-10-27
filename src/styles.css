@@ -1627,5 +1627,123 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   line-height: 1.25;
 }
 
+/* Modern Product Card Picker (No Dropdown) */
+.product-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 680px) {
+  .product-picker-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+.product-card-picker {
+  background: #ffffff;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+.product-card-picker:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.product-card-picker.selected {
+  background: #f0fdfa;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary), 0 2px 6px rgba(15, 118, 110, 0.12);
+}
+.product-card-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.product-card-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.product-card-picker.selected .product-card-title {
+  color: var(--primary);
+}
+.product-card-price {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+.product-card-desc {
+  font-size: 0.72rem;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.product-card-action {
+  flex-shrink: 0;
+}
+.product-btn-add {
+  background: #ffffff;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.product-btn-add:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+.product-stepper {
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid var(--primary);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.stepper-btn {
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.stepper-btn:hover {
+  background: var(--primary-50);
+}
+.stepper-val {
+  min-width: 28px;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+
 
 

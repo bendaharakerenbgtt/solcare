@@ -147,30 +147,32 @@ export const OrderFormPage: React.FC = () => {
     setSelectedServices(next);
   };
 
-  // Handle product addition
-  const addProduct = (prodId: string) => {
-    const p = productsCatalog?.find((x) => x.id === prodId);
-    if (!p) return;
-    const existing = selectedProducts.find((x) => x.productId === prodId);
-    if (existing) {
-      setSelectedProducts(
-        selectedProducts.map((x) => (x.productId === prodId ? { ...x, qty: x.qty + 1, subtotal: (x.qty + 1) * x.unitPrice } : x))
-      );
-    } else {
-      setSelectedProducts([
-        ...selectedProducts,
-        { productId: p.id, name: p.name, unitPrice: p.price, qty: 1, subtotal: p.price },
-      ]);
-    }
+  // Handle product addition & quantity modification
+  const getProductQty = (prodId: string) => {
+    const item = selectedProducts.find((x) => x.productId === prodId);
+    return item ? item.qty : 0;
   };
 
-  const updateProductQty = (index: number, qty: number) => {
-    if (qty <= 0) {
-      setSelectedProducts(selectedProducts.filter((_, i) => i !== index));
+  const setProductQty = (prodId: string, newQty: number) => {
+    const p = productsCatalog?.find((x) => x.id === prodId);
+    if (!p) return;
+
+    if (newQty <= 0) {
+      setSelectedProducts(selectedProducts.filter((x) => x.productId !== prodId));
     } else {
-      const next = [...selectedProducts];
-      next[index] = { ...next[index], qty, subtotal: qty * next[index].unitPrice };
-      setSelectedProducts(next);
+      const existing = selectedProducts.find((x) => x.productId === prodId);
+      if (existing) {
+        setSelectedProducts(
+          selectedProducts.map((x) =>
+            x.productId === prodId ? { ...x, qty: newQty, subtotal: newQty * x.unitPrice } : x
+          )
+        );
+      } else {
+        setSelectedProducts([
+          ...selectedProducts,
+          { productId: p.id, name: p.name, unitPrice: p.price, qty: newQty, subtotal: newQty * p.price },
+        ]);
+      }
     }
   };
 
@@ -528,59 +530,71 @@ export const OrderFormPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Retail Products to Buy */}
+          {/* Retail Products to Buy (Modern Visual Cards with Stepper, No Dropdown) */}
           <div style={{ borderTop: '1px solid var(--line)', paddingTop: '16px' }}>
-            <div style={{ marginBottom: '10px' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'block', color: '#334155' }}>
-                Beli Produk Tambahan (Opsional)
-              </span>
-              <span className="xs muted">
-                Botol parfum 60ml untuk dibawa pulang atau tali sepatu pengganti
-              </span>
+            <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <span style={{ fontSize: '0.88rem', fontWeight: 700, display: 'block', color: '#1e293b' }}>
+                  Beli Produk Tambahan (Opsional)
+                </span>
+                <span className="xs muted">
+                  Klik untuk menambahkan parfum botol 60ml atau tali sepatu ke nota
+                </span>
+              </div>
+              {selectedProducts.length > 0 && (
+                <span className="badge ok" style={{ fontSize: '0.75rem' }}>
+                  {selectedProducts.reduce((sum, p) => sum + p.qty, 0)} item dipilih (
+                  {rupiah(selectedProducts.reduce((sum, p) => sum + p.subtotal, 0))})
+                </span>
+              )}
             </div>
 
-            <label className="field" style={{ maxWidth: '440px', marginBottom: '12px' }}>
-              <select
-                onChange={(e) => {
-                  if (e.target.value) {
-                    addProduct(e.target.value);
-                    e.target.value = '';
-                  }
-                }}
-              >
-                <option value="">+ Tambah Produk untuk Dibeli</option>
-                {productsCatalog?.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({rupiah(p.price)})
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="product-picker-grid">
+              {productsCatalog?.map((p) => {
+                const qty = getProductQty(p.id);
+                return (
+                  <div key={p.id} className={`product-card-picker ${qty > 0 ? 'selected' : ''}`}>
+                    <div className="product-card-left">
+                      <div className="product-card-title">{p.name}</div>
+                      <div className="product-card-price">{rupiah(p.price)}</div>
+                      {p.description && <div className="product-card-desc">{p.description}</div>}
+                    </div>
 
-          {selectedProducts.length > 0 && (
-            <div className="stack" style={{ gap: '8px' }}>
-              {selectedProducts.map((p, idx) => (
-                <div key={idx} className="line-row prod">
-                  <strong>{p.name}</strong>
-                  <div className="small">{rupiah(p.unitPrice)}</div>
-                  <input
-                    type="number"
-                    min={1}
-                    value={p.qty}
-                    onChange={(e) => updateProductQty(idx, Number(e.target.value))}
-                  />
-                  <div className="small right"><strong>{rupiah(p.subtotal)}</strong></div>
-                  <button
-                    type="button"
-                    className="btn danger sm"
-                    onClick={() => updateProductQty(idx, 0)}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
+                    <div className="product-card-action">
+                      {qty === 0 ? (
+                        <button
+                          type="button"
+                          className="product-btn-add"
+                          onClick={() => setProductQty(p.id, 1)}
+                        >
+                          + Beli
+                        </button>
+                      ) : (
+                        <div className="product-stepper">
+                          <button
+                            type="button"
+                            className="stepper-btn"
+                            onClick={() => setProductQty(p.id, qty - 1)}
+                            title="Kurangi"
+                          >
+                            −
+                          </button>
+                          <span className="stepper-val">{qty}</span>
+                          <button
+                            type="button"
+                            className="stepper-btn"
+                            onClick={() => setProductQty(p.id, qty + 1)}
+                            title="Tambah"
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
           </div>
         </div>
 
