@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import { priceLabel, durationLabel } from '../../lib/format';
+import type { ServiceCategory } from '../../data/types';
 
 export const HomePage: React.FC = () => {
   const [searchCode, setSearchCode] = useState('');
+  const [selectedCat, setSelectedCat] = useState<ServiceCategory | 'all'>('all');
+  const catalogScrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const { data: services } = useAsync(() => repo.listServices(false), []);
@@ -18,37 +21,51 @@ export const HomePage: React.FC = () => {
     }
   };
 
-  const mainServices = (services || []).filter((s) => s.category === 'main').slice(0, 4);
+  const filteredServices = (services || []).filter((s) => {
+    if (selectedCat === 'all') return true;
+    return s.category === selectedCat;
+  });
+
+  const scrollCatalog = (dir: 'left' | 'right') => {
+    if (catalogScrollRef.current) {
+      const scrollAmount = 300;
+      catalogScrollRef.current.scrollBy({
+        left: dir === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   return (
-    <div>
+    <div style={{ paddingBottom: '60px' }}>
       {/* Hero Section */}
-      <section className="hero">
+      <section className="hero modern-hero">
         <div className="container">
           <div className="hero-grid">
             <div>
-              <div className="eyebrow" style={{ marginBottom: '12px' }}>
-                Jasa Perawatan Sepatu & Apparel
-              </div>
-              <h1>
-                Kembalikan Kilau & Kebersihan <span>Sepatu Favorit Anda</span>
+              <h1 className="modern-hero-title">
+                Soleful Soaks! <br />
+                <span>Shoes Care</span>
               </h1>
-              <p className="lead" style={{ marginTop: '16px', marginBottom: '24px' }}>
+              <p className="lead" style={{ marginTop: '14px', marginBottom: '24px' }}>
                 Perawatan mendalam, unyellowing, recolor hingga pembersihan harian untuk sepatu, tas, helm, dan topi dengan standar pengerjaan profesional.
               </p>
               <div className="hero-cta-row">
-                <Link to="/layanan" className="btn lg hero-btn">
-                  Lihat Katalog Layanan
+                <Link to="/cek-pesanan" className="btn lg hero-btn">
+                  🔍 Lacak Pesanan Anda
                 </Link>
-                <Link to="/cek-pesanan" className="btn secondary lg hero-btn">
-                  Lacak Pesanan
+                <Link to="/layanan" className="btn secondary lg hero-btn">
+                  🏷️ Lihat Katalog Harga
                 </Link>
               </div>
             </div>
 
             <div>
               <div className="hero-card">
-                <h3 style={{ marginBottom: '6px' }}>Lacak Status Sepatu Anda</h3>
+                <div className="row" style={{ gap: '8px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '1.4rem' }}>📦</span>
+                  <h3 style={{ margin: 0 }}>Lacak Status Sepatu</h3>
+                </div>
                 <p className="small muted" style={{ marginBottom: '16px' }}>
                   Masukkan kode pesanan yang tertera pada nota penerimaan Anda.
                 </p>
@@ -97,64 +114,180 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Announcements if any */}
+      {/* Modern Quick Menu Cards */}
+      <section className="container" style={{ marginTop: '-20px', position: 'relative', zIndex: 10 }}>
+        <div className="grid grid-3 quick-menu-grid">
+          <Link to="/cek-pesanan" className="quick-menu-card">
+            <div className="quick-menu-icon" style={{ background: '#ccfbf1', color: '#0f766e' }}>
+              🔍
+            </div>
+            <div>
+              <h4 style={{ margin: '0 0 4px', fontSize: '1.05rem', color: 'var(--ink)' }}>Cek Pesanan Saya</h4>
+              <p className="small muted" style={{ margin: 0 }}>Pantau timeline cuci, foto kolase & estimasi</p>
+            </div>
+          </Link>
+
+          <Link to="/layanan" className="quick-menu-card">
+            <div className="quick-menu-icon" style={{ background: '#fef3c7', color: '#b45309' }}>
+              ✨
+            </div>
+            <div>
+              <h4 style={{ margin: '0 0 4px', fontSize: '1.05rem', color: 'var(--ink)' }}>Katalog & Estimasi</h4>
+              <p className="small muted" style={{ margin: 0 }}>Daftar harga transparan mulai Rp35.000</p>
+            </div>
+          </Link>
+
+          <Link to="/kontak" className="quick-menu-card">
+            <div className="quick-menu-icon" style={{ background: '#dcfce7', color: '#15803d' }}>
+              💬
+            </div>
+            <div>
+              <h4 style={{ margin: '0 0 4px', fontSize: '1.05rem', color: 'var(--ink)' }}>Konsultasi & WhatsApp</h4>
+              <p className="small muted" style={{ margin: 0 }}>Tanya penanganan noda khusus & drop-off</p>
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      {/* Modern Announcements Banner / Card */}
       {announcements && announcements.length > 0 && (
-        <section className="container" style={{ marginTop: '32px' }}>
-          <div className="stack" style={{ gap: '12px' }}>
-            {announcements.slice(0, 2).map((a) => (
-              <div key={a.id} className={`card alert ${a.important ? 'warn' : 'info'}`}>
-                <div className="row between">
-                  <strong>📢 {a.title}</strong>
-                  <span className="badge">{a.category}</span>
-                </div>
-                <p style={{ margin: '8px 0 0' }}>{a.body}</p>
+        <section className="container" style={{ marginTop: '36px' }}>
+          <div className="card modern-announcement-card">
+            <div className="row between" style={{ marginBottom: '14px' }}>
+              <div className="row" style={{ gap: '8px' }}>
+                <span className="pulse-indicator"></span>
+                <strong style={{ fontSize: '1rem', color: 'var(--ink)' }}>Papan Informasi & Pengumuman Toko</strong>
               </div>
-            ))}
+              <Link to="/pengumuman" className="small" style={{ fontWeight: 600 }}>
+                Lihat Semua ({announcements.length}) →
+              </Link>
+            </div>
+
+            <div className="stack" style={{ gap: '10px' }}>
+              {announcements.slice(0, 2).map((a) => (
+                <div key={a.id} className={`announcement-bubble ${a.important ? 'important' : ''}`}>
+                  <div className="row between" style={{ marginBottom: '4px' }}>
+                    <span className="badge teal">{a.category}</span>
+                    <span className="xs muted">{new Date(a.publishAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+                  </div>
+                  <strong style={{ display: 'block', fontSize: '0.98rem', color: 'var(--ink)', marginBottom: '4px' }}>
+                    {a.title}
+                  </strong>
+                  <p className="small" style={{ margin: 0, color: '#475569', lineHeight: 1.5 }}>
+                    {a.body}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      {/* Highlight Services */}
-      <section className="section">
+      {/* Slide / Carousel Katalog Layanan */}
+      <section className="section" style={{ paddingBottom: '32px' }}>
         <div className="container">
-          <div className="section-title">
-            <div className="eyebrow">Pilihan Terbaik</div>
-            <h2>Layanan Utama Kami</h2>
-            <p className="muted" style={{ maxWidth: '600px', margin: '0 auto' }}>
-              Dikerjakan secara teliti dengan formula sabun khusus & teknik aman untuk berbagai material sepatu Anda.
-            </p>
+          <div className="row between" style={{ marginBottom: '16px' }}>
+            <div>
+              <div className="eyebrow">Katalog Layanan</div>
+              <h2 style={{ fontSize: '1.75rem', margin: '4px 0 0' }}>Pilihan Perawatan Sepatu & Barang</h2>
+            </div>
+            <div className="carousel-nav-arrows">
+              <button
+                type="button"
+                className="btn secondary sm carousel-arrow-btn"
+                onClick={() => scrollCatalog('left')}
+                aria-label="Scroll left"
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                className="btn secondary sm carousel-arrow-btn"
+                onClick={() => scrollCatalog('right')}
+                aria-label="Scroll right"
+              >
+                →
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-4">
-            {mainServices.map((svc) => (
-              <div key={svc.id} className="card service-card">
-                <h3>{svc.name}</h3>
-                <div className="price">{priceLabel(svc)}</div>
-                <p className="small muted" style={{ flex: 1, margin: '8px 0' }}>
+          {/* Filter Kategori Tabs */}
+          <div className="catalog-cat-pills">
+            <button
+              type="button"
+              className={`cat-pill ${selectedCat === 'all' ? 'active' : ''}`}
+              onClick={() => setSelectedCat('all')}
+            >
+              Semua ({services?.length || 0})
+            </button>
+            <button
+              type="button"
+              className={`cat-pill ${selectedCat === 'main' ? 'active' : ''}`}
+              onClick={() => setSelectedCat('main')}
+            >
+              Main Services
+            </button>
+            <button
+              type="button"
+              className={`cat-pill ${selectedCat === 'express' ? 'active' : ''}`}
+              onClick={() => setSelectedCat('express')}
+            >
+              ⚡ Express (24h/48h)
+            </button>
+            <button
+              type="button"
+              className={`cat-pill ${selectedCat === 'additional' ? 'active' : ''}`}
+              onClick={() => setSelectedCat('additional')}
+            >
+              🛠️ Additional & Repaint
+            </button>
+            <button
+              type="button"
+              className={`cat-pill ${selectedCat === 'other' ? 'active' : ''}`}
+              onClick={() => setSelectedCat('other')}
+            >
+              🎒 Tas, Helm & Topi
+            </button>
+          </div>
+
+          {/* Scrollable / Slide Cards */}
+          <div className="catalog-slider" ref={catalogScrollRef}>
+            {filteredServices.map((svc) => (
+              <div key={svc.id} className="catalog-slide-card card">
+                <div className="row between" style={{ marginBottom: '8px' }}>
+                  <span className="badge teal" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                    {svc.category}
+                  </span>
+                  {svc.expressEligible && (
+                    <span className="badge ok" style={{ fontSize: '0.7rem' }}>
+                      Bisa Express
+                    </span>
+                  )}
+                </div>
+                <h3 style={{ fontSize: '1.15rem', marginBottom: '4px' }}>{svc.name}</h3>
+                <div className="price" style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.2rem', marginBottom: '8px' }}>
+                  {priceLabel(svc)}
+                </div>
+                <p className="small muted" style={{ flex: 1, margin: '0 0 12px', lineHeight: 1.45 }}>
                   {svc.description}
                 </p>
-                <div className="small muted">
-                  ⏱️ Durasi: {durationLabel(svc) || '2 hari'}
+                <div className="xs muted" style={{ borderTop: '1px solid var(--line)', paddingTop: '8px' }}>
+                  ⏱️ Durasi: <strong>{durationLabel(svc) || '2 hari'}</strong>
                 </div>
-                {svc.expressEligible && (
-                  <span className="badge teal" style={{ alignSelf: 'flex-start', marginTop: '8px' }}>
-                    Tersedia Express
-                  </span>
-                )}
               </div>
             ))}
           </div>
 
-          <div className="center mt" style={{ marginTop: '32px' }}>
-            <Link to="/layanan" className="btn secondary">
-              Lihat Semua {services?.length || ''} Layanan & Kategori →
+          <div className="center mt" style={{ marginTop: '20px' }}>
+            <Link to="/layanan" className="btn secondary sm">
+              Buka Katalog Lengkap dengan Rincian Syarat & Ketentuan →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="section alt">
+      {/* Alur Pelayanan Ringkas */}
+      <section className="section alt" style={{ marginTop: '24px' }}>
         <div className="container">
           <div className="section-title">
             <div className="eyebrow">Alur Pelayanan</div>
@@ -163,22 +296,22 @@ export const HomePage: React.FC = () => {
           </div>
 
           <div className="grid grid-3">
-            <div className="card flat" style={{ textAlign: 'center', padding: '28px' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🏬</div>
+            <div className="card flat" style={{ textAlign: 'center', padding: '24px' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '10px' }}>🏬</div>
               <h3>1. Drop-off di Toko</h3>
               <p className="small muted">
-                Bawa sepatu Anda ke workshop kami. Pegawai akan memeriksa material, noda, serta menentukan estimasi dan pembayaran di tempat.
+                Bawa sepatu Anda ke workshop kami. Pegawai memeriksa material, noda, serta menentukan estimasi & pembayaran di tempat.
               </p>
             </div>
-            <div className="card flat" style={{ textAlign: 'center', padding: '28px' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🧼</div>
+            <div className="card flat" style={{ textAlign: 'center', padding: '24px' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '10px' }}>🧼</div>
               <h3>2. Proses Pengerjaan</h3>
               <p className="small muted">
                 Pencucian mendalam, pengeringan higienis, dan detailing. Pantau status pengerjaan secara real-time via kode pesanan.
               </p>
             </div>
-            <div className="card flat" style={{ textAlign: 'center', padding: '28px' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>✨</div>
+            <div className="card flat" style={{ textAlign: 'center', padding: '24px' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '10px' }}>✨</div>
               <h3>3. Selesai & Ambil</h3>
               <p className="small muted">
                 Dapatkan notifikasi selesai, lihat foto dokumentasi kolase hasil pembersihan, dan ambil sepatu wangi siap pakai!
