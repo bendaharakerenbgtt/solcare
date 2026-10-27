@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
-import { fmtDateTime, STATUS_LABEL, whatsappLink } from '../../lib/format';
+import { fmtDate, STATUS_LABEL, whatsappLink } from '../../lib/format';
 import { isLate } from '../../lib/estimation';
 import { dateKey } from '../../lib/dates';
 import type { Order, OrderStatus } from '../../data/types';
@@ -239,7 +239,7 @@ export const DashboardPage: React.FC = () => {
             </Link>
           </div>
         ) : (
-          <div className="stack" style={{ gap: '8px' }}>
+          <div className="stack" style={{ gap: '12px' }}>
             {activityList.map((o) => {
               const late = isLate(o, now) && o.status !== 'diambil';
               const waUrl = whatsappLink(o.customerPhone, `Halo Kak ${o.customerName}, info pengerjaan pesanan Anda di Soleful Soaks!`);
@@ -249,48 +249,14 @@ export const DashboardPage: React.FC = () => {
               return (
                 <div
                   key={o.id}
-                  className="activity-card-compact"
+                  className="order-card-modern"
                   style={{ borderLeftColor: stage.color }}
                 >
-                  {/* Left: Customer Info, Shoe & Services */}
-                  <div className="activity-card-left">
-                    <div className="activity-card-header">
-                      <span className="activity-cust-name">{o.customerName}</span>
-                      {waUrl && (
-                        <a
-                          href={waUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="activity-wa-pill"
-                          title="Chat WhatsApp Pelanggan"
-                        >
-                          💬 WA
-                        </a>
-                      )}
-                      <span className="activity-received-time">{fmtDateTime(o.receivedAt)}</span>
+                  {/* Top Row: Customer Name & Stage Selector */}
+                  <div className="order-card-top-row">
+                    <div className="order-card-cust-name" title={o.customerName}>
+                      👤 {o.customerName}
                     </div>
-
-                    <div className="activity-card-item">
-                      <span className="activity-shoe-info">
-                        👟 {o.brand} {o.model} {o.color ? `(${o.color})` : ''}
-                      </span>
-                      <span className="activity-service-info">
-                        🏷️ {o.services.map((s) => s.name).join(', ')}
-                      </span>
-                    </div>
-
-                    {o.estimatedAt && (
-                      <div className="activity-card-footer">
-                        <span className={`activity-est-badge ${late ? 'late' : ''}`}>
-                          {late ? '⚠️ Terlambat: ' : '🎯 Est: '}
-                          {fmtDateTime(o.estimatedAt)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right: Stage Dropdown Trigger & Detail Link */}
-                  <div className="activity-card-right">
                     <button
                       type="button"
                       className="stage-select-btn"
@@ -307,12 +273,61 @@ export const DashboardPage: React.FC = () => {
                       <span className="stage-btn-text">{stage.shortLabel}</span>
                       <span className="stage-btn-arrow">▾</span>
                     </button>
+                  </div>
 
+                  {/* Middle Box: Shoe Details & Services */}
+                  <div className="order-card-body-info">
+                    <div className="order-card-item-title">
+                      👟 {o.brand} {o.model} {o.color ? `(${o.color})` : ''}
+                    </div>
+                    <div className="order-card-service-desc">
+                      🏷️ {o.services.map((s) => s.name).join(', ')}
+                    </div>
+                  </div>
+
+                  {/* Meta Row: Target Estimate & Received Date */}
+                  <div className="order-card-meta-row">
+                    {o.estimatedAt ? (
+                      <span className={`order-card-est-pill ${late ? 'late' : ''}`}>
+                        {late ? '⚠️ Terlambat: ' : '🎯 Target: '}
+                        {fmtDate(o.estimatedAt)}
+                      </span>
+                    ) : (
+                      <span className="order-card-est-pill">🎯 Target: -</span>
+                    )}
+                    <span className="order-card-received-date">
+                      Masuk: {fmtDate(o.receivedAt)}
+                    </span>
+                  </div>
+
+                  {/* Bottom Action Row: Big Easy Touch WA & Detail Buttons */}
+                  <div className="order-card-bottom-actions">
+                    {waUrl ? (
+                      <a
+                        href={waUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="order-card-btn-wa"
+                        title="Chat WhatsApp Pelanggan"
+                      >
+                        💬 Chat WA
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled
+                        className="order-card-btn-wa"
+                        style={{ opacity: 0.45, cursor: 'not-allowed' }}
+                      >
+                        💬 No WA
+                      </button>
+                    )}
                     <Link
                       to={`/admin/orders/${o.id}`}
-                      className="activity-detail-link"
+                      className="order-card-btn-detail"
+                      title="Buka Detail Pesanan"
                     >
-                      Detail ✏️
+                      Detail Pesanan ✏️
                     </Link>
                   </div>
                 </div>

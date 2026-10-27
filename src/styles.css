@@ -1349,6 +1349,141 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   flex-shrink: 0;
 }
 
+/* Modern Clean Mobile Order Card (Restructured for Mobile First) */
+.order-card-modern {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--primary);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.order-card-modern:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+.order-card-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.order-card-cust-name {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+.order-card-body-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: #f8fafc;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+}
+.order-card-item-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.order-card-service-desc {
+  font-size: 0.78rem;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.order-card-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.78rem;
+}
+.order-card-est-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.76rem;
+  white-space: nowrap;
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
+}
+.order-card-est-pill.late {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+.order-card-received-date {
+  color: #94a3b8;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+.order-card-bottom-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+.order-card-btn-wa {
+  flex: 1;
+  background: #16a34a;
+  color: #ffffff !important;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 9px 12px;
+  border-radius: 9px;
+  text-decoration: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.order-card-btn-wa:hover {
+  background: #15803d;
+}
+.order-card-btn-detail {
+  flex: 1;
+  background: #ffffff;
+  color: var(--ink) !important;
+  border: 1px solid var(--line);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 9px 12px;
+  border-radius: 9px;
+  text-decoration: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.order-card-btn-detail:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
 /* Activity Filter Grid (No Horizontal Scroll / No Text Clipping on Mobile) */
 .activity-filter-grid {
   display: grid;
