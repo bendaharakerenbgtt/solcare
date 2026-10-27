@@ -341,22 +341,9 @@ export const OrderFormPage: React.FC = () => {
       <div className="admin-top" style={{ alignItems: 'flex-start', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
         <Link
           to="/admin/orders"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            color: '#475569',
-            fontSize: '0.82rem',
-            fontWeight: 600,
-            textDecoration: 'none',
-            padding: '5px 10px',
-            background: '#f1f5f9',
-            borderRadius: '7px',
-            border: '1px solid var(--line)',
-            transition: 'all 0.15s ease',
-          }}
+          className="admin-back-btn"
         >
-          ← Kembali ke Pesanan
+          ← Kembali
         </Link>
         <div>
           <h1 style={{ fontSize: '1.45rem', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
