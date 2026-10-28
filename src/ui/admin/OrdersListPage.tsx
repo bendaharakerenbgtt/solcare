@@ -40,24 +40,52 @@ export const OrdersListPage: React.FC = () => {
       </div>
 
       <div className="card">
-        <div className="order-filter-bar" style={{ gap: '12px', marginBottom: '16px' }}>
-          <div className="order-search-input">
+        <div className="order-filter-container">
+          <div className="order-search-wrap">
+            <span className="order-search-icon">🔍</span>
             <input
               type="text"
+              className="order-search-field"
               placeholder="Cari kode pesanan, nama pelanggan, no. WA, atau barang..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            {search && (
+              <button
+                type="button"
+                className="order-search-clear"
+                onClick={() => setSearch('')}
+                title="Hapus pencarian"
+              >
+                ✕
+              </button>
+            )}
           </div>
-          <div className="order-status-select">
-            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-              <option value="all">Semua Status ({orders?.length || 0})</option>
-              {ORDER_STATUSES.map((st) => (
-                <option key={st} value={st}>
-                  {STATUS_LABEL[st]} ({orders?.filter((o) => o.status === st).length || 0})
-                </option>
-              ))}
-            </select>
+
+          <div className="order-status-pills-scroll">
+            <button
+              type="button"
+              className={`order-status-pill ${filterStatus === 'all' ? 'active' : ''}`}
+              onClick={() => setFilterStatus('all')}
+            >
+              <span>Semua Status</span>
+              <span className="order-pill-count">{orders?.length || 0}</span>
+            </button>
+            {ORDER_STATUSES.map((st) => {
+              const count = orders?.filter((o) => o.status === st).length || 0;
+              const isActive = filterStatus === st;
+              return (
+                <button
+                  type="button"
+                  key={st}
+                  className={`order-status-pill status-${st} ${isActive ? 'active' : ''}`}
+                  onClick={() => setFilterStatus(st)}
+                >
+                  <span>{STATUS_LABEL[st]}</span>
+                  <span className="order-pill-count">{count}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
