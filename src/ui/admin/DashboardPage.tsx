@@ -159,6 +159,103 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Quick Menu Shortcut Hub */}
+      <div className="card dash-menu-card" style={{ padding: '16px 14px' }}>
+        <div className="row between" style={{ marginBottom: '12px', alignItems: 'center' }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 700, color: 'var(--ink)' }}>
+              Menu & Pintasan Operasional
+            </h3>
+            <span className="xs muted">Akses cepat menu utama aplikasi Solecare</span>
+          </div>
+          <span className="badge teal" style={{ fontSize: '0.74rem' }}>
+            Pintasan Staf
+          </span>
+        </div>
+
+        <div className="dash-menu-grid">
+          <Link to="/admin/orders/new" className="dash-menu-btn highlight">
+            <div className="dash-menu-icon" style={{ background: 'var(--primary-100)', color: 'var(--primary)' }}>
+              ➕
+            </div>
+            <div className="dash-menu-info">
+              <span className="dash-menu-title">Catat Pesanan</span>
+              <span className="dash-menu-desc">Input sepatu / barang baru</span>
+            </div>
+          </Link>
+
+          <Link to="/admin/orders" className="dash-menu-btn">
+            <div className="dash-menu-icon" style={{ background: '#e0f2fe', color: '#0369a1' }}>
+              📦
+            </div>
+            <div className="dash-menu-info">
+              <span className="dash-menu-title">Daftar Pesanan</span>
+              <span className="dash-menu-desc">{activeOrders.length} antrean aktif</span>
+            </div>
+          </Link>
+
+          <Link to="/admin/calendar" className="dash-menu-btn">
+            <div className="dash-menu-icon" style={{ background: '#fef3c7', color: '#b45309' }}>
+              📅
+            </div>
+            <div className="dash-menu-info">
+              <span className="dash-menu-title">Kalender Jadwal</span>
+              <span className="dash-menu-desc">Kapasitas & target</span>
+            </div>
+          </Link>
+
+          <Link to="/admin/services" className="dash-menu-btn">
+            <div className="dash-menu-icon" style={{ background: '#ede9fe', color: '#6d28d9' }}>
+              🏷️
+            </div>
+            <div className="dash-menu-info">
+              <span className="dash-menu-title">Layanan & Harga</span>
+              <span className="dash-menu-desc">Daftar treatment cuci</span>
+            </div>
+          </Link>
+
+          <Link to="/admin/products" className="dash-menu-btn">
+            <div className="dash-menu-icon" style={{ background: '#fce7f3', color: '#be185d' }}>
+              🧴
+            </div>
+            <div className="dash-menu-info">
+              <span className="dash-menu-title">Parfum & Produk</span>
+              <span className="dash-menu-desc">Aroma finishing & retail</span>
+            </div>
+          </Link>
+
+          <Link to="/admin/reports" className="dash-menu-btn">
+            <div className="dash-menu-icon" style={{ background: '#dcfce7', color: '#15803d' }}>
+              📈
+            </div>
+            <div className="dash-menu-info">
+              <span className="dash-menu-title">Laporan Omzet</span>
+              <span className="dash-menu-desc">Omzet & riwayat transaksi</span>
+            </div>
+          </Link>
+
+          <Link to="/admin/customers" className="dash-menu-btn">
+            <div className="dash-menu-icon" style={{ background: 'var(--navy-100)', color: 'var(--navy)' }}>
+              👥
+            </div>
+            <div className="dash-menu-info">
+              <span className="dash-menu-title">Data Pelanggan</span>
+              <span className="dash-menu-desc">Database & kontak WA</span>
+            </div>
+          </Link>
+
+          <Link to="/admin/settings" className="dash-menu-btn">
+            <div className="dash-menu-icon" style={{ background: '#f1f5f9', color: '#475569' }}>
+              ⚙️
+            </div>
+            <div className="dash-menu-info">
+              <span className="dash-menu-title">Pengaturan</span>
+              <span className="dash-menu-desc">Kapasitas & profil toko</span>
+            </div>
+          </Link>
+        </div>
+      </div>
+
       {/* Section: Aktivitas & Pengerjaan Hari Ini */}
       <div className="card" style={{ padding: '16px 14px' }}>
         <div className="row between" style={{ marginBottom: '12px', alignItems: 'center' }}>

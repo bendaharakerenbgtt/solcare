@@ -179,6 +179,56 @@ export const AdminLayout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile App Bottom Navigation Bar */}
+      <nav className="admin-bottom-nav" aria-label="Menu Navigasi Bawah">
+        <Link
+          to="/admin"
+          className={`bottom-nav-item ${location.pathname === '/admin' ? 'active' : ''}`}
+          onClick={closeSidebar}
+        >
+          <span className="bottom-nav-icon">📊</span>
+          <span className="bottom-nav-label">Dashboard</span>
+        </Link>
+
+        <Link
+          to="/admin/orders"
+          className={`bottom-nav-item ${location.pathname === '/admin/orders' ? 'active' : ''}`}
+          onClick={closeSidebar}
+        >
+          <span className="bottom-nav-icon">📦</span>
+          <span className="bottom-nav-label">Pesanan</span>
+        </Link>
+
+        <Link
+          to="/admin/orders/new"
+          className={`bottom-nav-fab ${location.pathname === '/admin/orders/new' ? 'active' : ''}`}
+          title="Tambah Pesanan Baru"
+          onClick={closeSidebar}
+        >
+          <span className="bottom-nav-fab-icon">+</span>
+          <span className="bottom-nav-fab-label">Catat Baru</span>
+        </Link>
+
+        <Link
+          to="/admin/calendar"
+          className={`bottom-nav-item ${location.pathname === '/admin/calendar' ? 'active' : ''}`}
+          onClick={closeSidebar}
+        >
+          <span className="bottom-nav-icon">📅</span>
+          <span className="bottom-nav-label">Kalender</span>
+        </Link>
+
+        <button
+          type="button"
+          className={`bottom-nav-item ${sidebarOpen ? 'active' : ''}`}
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label="Buka Semua Menu"
+        >
+          <span className="bottom-nav-icon">☰</span>
+          <span className="bottom-nav-label">Menu</span>
+        </button>
+      </nav>
     </div>
   );
 };
