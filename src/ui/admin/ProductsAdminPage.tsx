@@ -126,7 +126,7 @@ export const ProductsAdminPage: React.FC = () => {
             <div className="empty">Belum ada produk tambahan.</div>
           ) : (
             <>
-              <div className="table-scroll-hint">👉 Geser untuk melihat aksi</div>
+              <div className="table-scroll-hint">Geser untuk melihat aksi</div>
               <div className="table-wrap">
                 <table className="table" style={{ minWidth: '450px' }}>
                 <thead>
@@ -188,7 +188,7 @@ export const ProductsAdminPage: React.FC = () => {
             <div className="empty">Belum ada pilihan pewangi.</div>
           ) : (
             <>
-              <div className="table-scroll-hint">👉 Geser untuk melihat aksi</div>
+              <div className="table-scroll-hint">Geser untuk melihat aksi</div>
               <div className="table-wrap">
                 <table className="table" style={{ minWidth: '400px' }}>
                   <thead>

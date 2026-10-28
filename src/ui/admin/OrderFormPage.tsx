@@ -843,13 +843,13 @@ export const OrderFormPage: React.FC = () => {
           <div style={{ marginTop: '16px' }}>
             {estimateError && (
               <div className="alert error" style={{ marginBottom: '12px' }}>
-                ⚠️ {estimateError}
+                {estimateError}
               </div>
             )}
 
             {estimateWarnings.map((w, idx) => (
               <div key={idx} className="alert warn small" style={{ marginBottom: '8px' }}>
-                ℹ️ {w}
+                {w}
               </div>
             ))}
 
@@ -891,7 +891,7 @@ export const OrderFormPage: React.FC = () => {
               <div className="mini-cal-header">
                 <div>
                   <strong style={{ fontSize: '0.92rem' }}>
-                    📅 Visual Kalender: Target Selesai
+                    Visual Kalender: Target Selesai
                   </strong>
                   <div className="xs muted">
                     Klik tanggal pada kalender untuk menetapkan target selesai secara manual
@@ -954,11 +954,11 @@ export const OrderFormPage: React.FC = () => {
                 <div className="row" style={{ gap: '10px' }}>
                   <span className="row" style={{ gap: '4px' }}>
                     <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: '#dbeafe', border: '1px solid #93c5fd' }} />
-                    <span className="xs">📥 Masuk ({recDateKey || '-'})</span>
+                    <span className="xs">Masuk: {recDateKey || '-'}</span>
                   </span>
                   <span className="row" style={{ gap: '4px' }}>
                     <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: '#fee2e2', border: '1px solid #bf2f3b' }} />
-                    <span className="xs">✨ Target Selesai ({targetDateKey || '-'})</span>
+                    <span className="xs">Target Selesai: {targetDateKey || '-'}</span>
                   </span>
                 </div>
                 <span className="xs muted">
@@ -1013,7 +1013,7 @@ export const OrderFormPage: React.FC = () => {
                     setPaymentConfirmed(true);
                   }}
                 >
-                  ✓ Lunas
+                  Lunas
                 </button>
                 <button
                   type="button"

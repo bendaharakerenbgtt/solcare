@@ -56,7 +56,7 @@ export const ServicesPage: React.FC = () => {
                         {item.description && <p className="small muted" style={{ margin: '4px 0 0' }}>{item.description}</p>}
                         {item.terms && (
                           <div className="xs" style={{ color: 'var(--warn)', marginTop: '4px' }}>
-                            ⚠️ {item.terms}
+                            {item.terms}
                           </div>
                         )}
                         <div className="xs muted" style={{ marginTop: '4px' }}>

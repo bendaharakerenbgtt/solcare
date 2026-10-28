@@ -66,12 +66,12 @@ export const StaffAdminPage: React.FC = () => {
         </div>
         <div className="spacer" />
         <button type="button" className="btn" onClick={() => setModalOpen(true)}>
-          ➕ Tambah Akun Pegawai
+          + Tambah Pegawai
         </button>
       </div>
 
       <div className="card">
-        <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
+        <div className="table-scroll-hint">Geser ke samping untuk melihat tabel lengkap</div>
         <div className="table-wrap">
           <table className="table">
             <thead>

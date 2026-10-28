@@ -27,22 +27,34 @@ export const OrdersListPage: React.FC = () => {
   });
 
   return (
-    <div className="stack" style={{ gap: '20px' }}>
-      <div className="admin-top admin-top-responsive">
+    <div className="stack" style={{ gap: '16px' }}>
+      <div className="admin-page-header">
         <div>
-          <h1>Manajemen Pesanan & Antrean</h1>
-          <p className="small muted">Daftar seluruh pesanan masuk, status pengerjaan, dan riwayat pembayaran.</p>
+          <h1>Daftar Pesanan</h1>
+          <p>Pantau antrean masuk dan progres pengerjaan</p>
         </div>
-        <div className="spacer" />
-        <Link to="/admin/orders/new" className="btn admin-header-action-btn">
-          + Catat Pesanan Baru
+        <Link to="/admin/orders/new" className="btn sm">
+          + Pesanan
         </Link>
       </div>
 
       <div className="card">
         <div className="order-filter-container">
           <div className="order-search-wrap">
-            <span className="order-search-icon">🔍</span>
+            <svg
+              className="order-search-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
             <input
               type="text"
               className="order-search-field"
@@ -57,7 +69,7 @@ export const OrdersListPage: React.FC = () => {
                 onClick={() => setSearch('')}
                 title="Hapus pencarian"
               >
-                ✕
+                ×
               </button>
             )}
           </div>

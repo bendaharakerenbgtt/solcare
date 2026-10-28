@@ -73,7 +73,6 @@ export const SlideCalendarDrawer: React.FC<SlideCalendarDrawerProps> = ({ isOpen
       <aside className="cal-drawer open">
         <div className="cal-drawer-header">
           <div className="row" style={{ gap: '8px', alignItems: 'center' }}>
-            <span style={{ fontSize: '1.2rem' }}>📅</span>
             <strong>Kalender Jadwal</strong>
           </div>
           <button
@@ -83,7 +82,7 @@ export const SlideCalendarDrawer: React.FC<SlideCalendarDrawerProps> = ({ isOpen
             onClick={onClose}
             aria-label="Tutup Kalender"
           >
-            ✕
+            ×
           </button>
         </div>
 
@@ -202,7 +201,7 @@ export const SlideCalendarDrawer: React.FC<SlideCalendarDrawerProps> = ({ isOpen
                       </div>
                       {late && (
                         <div className="xs" style={{ color: 'var(--danger)', fontWeight: 700, marginTop: '2px' }}>
-                          ⚠️ Terlambat dari estimasi
+                          Terlambat dari estimasi
                         </div>
                       )}
                       <div className="row" style={{ marginTop: '8px', gap: '6px' }}>
@@ -212,7 +211,7 @@ export const SlideCalendarDrawer: React.FC<SlideCalendarDrawerProps> = ({ isOpen
                           className="btn sm secondary"
                           style={{ flex: 1, padding: '6px 8px', fontSize: '0.78rem' }}
                         >
-                          ✏️ Detail / Edit
+                          Detail / Edit
                         </Link>
                         {waUrl && (
                           <a

@@ -20,8 +20,12 @@ export const AdminLayout: React.FC = () => {
   return (
     <div>
       <div className="admin-mobile-bar">
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle Navigation">
-          ☰
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle Navigation" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <img
@@ -61,28 +65,28 @@ export const AdminLayout: React.FC = () => {
               className={location.pathname === '/admin' ? 'active' : ''}
               onClick={closeSidebar}
             >
-              📊 Dashboard
+              Dashboard
             </Link>
             <Link
               to="/admin/orders"
               className={location.pathname.startsWith('/admin/orders') ? 'active' : ''}
               onClick={closeSidebar}
             >
-              📦 Pesanan & Antrean
+              Pesanan & Antrean
             </Link>
             <Link
               to="/admin/calendar"
               className={location.pathname === '/admin/calendar' ? 'active' : ''}
               onClick={closeSidebar}
             >
-              📅 Kalender Jadwal
+              Kalender Jadwal
             </Link>
             <Link
               to="/admin/customers"
               className={location.pathname === '/admin/customers' ? 'active' : ''}
               onClick={closeSidebar}
             >
-              👥 Pelanggan
+              Pelanggan
             </Link>
           </nav>
 
@@ -93,14 +97,14 @@ export const AdminLayout: React.FC = () => {
               className={location.pathname === '/admin/services' ? 'active' : ''}
               onClick={closeSidebar}
             >
-              🏷️ Layanan & Harga
+              Layanan & Harga
             </Link>
             <Link
               to="/admin/products"
               className={location.pathname === '/admin/products' ? 'active' : ''}
               onClick={closeSidebar}
             >
-              🧴 Produk & Pewangi
+              Produk & Pewangi
             </Link>
           </nav>
 
@@ -111,35 +115,35 @@ export const AdminLayout: React.FC = () => {
               className={location.pathname === '/admin/reports' ? 'active' : ''}
               onClick={closeSidebar}
             >
-              📈 Laporan Bisnis
+              Laporan Bisnis
             </Link>
             <Link
               to="/admin/announcements"
               className={location.pathname === '/admin/announcements' ? 'active' : ''}
               onClick={closeSidebar}
             >
-              📢 Pengumuman Web
+              Pengumuman Web
             </Link>
             <Link
               to="/admin/retention"
               className={location.pathname === '/admin/retention' ? 'active' : ''}
               onClick={closeSidebar}
             >
-              🗄️ Retensi Foto
+              Retensi Foto
             </Link>
             <Link
               to="/admin/settings"
               className={location.pathname === '/admin/settings' ? 'active' : ''}
               onClick={closeSidebar}
             >
-              ⚙️ Pengaturan Toko
+              Pengaturan Toko
             </Link>
             <Link
               to="/admin/staff"
               className={location.pathname === '/admin/staff' ? 'active' : ''}
               onClick={closeSidebar}
             >
-              🛡️ Pegawai / Admin
+              Pegawai / Admin
             </Link>
           </nav>
 
@@ -174,7 +178,12 @@ export const AdminLayout: React.FC = () => {
           className={`bottom-nav-item ${location.pathname === '/admin' ? 'active' : ''}`}
           onClick={closeSidebar}
         >
-          <span className="bottom-nav-icon">📊</span>
+          <svg className="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="9"></rect>
+            <rect x="14" y="3" width="7" height="5"></rect>
+            <rect x="14" y="12" width="7" height="9"></rect>
+            <rect x="3" y="16" width="7" height="5"></rect>
+          </svg>
           <span className="bottom-nav-label">Dashboard</span>
         </Link>
 
@@ -183,7 +192,11 @@ export const AdminLayout: React.FC = () => {
           className={`bottom-nav-item ${location.pathname === '/admin/orders' ? 'active' : ''}`}
           onClick={closeSidebar}
         >
-          <span className="bottom-nav-icon">📦</span>
+          <svg className="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
           <span className="bottom-nav-label">Pesanan</span>
         </Link>
 
@@ -202,7 +215,12 @@ export const AdminLayout: React.FC = () => {
           className={`bottom-nav-item ${location.pathname === '/admin/calendar' ? 'active' : ''}`}
           onClick={closeSidebar}
         >
-          <span className="bottom-nav-icon">📅</span>
+          <svg className="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
           <span className="bottom-nav-label">Kalender</span>
         </Link>
 
@@ -212,7 +230,11 @@ export const AdminLayout: React.FC = () => {
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-label="Buka Semua Menu"
         >
-          <span className="bottom-nav-icon">☰</span>
+          <svg className="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
           <span className="bottom-nav-label">Menu</span>
         </button>
       </nav>

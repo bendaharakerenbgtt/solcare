@@ -73,7 +73,7 @@ export const CustomersPage: React.FC = () => {
         </div>
         <div className="spacer" />
         <button type="button" className="btn" onClick={openNew}>
-          ➕ Tambah Pelanggan Manual
+          + Tambah Pelanggan
         </button>
       </div>
 
@@ -93,7 +93,7 @@ export const CustomersPage: React.FC = () => {
           <div className="empty">Tidak ada data pelanggan yang cocok.</div>
         ) : (
           <>
-            <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
+            <div className="table-scroll-hint">Geser ke samping untuk melihat tabel lengkap</div>
             <div className="table-wrap">
               <table className="table">
               <thead>

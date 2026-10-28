@@ -28,7 +28,7 @@ export const ContactPage: React.FC = () => {
           </p>
           {waUrl ? (
             <a href={waUrl} target="_blank" rel="noreferrer" className="btn wa">
-              💬 Chat WhatsApp Kami ({settings?.whatsappNumber})
+              Chat WhatsApp Kami ({settings?.whatsappNumber})
             </a>
           ) : (
             <div className="alert warn small">
@@ -66,7 +66,7 @@ export const ContactPage: React.FC = () => {
         </div>
 
         <div className="card alert info">
-          <h4>💡 Informasi Pengantaran / Pickup</h4>
+          <h4>Informasi Pengantaran / Pickup</h4>
           <p className="small" style={{ margin: '6px 0 0' }}>
             Sistem kami tidak memiliki kurir internal otomatis. Anda dapat memesan kurir instan (Gojek / Grab / Maxim) mandiri setelah berkoordinasi via WhatsApp CS saat pesanan sudah berstatus <strong>Selesai (Siap Diambil)</strong>.
           </p>

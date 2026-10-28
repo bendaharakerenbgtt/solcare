@@ -80,7 +80,7 @@ export const AnnouncementsAdminPage: React.FC = () => {
         </div>
         <div className="spacer" />
         <button type="button" className="btn" onClick={openNew}>
-          ➕ Buat Pengumuman Baru
+          + Buat Pengumuman Baru
         </button>
       </div>
 
@@ -89,7 +89,7 @@ export const AnnouncementsAdminPage: React.FC = () => {
           <div className="empty">Belum ada pengumuman.</div>
         ) : (
           <>
-            <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
+            <div className="table-scroll-hint">Geser ke samping untuk melihat tabel lengkap</div>
             <div className="table-wrap">
               <table className="table">
               <thead>

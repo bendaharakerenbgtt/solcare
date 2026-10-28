@@ -102,7 +102,7 @@ export const LoginPage: React.FC = () => {
         {/* Quick Demo Template Fill Button */}
         <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--line)' }}>
           <div className="small muted" style={{ marginBottom: '8px' }}>
-            🧪 <strong>Template Cepat Demo:</strong> Klik tombol di bawah untuk mengisi form login/registrasi secara otomatis:
+            <strong>Template Cepat Demo:</strong> Klik tombol di bawah untuk mengisi form login/registrasi secara otomatis:
           </div>
           <button
             type="button"
@@ -116,7 +116,7 @@ export const LoginPage: React.FC = () => {
               setPassword('admin12345');
             }}
           >
-            ⚡ Isi Otomatis Akun Admin (admin@solefulsoaks.id / admin12345)
+            Isi Otomatis Akun Admin (admin@solefulsoaks.id / admin12345)
           </button>
         </div>
 

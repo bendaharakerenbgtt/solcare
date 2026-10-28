@@ -52,10 +52,10 @@ export const HomePage: React.FC = () => {
               </p>
               <div className="hero-cta-row">
                 <Link to="/cek-pesanan" className="btn lg hero-btn">
-                  🔍 Lacak Pesanan Anda
+                  Lacak Pesanan Anda
                 </Link>
                 <Link to="/layanan" className="btn secondary lg hero-btn">
-                  🏷️ Lihat Katalog Harga
+                  Lihat Katalog Harga
                 </Link>
               </div>
             </div>
@@ -63,7 +63,6 @@ export const HomePage: React.FC = () => {
             <div>
               <div className="hero-card">
                 <div className="row" style={{ gap: '8px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '1.4rem' }}>📦</span>
                   <h3 style={{ margin: 0 }}>Lacak Status Sepatu</h3>
                 </div>
                 <p className="small muted" style={{ marginBottom: '16px' }}>
@@ -86,7 +85,7 @@ export const HomePage: React.FC = () => {
                   </button>
                 </form>
                 <div style={{ marginTop: '16px', padding: '10px 12px', background: '#f8fafc', borderRadius: '8px' }} className="small muted">
-                  💡 Tidak perlu akun/login. Cukup simpan kode tanda terima Anda.
+                  Tidak perlu akun/login. Cukup simpan kode tanda terima Anda.
                   <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--line)' }}>
                     <span style={{ fontWeight: 600, color: 'var(--primary)' }}>Contoh kode demo: </span>
                     <button
@@ -119,7 +118,10 @@ export const HomePage: React.FC = () => {
         <div className="grid grid-3 quick-menu-grid">
           <Link to="/cek-pesanan" className="quick-menu-card">
             <div className="quick-menu-icon" style={{ background: 'var(--primary-100)', color: 'var(--primary)' }}>
-              🔍
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
             </div>
             <div>
               <h4 style={{ margin: '0 0 4px', fontSize: '1.05rem', color: 'var(--ink)' }}>Cek Pesanan Saya</h4>
@@ -129,7 +131,9 @@ export const HomePage: React.FC = () => {
 
           <Link to="/layanan" className="quick-menu-card">
             <div className="quick-menu-icon" style={{ background: '#fef3c7', color: '#b45309' }}>
-              ✨
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
             </div>
             <div>
               <h4 style={{ margin: '0 0 4px', fontSize: '1.05rem', color: 'var(--ink)' }}>Katalog & Estimasi</h4>
@@ -139,7 +143,9 @@ export const HomePage: React.FC = () => {
 
           <Link to="/kontak" className="quick-menu-card">
             <div className="quick-menu-icon" style={{ background: '#dcfce7', color: '#15803d' }}>
-              💬
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
             </div>
             <div>
               <h4 style={{ margin: '0 0 4px', fontSize: '1.05rem', color: 'var(--ink)' }}>Konsultasi & WhatsApp</h4>
@@ -232,21 +238,21 @@ export const HomePage: React.FC = () => {
               className={`cat-pill ${selectedCat === 'express' ? 'active' : ''}`}
               onClick={() => setSelectedCat('express')}
             >
-              ⚡ Express (24h/48h)
+              Express (24h/48h)
             </button>
             <button
               type="button"
               className={`cat-pill ${selectedCat === 'additional' ? 'active' : ''}`}
               onClick={() => setSelectedCat('additional')}
             >
-              🛠️ Additional & Repaint
+              Additional & Repaint
             </button>
             <button
               type="button"
               className={`cat-pill ${selectedCat === 'other' ? 'active' : ''}`}
               onClick={() => setSelectedCat('other')}
             >
-              🎒 Tas, Helm & Topi
+              Tas, Helm & Topi
             </button>
           </div>
 
@@ -272,7 +278,7 @@ export const HomePage: React.FC = () => {
                   {svc.description}
                 </p>
                 <div className="xs muted" style={{ borderTop: '1px solid var(--line)', paddingTop: '8px' }}>
-                  ⏱️ Durasi: <strong>{durationLabel(svc) || '2 hari'}</strong>
+                  Durasi: <strong>{durationLabel(svc) || '2 hari'}</strong>
                 </div>
               </div>
             ))}
@@ -297,21 +303,21 @@ export const HomePage: React.FC = () => {
 
           <div className="grid grid-3">
             <div className="card flat" style={{ textAlign: 'center', padding: '24px' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '10px' }}>🏬</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '10px' }}>01</div>
               <h3>1. Drop-off di Toko</h3>
               <p className="small muted">
                 Bawa sepatu Anda ke workshop kami. Pegawai memeriksa material, noda, serta menentukan estimasi & pembayaran di tempat.
               </p>
             </div>
             <div className="card flat" style={{ textAlign: 'center', padding: '24px' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '10px' }}>🧼</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '10px' }}>02</div>
               <h3>2. Proses Pengerjaan</h3>
               <p className="small muted">
                 Pencucian mendalam, pengeringan higienis, dan detailing. Pantau status pengerjaan secara real-time via kode pesanan.
               </p>
             </div>
             <div className="card flat" style={{ textAlign: 'center', padding: '24px' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '10px' }}>✨</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '10px' }}>03</div>
               <h3>3. Selesai & Ambil</h3>
               <p className="small muted">
                 Dapatkan notifikasi selesai, lihat foto dokumentasi kolase hasil pembersihan, dan ambil sepatu wangi siap pakai!

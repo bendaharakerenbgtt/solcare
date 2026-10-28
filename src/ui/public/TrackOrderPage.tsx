@@ -125,7 +125,7 @@ export const TrackOrderPage: React.FC = () => {
         {/* Quick Demo Templates */}
         <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px dashed var(--line)' }}>
           <div className="small" style={{ fontWeight: 600, color: '#475569', marginBottom: '8px' }}>
-            🧪 Coba Kode Contoh / Template Demo (Klik untuk langsung melihat tampilannya):
+            Coba Kode Contoh / Template Demo (Klik untuk langsung melihat tampilannya):
           </div>
           <div className="demo-chips-wrap">
             <button
@@ -136,7 +136,7 @@ export const TrackOrderPage: React.FC = () => {
                 void doTrack('SS-7K3QX-9MPRA', '');
               }}
             >
-              👟 Jordan 1 (SS-7K3QX-9MPRA)
+              Jordan 1 (SS-7K3QX-9MPRA)
             </button>
             <button
               type="button"
@@ -146,7 +146,7 @@ export const TrackOrderPage: React.FC = () => {
                 void doTrack('SS-28YBN-4VCFW', '');
               }}
             >
-              ✨ Chuck 70 (SS-28YBN-4VCFW)
+              Chuck 70 (SS-28YBN-4VCFW)
             </button>
             <button
               type="button"
@@ -156,7 +156,7 @@ export const TrackOrderPage: React.FC = () => {
                 void doTrack('SS-5MDPE-73KZ6', '');
               }}
             >
-              🎒 Tas Kanken (SS-5MDPE-73KZ6)
+              Tas Kanken (SS-5MDPE-73KZ6)
             </button>
           </div>
         </div>
@@ -341,7 +341,7 @@ export const TrackOrderPage: React.FC = () => {
                 Hubungi customer service kami melalui WhatsApp untuk konfirmasi pengambilan atau pertanyaan lainnya.
               </p>
               <a href={waUrl} target="_blank" rel="noreferrer" className="btn wa">
-                💬 Hubungi CS via WhatsApp
+                Hubungi CS via WhatsApp
               </a>
             </div>
           )}

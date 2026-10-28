@@ -98,7 +98,7 @@ export const PublicLayout: React.FC = () => {
               </p>
               {settings?.address && (
                 <p className="small" style={{ marginTop: '8px' }}>
-                  📍 {settings.address}
+                  {settings.address}
                 </p>
               )}
             </div>

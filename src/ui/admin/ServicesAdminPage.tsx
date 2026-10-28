@@ -113,7 +113,7 @@ export const ServicesAdminPage: React.FC = () => {
         </div>
         <div className="spacer" />
         <button type="button" className="btn" onClick={openNew}>
-          ➕ Tambah Layanan Baru
+          + Tambah Layanan
         </button>
       </div>
 
@@ -122,7 +122,7 @@ export const ServicesAdminPage: React.FC = () => {
           <div className="empty">Memuat katalog...</div>
         ) : (
           <>
-            <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
+            <div className="table-scroll-hint">Geser ke samping untuk melihat tabel lengkap</div>
             <div className="table-wrap">
               <table className="table">
               <thead>

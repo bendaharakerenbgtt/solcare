@@ -49,7 +49,7 @@ export const RetentionPage: React.FC = () => {
             disabled={running}
             onClick={() => void handleRun(true)}
           >
-            🔍 Jalankan Simulasi (Dry Run)
+            Jalankan Simulasi (Dry Run)
           </button>
           <button
             type="button"
@@ -57,7 +57,7 @@ export const RetentionPage: React.FC = () => {
             disabled={running}
             onClick={() => void handleRun(false)}
           >
-            🗑️ Eksekusi Pembersihan Sekarang
+            Eksekusi Pembersihan Sekarang
           </button>
         </div>
       </div>
@@ -88,7 +88,7 @@ export const RetentionPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="table-scroll-hint">👉 Geser ke samping untuk melihat tabel lengkap</div>
+          <div className="table-scroll-hint">Geser ke samping untuk melihat tabel lengkap</div>
           <div className="table-wrap">
             <table className="table">
               <thead>
