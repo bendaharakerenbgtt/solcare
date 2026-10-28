@@ -118,7 +118,7 @@ export const HomePage: React.FC = () => {
       <section className="container" style={{ marginTop: '-20px', position: 'relative', zIndex: 10 }}>
         <div className="grid grid-3 quick-menu-grid">
           <Link to="/cek-pesanan" className="quick-menu-card">
-            <div className="quick-menu-icon" style={{ background: '#ccfbf1', color: '#0f766e' }}>
+            <div className="quick-menu-icon" style={{ background: 'var(--primary-100)', color: 'var(--primary)' }}>
               🔍
             </div>
             <div>

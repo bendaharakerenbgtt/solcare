@@ -14,9 +14,9 @@ const STAGE_CONFIG: Record<
   menunggu: {
     label: 'Menunggu Antrean',
     shortLabel: 'Antrean',
-    color: '#0f766e',
-    bg: '#f0fdfa',
-    border: '#99f6e4',
+    color: '#001b3a',
+    bg: '#f0f4f9',
+    border: '#cbd5e1',
     desc: 'Sepatu baru masuk & belum mulai diproses',
   },
   pencucian: {

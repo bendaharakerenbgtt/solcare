@@ -63,7 +63,7 @@ export async function buildCollage(files: File[], opts: CollageOptions): Promise
   ctx.fillRect(0, 0, W, H);
 
   if (header) {
-    ctx.fillStyle = '#0f766e';
+    ctx.fillStyle = '#001b3a';
     ctx.fillRect(0, 0, W, header);
     ctx.fillStyle = '#ffffff';
     ctx.font = '600 30px system-ui, sans-serif';

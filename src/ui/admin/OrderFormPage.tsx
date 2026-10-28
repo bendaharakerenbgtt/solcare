@@ -944,7 +944,7 @@ export const OrderFormPage: React.FC = () => {
                     >
                       <span>{d.dayNum}</span>
                       {isRec && <span className="mini-cal-badge" style={{ background: '#dbeafe', color: '#1e40af' }}>Masuk</span>}
-                      {isTarget && <span className="mini-cal-badge" style={{ background: '#ccfbf1', color: '#0f766e' }}>Selesai</span>}
+                      {isTarget && <span className="mini-cal-badge" style={{ background: '#fee2e2', color: '#bf2f3b' }}>Selesai</span>}
                     </div>
                   );
                 })}
@@ -957,7 +957,7 @@ export const OrderFormPage: React.FC = () => {
                     <span className="xs">📥 Masuk ({recDateKey || '-'})</span>
                   </span>
                   <span className="row" style={{ gap: '4px' }}>
-                    <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: '#ccfbf1', border: '1px solid #14b8a6' }} />
+                    <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: '#fee2e2', border: '1px solid #bf2f3b' }} />
                     <span className="xs">✨ Target Selesai ({targetDateKey || '-'})</span>
                   </span>
                 </div>
