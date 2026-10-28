@@ -2013,6 +2013,98 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   white-space: nowrap;
 }
 
+/* Order Detail Header Card & Mobile Alignment */
+.order-detail-header-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 4px;
+}
+.order-badge-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+  width: auto !important;
+}
+.order-badge-row .badge {
+  width: auto !important;
+  display: inline-flex !important;
+  text-align: left !important;
+  padding: 4px 10px !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+}
+.order-detail-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.order-detail-sub {
+  font-size: 0.84rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.order-detail-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+  width: 100%;
+}
+.order-detail-action-grid .btn {
+  width: 100% !important;
+  text-align: center;
+  justify-content: center;
+  padding: 9px 8px !important;
+  font-size: 0.8rem !important;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+
+/* Order Spec Key-Value List */
+.order-spec-grid {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+.order-spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 0.88rem;
+  gap: 12px;
+}
+.order-spec-row:last-child {
+  border-bottom: none;
+}
+.order-spec-label {
+  color: #64748b;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.order-spec-val {
+  font-weight: 600;
+  color: var(--ink);
+  text-align: right;
+  word-break: break-word;
+}
+
 
 
 

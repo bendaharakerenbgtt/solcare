@@ -187,46 +187,46 @@ export const OrderDetailPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '24px', maxWidth: '1000px', margin: '0 auto' }}>
-      {/* Top Header */}
-      <div className="admin-top" style={{ alignItems: 'flex-start', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
+      {/* Top Navigation */}
+      <div>
         <Link to="/admin/orders" className="admin-back-btn">
           ← Kembali
         </Link>
+      </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
-          <div>
-            <div className="row" style={{ gap: '6px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '6px' }}>
-              <span className="badge teal" style={{ fontSize: '0.88rem', fontWeight: 700 }}>
-                {displayCode(order.code)}
-              </span>
-              <span className={`badge ${order.status === 'selesai' ? 'ok' : 'blue'}`}>
-                {STATUS_LABEL[order.status]}
-              </span>
-              <span className={`badge ${order.payment.status === 'lunas' ? 'ok' : 'warn'}`}>
-                {order.payment.status === 'lunas' ? 'Lunas' : 'Belum Lunas'}
-              </span>
-            </div>
-            <h1 style={{ fontSize: '1.45rem', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
-              {order.itemType}: {order.brand} {order.model}
-            </h1>
-            <p className="small muted" style={{ margin: '4px 0 0', fontSize: '0.84rem' }}>
-              Pelanggan: <strong>{order.customerName}</strong> ({order.customerPhone}) • Diterima: {fmtDateTime(order.receivedAt)}
-            </p>
-          </div>
+      {/* Header Card */}
+      <div className="order-detail-header-card">
+        <div className="order-badge-row">
+          <span className="badge teal">{displayCode(order.code)}</span>
+          <span className={`badge ${order.status === 'selesai' ? 'ok' : 'blue'}`}>
+            {STATUS_LABEL[order.status]}
+          </span>
+          <span className={`badge ${order.payment.status === 'lunas' ? 'ok' : 'warn'}`}>
+            {order.payment.status === 'lunas' ? 'Lunas' : 'Belum Lunas'}
+          </span>
+        </div>
 
-          <div className="order-detail-actions">
-            {waCustomer && (
-              <a href={waCustomer} target="_blank" rel="noreferrer" className="btn wa sm">
-                WhatsApp Pelanggan
-              </a>
-            )}
-            <Link to={`/admin/orders/${order.id}/edit`} className="btn secondary sm">
-              Edit Pesanan
-            </Link>
-            <Link to={`/cek-pesanan?code=${order.code}`} target="_blank" className="btn secondary sm">
-              Cek Publik ↗
-            </Link>
-          </div>
+        <h1 className="order-detail-title">
+          {order.itemType}: {order.brand} {order.model}
+        </h1>
+
+        <div className="order-detail-sub">
+          <span>Pelanggan: <strong>{order.customerName}</strong> ({order.customerPhone})</span>
+          <span>• Masuk: {fmtDateTime(order.receivedAt)}</span>
+        </div>
+
+        <div className="order-detail-action-grid">
+          {waCustomer && (
+            <a href={waCustomer} target="_blank" rel="noreferrer" className="btn wa sm">
+              WhatsApp
+            </a>
+          )}
+          <Link to={`/admin/orders/${order.id}/edit`} className="btn secondary sm">
+            Edit
+          </Link>
+          <Link to={`/cek-pesanan?code=${order.code}`} target="_blank" className="btn secondary sm">
+            Cek Nota ↗
+          </Link>
         </div>
       </div>
 
@@ -235,24 +235,42 @@ export const OrderDetailPage: React.FC = () => {
         {/* Customer & Item Info */}
         <div className="card">
           <h3>Informasi Pelanggan & Barang</h3>
-          <dl className="kv" style={{ marginTop: '12px' }}>
-            <dt>Pelanggan</dt>
-            <dd><strong>{order.customerName}</strong></dd>
-            <dt>WhatsApp</dt>
-            <dd>{order.customerPhone}</dd>
-            <dt>Jenis Barang</dt>
-            <dd>{order.itemType}</dd>
-            <dt>Merek & Model</dt>
-            <dd>{order.brand} {order.model}</dd>
-            <dt>Warna</dt>
-            <dd>{order.color || '-'}</dd>
-            <dt>Pewangi</dt>
-            <dd>{order.fragranceName || 'Standar'}</dd>
-            <dt>Kondisi Barang</dt>
-            <dd>{order.conditionNotes || '-'}</dd>
-            <dt>Catatan Internal</dt>
-            <dd style={{ color: 'var(--warn)' }}>{order.internalNotes || '-'}</dd>
-          </dl>
+          <div className="order-spec-grid">
+            <div className="order-spec-row">
+              <span className="order-spec-label">Nama Pelanggan</span>
+              <span className="order-spec-val">{order.customerName}</span>
+            </div>
+            <div className="order-spec-row">
+              <span className="order-spec-label">No. WhatsApp</span>
+              <span className="order-spec-val">{order.customerPhone}</span>
+            </div>
+            <div className="order-spec-row">
+              <span className="order-spec-label">Jenis Barang</span>
+              <span className="order-spec-val">{order.itemType}</span>
+            </div>
+            <div className="order-spec-row">
+              <span className="order-spec-label">Merek & Model</span>
+              <span className="order-spec-val">{order.brand} {order.model}</span>
+            </div>
+            <div className="order-spec-row">
+              <span className="order-spec-label">Warna</span>
+              <span className="order-spec-val">{order.color || '-'}</span>
+            </div>
+            <div className="order-spec-row">
+              <span className="order-spec-label">Pewangi Finishing</span>
+              <span className="order-spec-val">{order.fragranceName || 'Standar'}</span>
+            </div>
+            <div className="order-spec-row">
+              <span className="order-spec-label">Catatan Kondisi</span>
+              <span className="order-spec-val">{order.conditionNotes || '-'}</span>
+            </div>
+            {order.internalNotes && (
+              <div className="order-spec-row">
+                <span className="order-spec-label">Catatan Internal</span>
+                <span className="order-spec-val" style={{ color: 'var(--warn)' }}>{order.internalNotes}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Status & Estimate Controls */}
