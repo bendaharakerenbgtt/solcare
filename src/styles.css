@@ -2105,6 +2105,79 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   word-break: break-word;
 }
 
+/* Orders List Responsive Desktop Table vs Mobile Cards */
+.desktop-only-table {
+  display: block;
+}
+.mobile-only-cards {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-only-table {
+    display: none !important;
+  }
+  .mobile-only-cards {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .table-scroll-hint {
+    display: none !important;
+  }
+}
+
+.order-list-mobile-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+}
+.order-list-mobile-card:hover {
+  border-color: #cbd5e1;
+}
+.order-list-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 8px;
+}
+.order-list-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.order-list-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: #f8fafc;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.order-list-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+.order-list-card-actions .btn {
+  flex: 1;
+  text-align: center;
+  justify-content: center;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 
 
 
