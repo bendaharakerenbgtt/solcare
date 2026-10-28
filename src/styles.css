@@ -512,103 +512,46 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   color: var(--ink);
 }
 
-.order-status-pills-scroll {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-bottom: 4px;
-}
-.order-status-pills-scroll::-webkit-scrollbar {
-  display: none;
-}
-.order-status-pill {
-  display: inline-flex;
-  align-items: center;
+/* Orders Filter Grid (No Horizontal Scroll - Matches Dashboard Activity Buttons) */
+.orders-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  padding: 7px 13px;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  background: #ffffff;
-  border: 1.5px solid var(--line);
-  color: #475569;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
-  user-select: none;
+  width: 100%;
 }
-.order-status-pill:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-  color: var(--ink);
-}
-.order-status-pill .order-pill-count {
-  font-size: 0.74rem;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: #f1f5f9;
-  color: #64748b;
-  font-weight: 700;
-  line-height: 1.2;
-}
-.order-status-pill.active {
-  background: var(--navy);
-  border-color: var(--navy);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 27, 58, 0.18);
-}
-.order-status-pill.active .order-pill-count {
-  background: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
-}
-
-/* Custom stage highlights for active pills */
-.order-status-pill.status-menunggu.active {
-  background: var(--navy);
-  border-color: var(--navy);
-  color: #fff;
-}
-.order-status-pill.status-pencucian.active {
-  background: #0284c7;
-  border-color: #0284c7;
-  color: #fff;
-}
-.order-status-pill.status-pengeringan.active {
-  background: #d97706;
-  border-color: #d97706;
-  color: #fff;
-}
-.order-status-pill.status-finishing.active {
-  background: #7c3aed;
-  border-color: #7c3aed;
-  color: #fff;
-}
-.order-status-pill.status-selesai.active {
-  background: #16a34a;
-  border-color: #16a34a;
-  color: #fff;
-}
-.order-status-pill.status-diambil.active {
-  background: #475569;
-  border-color: #475569;
-  color: #fff;
-}
-.order-status-pill.status-batal.active {
-  background: var(--danger);
-  border-color: var(--danger);
-  color: #fff;
-}
-
-@media (max-width: 600px) {
-  .order-status-pills-scroll {
-    gap: 6px;
+@media (max-width: 540px) {
+  .orders-filter-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
   }
-  .order-status-pill {
-    padding: 6px 11px;
-    font-size: 0.78rem;
+  .orders-filter-grid .activity-filter-btn {
+    font-size: 0.72rem;
+    padding: 0 2px;
+    height: 34px;
+  }
+}
+@media (max-width: 360px) {
+  .orders-filter-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3px;
+  }
+  .orders-filter-grid .activity-filter-btn {
+    font-size: 0.68rem;
+    padding: 0 1px;
+    height: 32px;
+  }
+}
+@media (min-width: 680px) {
+  .orders-filter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .orders-filter-grid .activity-filter-btn {
+    padding: 8px 14px;
+    font-size: 0.84rem;
+    height: auto;
+    border-radius: 999px;
   }
 }
 
@@ -1802,6 +1745,16 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   background: #dcfce7;
   border-color: #16a34a;
   color: #15803d;
+}
+.activity-filter-btn.active.filter-diambil {
+  background: #f1f5f9;
+  border-color: #64748b;
+  color: #334155;
+}
+.activity-filter-btn.active.filter-batal {
+  background: #fee2e2;
+  border-color: #dc2626;
+  color: #991b1b;
 }
 
 @media (min-width: 680px) {

@@ -62,27 +62,33 @@ export const OrdersListPage: React.FC = () => {
             )}
           </div>
 
-          <div className="order-status-pills-scroll">
+          <div className="orders-filter-grid">
             <button
               type="button"
-              className={`order-status-pill ${filterStatus === 'all' ? 'active' : ''}`}
+              className={`activity-filter-btn filter-all ${filterStatus === 'all' ? 'active' : ''}`}
               onClick={() => setFilterStatus('all')}
             >
-              <span>Semua Status</span>
-              <span className="order-pill-count">{orders?.length || 0}</span>
+              Semua ({orders?.length || 0})
             </button>
             {ORDER_STATUSES.map((st) => {
               const count = orders?.filter((o) => o.status === st).length || 0;
-              const isActive = filterStatus === st;
+              const shortLabels: Record<string, string> = {
+                menunggu: 'Antrean',
+                pencucian: 'Cuci',
+                pengeringan: 'Kering',
+                finishing: 'Finishing',
+                selesai: 'Siap',
+                diambil: 'Diambil',
+                batal: 'Batal',
+              };
               return (
                 <button
                   type="button"
                   key={st}
-                  className={`order-status-pill status-${st} ${isActive ? 'active' : ''}`}
+                  className={`activity-filter-btn filter-${st} ${filterStatus === st ? 'active' : ''}`}
                   onClick={() => setFilterStatus(st)}
                 >
-                  <span>{STATUS_LABEL[st]}</span>
-                  <span className="order-pill-count">{count}</span>
+                  {shortLabels[st] || STATUS_LABEL[st]} ({count})
                 </button>
               );
             })}
