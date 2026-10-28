@@ -63,28 +63,50 @@ export const CustomersPage: React.FC = () => {
   });
 
   return (
-    <div className="stack" style={{ gap: '20px' }}>
-      <div className="admin-top">
+    <div className="stack" style={{ gap: '16px' }}>
+      <div className="admin-page-header">
         <div>
-          <h1>Buku Pelanggan</h1>
-          <p className="small muted">
-            Daftar kontak pelanggan yang pernah melakukan perawatan di Soleful Soaks!.
-          </p>
+          <h1>Data Pelanggan</h1>
+          <p>Daftar kontak WhatsApp dan riwayat pelanggan</p>
         </div>
-        <div className="spacer" />
-        <button type="button" className="btn" onClick={openNew}>
-          + Tambah Pelanggan
+        <button type="button" className="btn sm" onClick={openNew}>
+          + Pelanggan
         </button>
       </div>
 
       <div className="card">
-        <div style={{ marginBottom: '16px' }}>
+        <div className="order-search-wrap" style={{ marginBottom: '16px' }}>
+          <svg
+            className="order-search-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
           <input
             type="text"
+            className="order-search-field"
             placeholder="Cari nama atau nomor WhatsApp pelanggan..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          {search && (
+            <button
+              type="button"
+              className="order-search-clear"
+              onClick={() => setSearch('')}
+              title="Hapus pencarian"
+            >
+              ×
+            </button>
+          )}
         </div>
 
         {loading ? (
@@ -93,60 +115,118 @@ export const CustomersPage: React.FC = () => {
           <div className="empty">Tidak ada data pelanggan yang cocok.</div>
         ) : (
           <>
-            <div className="table-scroll-hint">Geser ke samping untuk melihat tabel lengkap</div>
-            <div className="table-wrap">
-              <table className="table">
-              <thead>
-                <tr>
-                  <th>Nama Pelanggan</th>
-                  <th>Nomor WhatsApp</th>
-                  <th>Catatan Preferensi</th>
-                  <th>Terdaftar Sejak</th>
-                  <th className="right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((c) => {
-                  const wa = whatsappLink(c.phone, `Halo Kak ${c.name}, dari Soleful Soaks! Shoes Care.`);
-                  return (
-                    <tr key={c.id}>
-                      <td><strong>{c.name}</strong></td>
-                      <td>
-                        <span className="mono">{c.phone}</span>
-                        {wa && (
-                          <a
-                            href={wa}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="btn wa sm"
-                            style={{ marginLeft: '8px', padding: '2px 8px', fontSize: '0.75rem' }}
-                          >
-                            Chat WA
-                          </a>
-                        )}
-                      </td>
-                      <td>{c.notes || '-'}</td>
-                      <td className="small muted">{fmtDateTime(c.createdAt)}</td>
-                      <td className="right">
-                        <button type="button" className="btn secondary sm" onClick={() => openEdit(c)}>
+            {/* Desktop Table View */}
+            <div className="desktop-only-table">
+              <div className="table-scroll-hint">Geser ke samping untuk melihat tabel lengkap</div>
+              <div className="table-wrap">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Nama Pelanggan</th>
+                      <th>Nomor WhatsApp</th>
+                      <th>Catatan Preferensi</th>
+                      <th>Terdaftar Sejak</th>
+                      <th className="right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((c) => {
+                      const wa = whatsappLink(c.phone, `Halo Kak ${c.name}, dari Soleful Soaks! Shoes Care.`);
+                      return (
+                        <tr key={c.id}>
+                          <td><strong>{c.name}</strong></td>
+                          <td>
+                            <span className="mono">{c.phone}</span>
+                            {wa && (
+                              <a
+                                href={wa}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="btn wa sm"
+                                style={{ marginLeft: '8px', padding: '2px 8px', fontSize: '0.75rem' }}
+                              >
+                                Chat WA
+                              </a>
+                            )}
+                          </td>
+                          <td>{c.notes || '-'}</td>
+                          <td className="small muted">{fmtDateTime(c.createdAt)}</td>
+                          <td className="right">
+                            <button type="button" className="btn secondary sm" onClick={() => openEdit(c)}>
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="btn danger sm"
+                              style={{ marginLeft: '4px' }}
+                              onClick={() => void handleDelete(c.id, c.name)}
+                            >
+                              Hapus
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Card View (Touch Friendly) */}
+            <div className="mobile-only-cards">
+              {filtered.map((c) => {
+                const wa = whatsappLink(c.phone, `Halo Kak ${c.name}, dari Soleful Soaks! Shoes Care.`);
+                return (
+                  <div key={c.id} className="customer-mobile-card">
+                    <div className="customer-card-header">
+                      <div>
+                        <strong className="customer-card-name">{c.name}</strong>
+                        <div className="customer-card-phone mono">{c.phone}</div>
+                      </div>
+                      {wa && (
+                        <a
+                          href={wa}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn wa sm customer-card-wa"
+                        >
+                          Chat WA
+                        </a>
+                      )}
+                    </div>
+
+                    {c.notes && (
+                      <div className="customer-card-notes">
+                        <span className="customer-notes-label">Preferensi:</span> {c.notes}
+                      </div>
+                    )}
+
+                    <div className="customer-card-footer">
+                      <span className="customer-card-date">
+                        Terdaftar: {fmtDateTime(c.createdAt)}
+                      </span>
+                      <div className="customer-card-actions">
+                        <button
+                          type="button"
+                          className="btn secondary sm"
+                          onClick={() => openEdit(c)}
+                        >
                           Edit
                         </button>
                         <button
                           type="button"
                           className="btn danger sm"
-                          style={{ marginLeft: '4px' }}
                           onClick={() => void handleDelete(c.id, c.name)}
                         >
                           Hapus
                         </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 
