@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { SlideCalendarDrawer } from './SlideCalendarDrawer';
 
 export const AdminLayout: React.FC = () => {
   const { user, ready, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [calDrawerOpen, setCalDrawerOpen] = useState(false);
   const location = useLocation();
 
   if (!ready) {
@@ -33,15 +31,7 @@ export const AdminLayout: React.FC = () => {
           />
           <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Soleful Staff</span>
         </div>
-        <button
-          type="button"
-          onClick={() => setCalDrawerOpen(true)}
-          className="admin-cal-drawer-btn"
-          title="Buka Kalender Jadwal"
-          aria-label="Buka Kalender"
-        >
-          📅
-        </button>
+        <div style={{ width: '38px' }} aria-hidden="true" />
       </div>
 
       {sidebarOpen && (
@@ -51,9 +41,6 @@ export const AdminLayout: React.FC = () => {
           aria-hidden="true"
         />
       )}
-
-      {/* Slide-out Calendar Drawer from Right */}
-      <SlideCalendarDrawer isOpen={calDrawerOpen} onClose={() => setCalDrawerOpen(false)} />
 
       <div className="admin">
         <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
