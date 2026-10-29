@@ -121,49 +121,85 @@ export const ProductsAdminPage: React.FC = () => {
             <div className="empty">Belum ada produk tambahan.</div>
           ) : (
             <>
-              <div className="table-scroll-hint">Geser untuk melihat aksi</div>
-              <div className="table-wrap">
-                <table className="table" style={{ minWidth: '450px' }}>
-                <thead>
-                  <tr>
-                    <th>Nama & Ket.</th>
-                    <th>Harga</th>
-                    <th>Status</th>
-                    <th className="right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((p) => (
-                    <tr key={p.id}>
-                      <td>
-                        <strong>{p.name}</strong>
-                        {p.description && <div className="xs muted">{p.description}</div>}
-                      </td>
-                      <td>{rupiah(p.price)}</td>
-                      <td>
-                        <span className={`badge ${p.active ? 'ok' : 'danger'}`}>
-                          {p.active ? 'Aktif' : 'Nonaktif'}
-                        </span>
-                      </td>
-                      <td className="right">
+              {/* Desktop Table */}
+              <div className="desktop-only-table">
+                <div className="table-scroll-hint">Geser untuk melihat aksi</div>
+                <div className="table-wrap">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Nama & Ket.</th>
+                        <th>Harga</th>
+                        <th>Status</th>
+                        <th className="right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {products.map((p) => (
+                        <tr key={p.id}>
+                          <td>
+                            <strong>{p.name}</strong>
+                            {p.description && <div className="xs muted">{p.description}</div>}
+                          </td>
+                          <td>{rupiah(p.price)}</td>
+                          <td>
+                            <span className={`badge ${p.active ? 'ok' : 'danger'}`}>
+                              {p.active ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                          </td>
+                          <td className="right">
+                            <button type="button" className="btn secondary sm" onClick={() => openEditProduct(p)}>
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="btn danger sm"
+                              style={{ marginLeft: '4px' }}
+                              onClick={() => void deleteProduct(p.id, p.name)}
+                            >
+                              Hapus
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="mobile-only-cards">
+                {products.map((p) => (
+                  <div key={p.id} className="service-mobile-card">
+                    <div className="service-card-header">
+                      <div>
+                        <strong className="service-card-name">{p.name}</strong>
+                        {p.description && <div className="service-card-desc">{p.description}</div>}
+                      </div>
+                      <span className={`badge ${p.active ? 'ok' : 'danger'}`}>
+                        {p.active ? 'Aktif' : 'Nonaktif'}
+                      </span>
+                    </div>
+                    <div className="service-card-meta-grid" style={{ gridTemplateColumns: '1fr' }}>
+                      <div className="service-meta-item">
+                        <span className="service-meta-label">Harga Satuan</span>
+                        <span className="service-meta-val price">{rupiah(p.price)}</span>
+                      </div>
+                    </div>
+                    <div className="service-card-footer">
+                      <div className="service-card-actions">
                         <button type="button" className="btn secondary sm" onClick={() => openEditProduct(p)}>
                           Edit
                         </button>
-                        <button
-                          type="button"
-                          className="btn danger sm"
-                          style={{ marginLeft: '4px' }}
-                          onClick={() => void deleteProduct(p.id, p.name)}
-                        >
-                          ✕
+                        <button type="button" className="btn danger sm" onClick={() => void deleteProduct(p.id, p.name)}>
+                          Hapus
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
 
@@ -183,45 +219,75 @@ export const ProductsAdminPage: React.FC = () => {
             <div className="empty">Belum ada pilihan pewangi.</div>
           ) : (
             <>
-              <div className="table-scroll-hint">Geser untuk melihat aksi</div>
-              <div className="table-wrap">
-                <table className="table" style={{ minWidth: '400px' }}>
-                  <thead>
-                    <tr>
-                      <th>Aroma Pewangi</th>
-                      <th>Status</th>
-                      <th className="right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {fragrances.map((f) => (
-                      <tr key={f.id}>
-                        <td>
-                          <strong>{f.name}</strong>
-                          {f.description && <div className="xs muted">{f.description}</div>}
-                        </td>
-                        <td>
-                          <span className={`badge ${f.active ? 'ok' : 'danger'}`}>
-                            {f.active ? 'Aktif' : 'Nonaktif'}
-                          </span>
-                        </td>
-                        <td className="right">
-                          <button type="button" className="btn secondary sm" onClick={() => openEditFragrance(f)}>
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            className="btn danger sm"
-                            style={{ marginLeft: '4px' }}
-                            onClick={() => void deleteFragrance(f.id, f.name)}
-                          >
-                            ✕
-                          </button>
-                        </td>
+              {/* Desktop Table */}
+              <div className="desktop-only-table">
+                <div className="table-scroll-hint">Geser untuk melihat aksi</div>
+                <div className="table-wrap">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Aroma Pewangi</th>
+                        <th>Status</th>
+                        <th className="right">Aksi</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {fragrances.map((f) => (
+                        <tr key={f.id}>
+                          <td>
+                            <strong>{f.name}</strong>
+                            {f.description && <div className="xs muted">{f.description}</div>}
+                          </td>
+                          <td>
+                            <span className={`badge ${f.active ? 'ok' : 'danger'}`}>
+                              {f.active ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                          </td>
+                          <td className="right">
+                            <button type="button" className="btn secondary sm" onClick={() => openEditFragrance(f)}>
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="btn danger sm"
+                              style={{ marginLeft: '4px' }}
+                              onClick={() => void deleteFragrance(f.id, f.name)}
+                            >
+                              Hapus
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="mobile-only-cards">
+                {fragrances.map((f) => (
+                  <div key={f.id} className="service-mobile-card">
+                    <div className="service-card-header">
+                      <div>
+                        <strong className="service-card-name">{f.name}</strong>
+                        {f.description && <div className="service-card-desc">{f.description}</div>}
+                      </div>
+                      <span className={`badge ${f.active ? 'ok' : 'danger'}`}>
+                        {f.active ? 'Aktif' : 'Nonaktif'}
+                      </span>
+                    </div>
+                    <div className="service-card-footer">
+                      <div className="service-card-actions">
+                        <button type="button" className="btn secondary sm" onClick={() => openEditFragrance(f)}>
+                          Edit
+                        </button>
+                        <button type="button" className="btn danger sm" onClick={() => void deleteFragrance(f.id, f.name)}>
+                          Hapus
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </>
           )}
