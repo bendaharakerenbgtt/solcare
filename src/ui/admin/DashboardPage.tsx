@@ -105,14 +105,10 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="stack" style={{ gap: '16px' }}>
       {/* Top Header Row: Clean title & compact Add button */}
-      <div className="row between" style={{ alignItems: 'center', gap: '10px' }}>
-        <h1 style={{ margin: 0, fontSize: '1.4rem' }}>Dashboard Operasional</h1>
-        <Link
-          to="/admin/orders/new"
-          className="btn primary sm"
-          style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700 }}
-        >
-          + Pesanan Baru
+      <div className="admin-page-header">
+        <h1>Dashboard Operasional</h1>
+        <Link to="/admin/orders/new" className="btn sm">
+          + Pesanan
         </Link>
       </div>
 

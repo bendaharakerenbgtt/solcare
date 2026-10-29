@@ -104,16 +104,10 @@ export const ServicesAdminPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '20px' }}>
-      <div className="admin-top">
-        <div>
-          <h1>Katalog Layanan & Penyesuaian Harga</h1>
-          <p className="small muted">
-            Tambah, edit, atau nonaktifkan layanan tanpa mengubah transaksi lama.
-          </p>
-        </div>
-        <div className="spacer" />
-        <button type="button" className="btn" onClick={openNew}>
-          + Tambah Layanan
+      <div className="admin-page-header">
+        <h1>Layanan & Harga</h1>
+        <button type="button" className="btn sm" onClick={openNew}>
+          + Layanan
         </button>
       </div>
 

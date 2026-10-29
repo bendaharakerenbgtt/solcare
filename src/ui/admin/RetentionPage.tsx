@@ -26,13 +26,8 @@ export const RetentionPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '24px' }}>
-      <div className="admin-top">
-        <div>
-          <h1>Kebijakan Retensi & Pembersihan Foto</h1>
-          <p className="small muted">
-            Pembersihan otomatis file kolase dokumentasi untuk menghemat kuota penyimpanan.
-          </p>
-        </div>
+      <div className="admin-page-header">
+        <h1>Retensi Foto</h1>
       </div>
 
       <div className="card">

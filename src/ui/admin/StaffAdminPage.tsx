@@ -57,16 +57,10 @@ export const StaffAdminPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '20px' }}>
-      <div className="admin-top">
-        <div>
-          <h1>Akun Pegawai & Administrator</h1>
-          <p className="small muted">
-            Kelola hak akses dan staf operasional toko.
-          </p>
-        </div>
-        <div className="spacer" />
-        <button type="button" className="btn" onClick={() => setModalOpen(true)}>
-          + Tambah Pegawai
+      <div className="admin-page-header">
+        <h1>Akun Pegawai</h1>
+        <button type="button" className="btn sm" onClick={() => setModalOpen(true)}>
+          + Pegawai
         </button>
       </div>
 

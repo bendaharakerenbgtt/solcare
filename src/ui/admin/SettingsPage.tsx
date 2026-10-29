@@ -43,13 +43,8 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '24px', maxWidth: '850px' }}>
-      <div className="admin-top">
-        <div>
-          <h1>Pengaturan Toko & Operasional</h1>
-          <p className="small muted">
-            Semua parameter operasional dapat diubah tanpa perlu mengedit kode program.
-          </p>
-        </div>
+      <div className="admin-page-header">
+        <h1>Pengaturan Toko</h1>
       </div>
 
       {msg && (

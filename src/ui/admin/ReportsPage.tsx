@@ -62,16 +62,14 @@ export const ReportsPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '24px' }}>
-      <div className="admin-top">
-        <div>
-          <h1>Laporan Operasional & Keuangan</h1>
-          <p className="small muted">
-            Analisis transaksi tercatat, pendapatan bersih, layanan terlaris, dan performa ketepatan waktu.
-          </p>
-        </div>
-        <div className="spacer" />
-        <select value={dateRange} onChange={(e) => setDateRange(e.target.value as any)}>
-          <option value="all">Semua Periode Transaksi</option>
+      <div className="admin-page-header">
+        <h1>Laporan Bisnis</h1>
+        <select
+          value={dateRange}
+          onChange={(e) => setDateRange(e.target.value as any)}
+          style={{ width: 'auto', padding: '6px 10px', fontSize: '0.82rem', borderRadius: '8px' }}
+        >
+          <option value="all">Semua Periode</option>
           <option value="this_month">Bulan Ini</option>
           <option value="last_30">30 Hari Terakhir</option>
         </select>

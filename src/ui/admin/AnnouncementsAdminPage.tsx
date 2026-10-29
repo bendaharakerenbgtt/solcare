@@ -71,16 +71,10 @@ export const AnnouncementsAdminPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '20px' }}>
-      <div className="admin-top">
-        <div>
-          <h1>Pengumuman Website Publik</h1>
-          <p className="small muted">
-            Kelola pengumuman jam buka, libur, kendala teknis, atau promosi yang tayang di halaman depan.
-          </p>
-        </div>
-        <div className="spacer" />
-        <button type="button" className="btn" onClick={openNew}>
-          + Buat Pengumuman Baru
+      <div className="admin-page-header">
+        <h1>Pengumuman</h1>
+        <button type="button" className="btn sm" onClick={openNew}>
+          + Pengumuman
         </button>
       </div>
 

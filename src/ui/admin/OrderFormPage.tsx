@@ -420,22 +420,17 @@ export const OrderFormPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <div className="admin-top" style={{ alignItems: 'flex-start', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
+      <div className="admin-page-header" style={{ alignItems: 'flex-start', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
         <Link
           to="/admin/orders"
           className="admin-back-btn"
         >
-          ← Kembali
+          Kembali
         </Link>
         <div>
-          <h1 style={{ fontSize: '1.45rem', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
+          <h1>
             {isEdit ? 'Edit Data Pesanan' : 'Input Pesanan Baru'}
           </h1>
-          <p className="small muted" style={{ margin: '4px 0 0', fontSize: '0.84rem' }}>
-            {isEdit
-              ? 'Perbarui rincian pesanan, layanan treatment, atau status pembayaran.'
-              : 'Pencatatan order treatment & penerbitan nota transaksi pelanggan.'}
-          </p>
         </div>
       </div>
 

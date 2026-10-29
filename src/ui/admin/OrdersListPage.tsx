@@ -29,10 +29,7 @@ export const OrdersListPage: React.FC = () => {
   return (
     <div className="stack" style={{ gap: '16px' }}>
       <div className="admin-page-header">
-        <div>
-          <h1>Daftar Pesanan</h1>
-          <p>Pantau antrean masuk dan progres pengerjaan</p>
-        </div>
+        <h1>Daftar Pesanan</h1>
         <Link to="/admin/orders/new" className="btn sm">
           + Pesanan
         </Link>

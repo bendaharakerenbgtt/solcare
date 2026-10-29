@@ -100,13 +100,8 @@ export const ProductsAdminPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '24px' }}>
-      <div className="admin-top">
-        <div>
-          <h1>Produk Tambahan & Pilihan Pewangi</h1>
-          <p className="small muted">
-            Kelola stok item add-on (tali sepatu, parfum mini) dan aroma deodorant sepatu.
-          </p>
-        </div>
+      <div className="admin-page-header">
+        <h1>Produk & Pewangi</h1>
       </div>
 
       <div className="grid grid-2">

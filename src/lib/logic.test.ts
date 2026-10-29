@@ -162,3 +162,13 @@ describe('photo retention', () => {
     expect(checkPhotoEligibility({ ...photo, status: 'deleted' }, order, settingsR, late).eligible).toBe(false);
   });
 });
+
+describe('indonesian holidays & tanggal merah', () => {
+  it('identifies national holidays and Sundays as tanggal merah', async () => {
+    const { getNationalHolidayName, isTanggalMerah } = await import('./holidays');
+    expect(getNationalHolidayName('2026-08-17')).toContain('Kemerdekaan RI');
+    expect(isTanggalMerah('2026-08-17', 1)).toBe(true); // Monday national holiday
+    expect(isTanggalMerah('2026-10-18', 0)).toBe(true); // Sunday
+    expect(isTanggalMerah('2026-10-20', 2)).toBe(false); // Normal Tuesday
+  });
+});

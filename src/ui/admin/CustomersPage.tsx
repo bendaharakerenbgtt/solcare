@@ -65,10 +65,7 @@ export const CustomersPage: React.FC = () => {
   return (
     <div className="stack" style={{ gap: '16px' }}>
       <div className="admin-page-header">
-        <div>
-          <h1>Data Pelanggan</h1>
-          <p>Daftar kontak WhatsApp dan riwayat pelanggan</p>
-        </div>
+        <h1>Data Pelanggan</h1>
         <button type="button" className="btn sm" onClick={openNew}>
           + Pelanggan
         </button>
