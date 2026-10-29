@@ -2654,8 +2654,10 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   color: #334155;
 }
 
-/* Service Mobile Card (Touch-friendly responsive view) */
-.service-mobile-card {
+/* Admin Mobile Cards (Touch-friendly responsive view across services, staff, announcements) */
+.service-mobile-card,
+.staff-mobile-card,
+.announcement-mobile-card {
   background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -2667,7 +2669,9 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   box-sizing: border-box;
   transition: border-color 0.15s ease;
 }
-.service-mobile-card:hover {
+.service-mobile-card:hover,
+.staff-mobile-card:hover,
+.announcement-mobile-card:hover {
   border-color: #cbd5e1;
 }
 .service-card-top {

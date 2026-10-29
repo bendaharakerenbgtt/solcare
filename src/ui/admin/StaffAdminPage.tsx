@@ -7,8 +7,9 @@ import { useAuth } from '../../auth/AuthContext';
 
 export const StaffAdminPage: React.FC = () => {
   const { user: currentUser } = useAuth();
-  const { data: staffList, reload } = useAsync(() => repo.listStaff(), []);
+  const { data: staffList, loading, reload } = useAsync(() => repo.listStaff(), []);
 
+  const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -55,8 +56,14 @@ export const StaffAdminPage: React.FC = () => {
     }
   };
 
+  const filtered = (staffList || []).filter((s) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q) || s.role.toLowerCase().includes(q);
+  });
+
   return (
-    <div className="stack" style={{ gap: '20px' }}>
+    <div className="stack" style={{ gap: '16px' }}>
       <div className="admin-page-header">
         <h1>Akun Pegawai</h1>
         <button type="button" className="btn sm" onClick={() => setModalOpen(true)}>
@@ -65,65 +72,173 @@ export const StaffAdminPage: React.FC = () => {
       </div>
 
       <div className="card">
-        <div className="table-scroll-hint">Geser ke samping untuk melihat tabel lengkap</div>
-        <div className="table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Nama Pegawai</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Dibuat Pada</th>
-                <th className="right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {staffList?.map((s) => (
-                <tr key={s.id}>
-                  <td>
-                    <strong>{s.name}</strong>
-                    {s.id === currentUser?.id && <span className="xs teal" style={{ marginLeft: '6px' }}>(Anda)</span>}
-                  </td>
-                  <td>{s.email}</td>
-                  <td>
-                    <span className="badge teal" style={{ textTransform: 'uppercase' }}>
-                      {s.role}
-                    </span>
-                  </td>
-                  <td>
+        {/* Search Wrap (Consistent with other admin pages) */}
+        <div className="order-search-wrap" style={{ marginBottom: '16px' }}>
+          <svg
+            className="order-search-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            className="order-search-field"
+            placeholder="Cari nama, email, atau role pegawai..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button
+              type="button"
+              className="order-search-clear"
+              onClick={() => setSearch('')}
+              title="Hapus pencarian"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {loading ? (
+          <div className="empty">Memuat akun pegawai...</div>
+        ) : filtered.length === 0 ? (
+          <div className="empty">Tidak ada akun pegawai yang sesuai.</div>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <div className="desktop-only-table">
+              <div className="table-scroll-hint">Geser ke samping untuk melihat tabel lengkap</div>
+              <div className="table-wrap">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Nama Pegawai</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Dibuat Pada</th>
+                      <th className="right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((s) => (
+                      <tr key={s.id}>
+                        <td>
+                          <strong>{s.name}</strong>
+                          {s.id === currentUser?.id && (
+                            <span className="xs teal" style={{ marginLeft: '6px' }}>
+                              (Anda)
+                            </span>
+                          )}
+                        </td>
+                        <td>{s.email}</td>
+                        <td>
+                          <span className="badge teal" style={{ textTransform: 'uppercase' }}>
+                            {s.role}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`badge ${s.active ? 'ok' : 'danger'}`}>
+                            {s.active ? 'Aktif' : 'Nonaktif'}
+                          </span>
+                        </td>
+                        <td className="small muted">{fmtDateTime(s.createdAt)}</td>
+                        <td className="right">
+                          <button
+                            type="button"
+                            className="btn secondary sm"
+                            onClick={() => {
+                              setPwdTargetId(s.id);
+                              setPwdModalOpen(true);
+                            }}
+                          >
+                            Ubah Password
+                          </button>
+                          {s.id !== currentUser?.id && (
+                            <button
+                              type="button"
+                              className={`btn ${s.active ? 'danger' : 'secondary'} sm`}
+                              style={{ marginLeft: '6px' }}
+                              onClick={() => void handleToggleActive(s)}
+                            >
+                              {s.active ? 'Nonaktifkan' : 'Aktifkan'}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Card View (Touch-friendly responsive) */}
+            <div className="mobile-only-cards">
+              {filtered.map((s) => (
+                <div key={s.id} className="staff-mobile-card">
+                  <div className="service-card-top">
+                    <div>
+                      <strong className="service-card-name">{s.name}</strong>
+                      {s.id === currentUser?.id && (
+                        <span className="badge teal" style={{ marginLeft: '6px', fontSize: '0.7rem' }}>
+                          Anda
+                        </span>
+                      )}
+                    </div>
                     <span className={`badge ${s.active ? 'ok' : 'danger'}`}>
                       {s.active ? 'Aktif' : 'Nonaktif'}
                     </span>
-                  </td>
-                  <td className="small muted">{fmtDateTime(s.createdAt)}</td>
-                  <td className="right">
-                    <button
-                      type="button"
-                      className="btn secondary sm"
-                      onClick={() => {
-                        setPwdTargetId(s.id);
-                        setPwdModalOpen(true);
-                      }}
-                    >
-                      Ubah Password
-                    </button>
-                    {s.id !== currentUser?.id && (
+                  </div>
+
+                  <div className="service-card-badges">
+                    <span className="badge teal" style={{ textTransform: 'uppercase', fontSize: '0.72rem' }}>
+                      Role: {s.role}
+                    </span>
+                    <span className="mono xs muted" style={{ wordBreak: 'break-all' }}>
+                      {s.email}
+                    </span>
+                  </div>
+
+                  <div className="service-card-meta-row">
+                    <span className="xs muted">Terdaftar: {fmtDateTime(s.createdAt)}</span>
+                  </div>
+
+                  <div className="service-card-footer">
+                    <div className="service-card-actions">
                       <button
                         type="button"
-                        className={`btn ${s.active ? 'danger' : 'secondary'} sm`}
-                        style={{ marginLeft: '6px' }}
-                        onClick={() => void handleToggleActive(s)}
+                        className="btn secondary sm"
+                        onClick={() => {
+                          setPwdTargetId(s.id);
+                          setPwdModalOpen(true);
+                        }}
                       >
-                        {s.active ? 'Nonaktifkan' : 'Aktifkan'}
+                        Ubah Password
                       </button>
-                    )}
-                  </td>
-                </tr>
+                      {s.id !== currentUser?.id && (
+                        <button
+                          type="button"
+                          className={`btn ${s.active ? 'danger' : 'secondary'} sm`}
+                          onClick={() => void handleToggleActive(s)}
+                        >
+                          {s.active ? 'Nonaktifkan' : 'Aktifkan'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
       {modalOpen && (
@@ -141,15 +256,17 @@ export const StaffAdminPage: React.FC = () => {
                   <span>Nama Lengkap *</span>
                   <input
                     type="text"
+                    placeholder="Nama staf"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
                   />
                 </label>
                 <label className="field">
-                  <span>Email Akun *</span>
+                  <span>Email Login *</span>
                   <input
                     type="email"
+                    placeholder="staf@solefulsoaks.id"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -159,17 +276,17 @@ export const StaffAdminPage: React.FC = () => {
                   <span>Password Awal *</span>
                   <input
                     type="password"
-                    placeholder="Minimal 8 karakter"
+                    placeholder="Minimal 6 karakter"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                 </label>
                 <label className="field">
-                  <span>Role Akses</span>
+                  <span>Role Akses *</span>
                   <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
-                    <option value="staff">Staff Operasional</option>
-                    <option value="admin">Administrator</option>
+                    <option value="staff">Staff Operasional (Pengerjaan & Kasir)</option>
+                    <option value="admin">Administrator (Akses Penuh)</option>
                   </select>
                 </label>
               </div>
@@ -178,7 +295,7 @@ export const StaffAdminPage: React.FC = () => {
                   Batal
                 </button>
                 <button type="submit" className="btn">
-                  Buat Akun
+                  Simpan Pegawai
                 </button>
               </footer>
             </form>
@@ -190,7 +307,7 @@ export const StaffAdminPage: React.FC = () => {
         <div className="modal-backdrop">
           <div className="modal">
             <header>
-              <h3>Ubah Kata Sandi Pegawai</h3>
+              <h3>Ubah Password Pegawai</h3>
               <button type="button" className="x" onClick={() => setPwdModalOpen(false)}>
                 ✕
               </button>
@@ -198,10 +315,10 @@ export const StaffAdminPage: React.FC = () => {
             <form onSubmit={handleChangePwd}>
               <div className="body stack" style={{ gap: '14px' }}>
                 <label className="field">
-                  <span>Kata Sandi Baru *</span>
+                  <span>Password Baru *</span>
                   <input
                     type="password"
-                    placeholder="Minimal 8 karakter"
+                    placeholder="Minimal 6 karakter"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
@@ -213,7 +330,7 @@ export const StaffAdminPage: React.FC = () => {
                   Batal
                 </button>
                 <button type="submit" className="btn">
-                  Simpan Sandi Baru
+                  Perbarui Password
                 </button>
               </footer>
             </form>
