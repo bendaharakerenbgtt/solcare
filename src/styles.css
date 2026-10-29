@@ -2737,6 +2737,86 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   border-radius: 8px;
 }
 
+/* Report Metric Cards & Leaderboard (Matches Dashboard & Orders) */
+.dash-metric-card .val.currency {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+@media (max-width: 680px) {
+  .dash-metric-card .val.currency {
+    font-size: 1.15rem;
+  }
+}
+
+.report-leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.report-rank-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--line);
+}
+.report-rank-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.report-rank-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.report-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: #f1f5f9;
+  color: #475569;
+}
+.report-rank-badge.top-1 { background: #fef3c7; color: #92400e; }
+.report-rank-badge.top-2 { background: #f1f5f9; color: #334155; }
+.report-rank-badge.top-3 { background: #ffedd5; color: #9a3412; }
+
+.report-rank-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.report-rank-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+}
+.report-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.report-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+.report-progress-fill.qris { background: #0284c7; }
+.report-progress-fill.cash { background: #16a34a; }
+
 
 
 

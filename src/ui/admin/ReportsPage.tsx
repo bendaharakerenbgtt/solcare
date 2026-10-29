@@ -36,12 +36,13 @@ export const ReportsPage: React.FC = () => {
   const pendingRevenue = unpaidOrders.reduce((sum, o) => sum + o.total, 0);
 
   // Revenue by payment method
-  const qrisRevenue = paidOrders
-    .filter((o) => o.payment.method === 'qris')
-    .reduce((sum, o) => sum + o.total, 0);
-  const cashRevenue = paidOrders
-    .filter((o) => o.payment.method === 'tunai')
-    .reduce((sum, o) => sum + o.total, 0);
+  const qrisOrders = paidOrders.filter((o) => o.payment.method === 'qris');
+  const cashOrders = paidOrders.filter((o) => o.payment.method === 'tunai');
+  const qrisRevenue = qrisOrders.reduce((sum, o) => sum + o.total, 0);
+  const cashRevenue = cashOrders.reduce((sum, o) => sum + o.total, 0);
+
+  const qrisPct = realRevenue > 0 ? Math.round((qrisRevenue / realRevenue) * 100) : 0;
+  const cashPct = realRevenue > 0 ? Math.round((cashRevenue / realRevenue) * 100) : 0;
 
   // Top services selected
   const serviceCount = new Map<string, { count: number; revenue: number }>();
@@ -56,141 +57,189 @@ export const ReportsPage: React.FC = () => {
   });
 
   const topServices = Array.from(serviceCount.entries()).sort((a, b) => b[1].count - a[1].count);
+  const maxServiceCount = topServices.length > 0 ? topServices[0][1].count : 1;
 
   // Late orders analysis
   const lateOrders = filteredOrders.filter((o) => isLate(o, now) && o.status !== 'diambil');
 
   return (
-    <div className="stack" style={{ gap: '24px' }}>
+    <div className="stack" style={{ gap: '16px' }}>
       <div className="admin-page-header">
         <h1>Laporan Bisnis</h1>
-        <select
-          value={dateRange}
-          onChange={(e) => setDateRange(e.target.value as any)}
-          style={{ width: 'auto', padding: '6px 10px', fontSize: '0.82rem', borderRadius: '8px' }}
-        >
-          <option value="all">Semua Periode</option>
-          <option value="this_month">Bulan Ini</option>
-          <option value="last_30">30 Hari Terakhir</option>
-        </select>
       </div>
 
-      {/* Revenue & Volume Cards */}
-      <div className="grid grid-4">
-        <div className="card stat">
-          <div className="value" style={{ color: 'var(--primary)' }}>
+      {/* Period Filter Pills (Consistent with Orders & Services) */}
+      <div className="services-filter-pills">
+        <button
+          type="button"
+          className={`activity-filter-btn filter-all ${dateRange === 'all' ? 'active' : ''}`}
+          onClick={() => setDateRange('all')}
+        >
+          Semua Periode
+        </button>
+        <button
+          type="button"
+          className={`activity-filter-btn filter-main ${dateRange === 'this_month' ? 'active' : ''}`}
+          onClick={() => setDateRange('this_month')}
+        >
+          Bulan Ini
+        </button>
+        <button
+          type="button"
+          className={`activity-filter-btn filter-express ${dateRange === 'last_30' ? 'active' : ''}`}
+          onClick={() => setDateRange('last_30')}
+        >
+          30 Hari Terakhir
+        </button>
+      </div>
+
+      {/* Modern Compact 2x2 Metrics Cards on Mobile (4 cols on Desktop) */}
+      <div className="dash-metrics-grid">
+        <div className="dash-metric-card">
+          <div className="icon-label">
+            <span>Pendapatan Lunas</span>
+          </div>
+          <div className="val currency" style={{ color: 'var(--ok)' }}>
             {rupiah(realRevenue)}
           </div>
-          <div className="label">Pendapatan Diterima (Lunas)</div>
-          <div className="xs muted">Dari {paidOrders.length} transaksi terverifikasi</div>
+          <div className="sub">{paidOrders.length} transaksi terverifikasi</div>
         </div>
 
-        <div className="card stat">
-          <div className="value" style={{ color: unpaidOrders.length ? 'var(--warn)' : 'var(--muted)' }}>
+        <div className="dash-metric-card">
+          <div className="icon-label">
+            <span>Piutang (Belum Lunas)</span>
+          </div>
+          <div
+            className="val currency"
+            style={{ color: unpaidOrders.length ? 'var(--warn)' : 'var(--muted)' }}
+          >
             {rupiah(pendingRevenue)}
           </div>
-          <div className="label">Belum Lunas (Piutang Kasir)</div>
-          <div className="xs muted">{unpaidOrders.length} pesanan belum lunas</div>
+          <div className="sub">{unpaidOrders.length} pesanan belum lunas</div>
         </div>
 
-        <div className="card stat">
-          <div className="value">{totalOrders}</div>
-          <div className="label">Total Pesanan Masuk</div>
-          <div className="xs muted">Periode terpilih</div>
-        </div>
-
-        <div className="card stat">
-          <div className="value" style={{ color: lateOrders.length > 0 ? 'var(--danger)' : 'var(--ok)' }}>
-            {lateOrders.length}
+        <div className="dash-metric-card">
+          <div className="icon-label">
+            <span>Total Pesanan</span>
           </div>
-          <div className="label">Pernah / Sedang Terlambat</div>
-          <div className="xs muted">Melewati target estimasi</div>
+          <div className="val">{totalOrders}</div>
+          <div className="sub">
+            Rata-rata: {paidOrders.length ? rupiah(Math.round(realRevenue / paidOrders.length)) : 'Rp0'}
+          </div>
+        </div>
+
+        <div className="dash-metric-card">
+          <div className="icon-label">
+            <span>Status Ketepatan</span>
+          </div>
+          <div
+            className="val"
+            style={{ color: lateOrders.length > 0 ? 'var(--danger)' : 'var(--ok)' }}
+          >
+            {lateOrders.length > 0 ? `${lateOrders.length} Lewat` : '100%'}
+          </div>
+          <div className="sub">
+            {lateOrders.length > 0 ? 'Melewati target estimasi' : 'Semua pengerjaan tepat waktu'}
+          </div>
         </div>
       </div>
 
-      {/* Notice regarding accounting transparency */}
-      <div className="alert info">
-        ℹ️ <strong>Catatan Akuntansi:</strong> Pendapatan bersih hanya mengakui pesanan yang status pembayarannya telah terverifikasi <strong>Lunas</strong> oleh pegawai. Nilai belum lunas dipisahkan agar laporan akurat tanpa menggelembungkan omzet riil.
+      {/* Notice regarding accounting transparency (Clean text, no emoji) */}
+      <div className="alert info" style={{ fontSize: '0.82rem', lineHeight: '1.45' }}>
+        <strong>Catatan Akuntansi:</strong> Pendapatan bersih hanya mengakui pesanan yang status
+        pembayarannya telah terverifikasi <strong>Lunas</strong> oleh kasir. Nilai belum lunas
+        dipisahkan sebagai piutang agar omzet riil tercatat akurat.
       </div>
 
       {/* Breakdown Grid */}
       <div className="grid grid-2">
         {/* Payment Methods Breakdown */}
         <div className="card">
-          <h3>Pembayaran Berdasarkan Metode</h3>
-          <p className="small muted" style={{ marginBottom: '16px' }}>
-            Hanya menghitung dana yang sudah lunas diterima di kasir.
-          </p>
+          <div className="row between" style={{ alignItems: 'center', marginBottom: '12px' }}>
+            <h3 style={{ margin: 0, fontSize: '1rem' }}>Metode Pembayaran Kasir</h3>
+            <span className="badge ok">{paidOrders.length} Lunas</span>
+          </div>
+
           <div className="stack" style={{ gap: '14px' }}>
-            <div className="bar-row">
-              <div>
-                <strong>QRIS</strong>
-                <div className="xs muted">
-                  {paidOrders.filter((o) => o.payment.method === 'qris').length} transaksi
+            {/* QRIS */}
+            <div className="stack" style={{ gap: '6px' }}>
+              <div className="row between" style={{ fontSize: '0.86rem' }}>
+                <div>
+                  <strong>QRIS</strong>{' '}
+                  <span className="xs muted">({qrisOrders.length} transaksi)</span>
+                </div>
+                <div style={{ fontWeight: 700, color: 'var(--ink)' }}>
+                  {rupiah(qrisRevenue)}{' '}
+                  <span className="xs muted" style={{ fontWeight: 600 }}>
+                    ({qrisPct}%)
+                  </span>
                 </div>
               </div>
-              <div className="progress">
-                <div
-                  style={{
-                    width: `${realRevenue > 0 ? (qrisRevenue / realRevenue) * 100 : 0}%`,
-                  }}
-                />
-              </div>
-              <div className="right">
-                <strong>{rupiah(qrisRevenue)}</strong>
+              <div className="report-progress-bar">
+                <div className="report-progress-fill qris" style={{ width: `${qrisPct}%` }} />
               </div>
             </div>
 
-            <div className="bar-row">
-              <div>
-                <strong>Tunai (Cash)</strong>
-                <div className="xs muted">
-                  {paidOrders.filter((o) => o.payment.method === 'tunai').length} transaksi
+            {/* Tunai */}
+            <div className="stack" style={{ gap: '6px' }}>
+              <div className="row between" style={{ fontSize: '0.86rem' }}>
+                <div>
+                  <strong>Tunai (Cash)</strong>{' '}
+                  <span className="xs muted">({cashOrders.length} transaksi)</span>
+                </div>
+                <div style={{ fontWeight: 700, color: 'var(--ink)' }}>
+                  {rupiah(cashRevenue)}{' '}
+                  <span className="xs muted" style={{ fontWeight: 600 }}>
+                    ({cashPct}%)
+                  </span>
                 </div>
               </div>
-              <div className="progress">
-                <div
-                  style={{
-                    width: `${realRevenue > 0 ? (cashRevenue / realRevenue) * 100 : 0}%`,
-                  }}
-                />
-              </div>
-              <div className="right">
-                <strong>{rupiah(cashRevenue)}</strong>
+              <div className="report-progress-bar">
+                <div className="report-progress-fill cash" style={{ width: `${cashPct}%` }} />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Top Services Breakdown */}
+        {/* Top Services Leaderboard */}
         <div className="card">
-          <h3>Layanan Paling Banyak Dipilih</h3>
-          <p className="small muted" style={{ marginBottom: '16px' }}>
-            Frekuensi pemilihan layanan oleh pelanggan.
-          </p>
+          <div className="row between" style={{ alignItems: 'center', marginBottom: '12px' }}>
+            <h3 style={{ margin: 0, fontSize: '1rem' }}>Layanan Terpopuler</h3>
+            <span className="badge teal">{topServices.length} Jenis</span>
+          </div>
 
           {topServices.length === 0 ? (
-            <div className="empty">Belum ada data pengerjaan layanan.</div>
+            <div className="empty" style={{ padding: '24px 12px' }}>
+              Belum ada data pengerjaan layanan pada periode ini.
+            </div>
           ) : (
-            <div className="table-wrap">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Layanan</th>
-                    <th className="right">Jumlah</th>
-                    <th className="right">Total Omzet</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topServices.slice(0, 8).map(([name, stat]) => (
-                    <tr key={name}>
-                      <td><strong>{name}</strong></td>
-                      <td className="right">{stat.count}x</td>
-                      <td className="right">{rupiah(stat.revenue)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="report-leaderboard">
+              {topServices.slice(0, 5).map(([name, stat], idx) => {
+                const rankClass = idx === 0 ? 'top-1' : idx === 1 ? 'top-2' : idx === 2 ? 'top-3' : '';
+                const pct = Math.round((stat.count / maxServiceCount) * 100);
+
+                return (
+                  <div key={name} className="report-rank-row">
+                    <div className="report-rank-top">
+                      <div className="report-rank-title">
+                        <span className={`report-rank-badge ${rankClass}`}>{idx + 1}</span>
+                        <span>{name}</span>
+                      </div>
+                      <div className="report-rank-stats">
+                        <span className="badge" style={{ fontSize: '0.72rem' }}>
+                          {stat.count}x
+                        </span>
+                        <strong style={{ fontSize: '0.84rem', color: 'var(--primary)' }}>
+                          {rupiah(stat.revenue)}
+                        </strong>
+                      </div>
+                    </div>
+                    <div className="report-progress-bar">
+                      <div className="report-progress-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
