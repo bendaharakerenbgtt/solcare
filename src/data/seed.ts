@@ -94,7 +94,7 @@ export function defaultSettings(now: string): Settings {
     whatsappNumber: '',
     instagramUrl: '',
     whatsappTemplate: 'Halo Soleful Soaks!, saya ingin bertanya tentang pesanan dengan kode {kode}.',
-    dailyCapacity: 20,
+    dailyCapacity: 8.5,
     // ASUMSI: jam kerja untuk perhitungan estimasi. Belum diberikan mitra.
     openTime: '09:00',
     closeTime: '18:00',

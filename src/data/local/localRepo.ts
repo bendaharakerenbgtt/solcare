@@ -112,6 +112,15 @@ export class LocalRepo implements Repo {
     this.kv.set(key, rows);
   }
   private ensureSeed() {
+    // Migration: Update daily capacity to 8.5 if still on legacy initial default 20
+    if (!this.kv.get('capacity_migrated_v4')) {
+      const s = this.kv.get<Settings>('settings');
+      if (s && (s.dailyCapacity === 20 || !s.dailyCapacity)) {
+        this.kv.set('settings', { ...s, dailyCapacity: 8.5 });
+      }
+      this.kv.set('capacity_migrated_v4', true);
+    }
+
     if (this.kv.get('seeded_v3')) return;
     const now = this.now();
     this.kv.set('settings', {

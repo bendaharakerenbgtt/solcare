@@ -22,7 +22,19 @@ export const SettingsPage: React.FC = () => {
     setSaving(true);
     setMsg(null);
     try {
-      await repo.updateSettings(form);
+      const payload: Partial<Settings> = {
+        ...form,
+        dailyCapacity: form.dailyCapacity !== undefined && form.dailyCapacity !== ('' as any)
+          ? Number(form.dailyCapacity)
+          : 8.5,
+        estimateHorizonDays: form.estimateHorizonDays !== undefined && form.estimateHorizonDays !== ('' as any)
+          ? Number(form.estimateHorizonDays)
+          : 60,
+        retentionMonths: form.retentionMonths !== undefined && form.retentionMonths !== ('' as any)
+          ? Number(form.retentionMonths)
+          : 6,
+      };
+      await repo.updateSettings(payload);
       setMsg({ type: 'ok', text: 'Pengaturan berhasil diperbarui.' });
       await reload();
     } catch (err) {
@@ -131,21 +143,30 @@ export const SettingsPage: React.FC = () => {
               <span>Kapasitas Harian (Unit Beban) *</span>
               <input
                 type="number"
-                min="1"
-                value={form.dailyCapacity || 20}
-                onChange={(e) => setForm({ ...form, dailyCapacity: Number(e.target.value) })}
+                min="0.5"
+                step="0.5"
+                placeholder="8.5"
+                value={form.dailyCapacity !== undefined ? form.dailyCapacity : ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setForm({ ...form, dailyCapacity: val === '' ? ('' as any) : Number(val) });
+                }}
                 required
               />
-              <span className="hint">Awal mula: 20 antrean sepatu (1 unit beban = 1 Basic Clean)</span>
+              <span className="hint">Rekomendasi tim berdua: 8 - 9 pasang sepatu/hari (8.5 unit beban/hari)</span>
             </label>
 
             <label className="field">
               <span>Batas Horizon Hari Penuh</span>
               <input
                 type="number"
-                min="7"
-                value={form.estimateHorizonDays || 60}
-                onChange={(e) => setForm({ ...form, estimateHorizonDays: Number(e.target.value) })}
+                min="1"
+                placeholder="60"
+                value={form.estimateHorizonDays !== undefined ? form.estimateHorizonDays : ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setForm({ ...form, estimateHorizonDays: val === '' ? ('' as any) : Number(val) });
+                }}
                 required
               />
               <span className="hint">Tolak estimasi otomatis jika antrean melebihi sekian hari</span>
@@ -155,7 +176,7 @@ export const SettingsPage: React.FC = () => {
               <span>Jam Buka Operasional (HH:mm)</span>
               <input
                 type="time"
-                value={form.openTime || '09:00'}
+                value={form.openTime !== undefined ? form.openTime : '09:00'}
                 onChange={(e) => setForm({ ...form, openTime: e.target.value })}
                 required
               />
@@ -165,7 +186,7 @@ export const SettingsPage: React.FC = () => {
               <span>Jam Tutup Operasional (HH:mm)</span>
               <input
                 type="time"
-                value={form.closeTime || '18:00'}
+                value={form.closeTime !== undefined ? form.closeTime : '18:00'}
                 onChange={(e) => setForm({ ...form, closeTime: e.target.value })}
                 required
               />
@@ -218,8 +239,12 @@ export const SettingsPage: React.FC = () => {
               <input
                 type="number"
                 min="1"
-                value={form.retentionMonths || 6}
-                onChange={(e) => setForm({ ...form, retentionMonths: Number(e.target.value) })}
+                placeholder="6"
+                value={form.retentionMonths !== undefined ? form.retentionMonths : ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setForm({ ...form, retentionMonths: val === '' ? ('' as any) : Number(val) });
+                }}
                 required
               />
               <span className="hint">File foto dihapus setelah N bulan dari tanggal selesai / diambil</span>

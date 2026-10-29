@@ -121,7 +121,7 @@ export const DashboardPage: React.FC = () => {
           <div className="val" style={{ color: 'var(--primary)' }}>
             {activeOrders.length}
           </div>
-          <div className="sub">Kapasitas: {settings?.dailyCapacity || 20} unit/hari</div>
+          <div className="sub">Kapasitas: {settings?.dailyCapacity ?? 8.5} unit/hari</div>
         </div>
 
         <div className="dash-metric-card">

@@ -21,11 +21,11 @@ export const ServicesAdminPage: React.FC = () => {
   const [category, setCategory] = useState<ServiceCategory>('main');
   const [description, setDescription] = useState('');
   const [terms, setTerms] = useState('');
-  const [priceMin, setPriceMin] = useState(35000);
+  const [priceMin, setPriceMin] = useState<string | number>(35000);
   const [priceMax, setPriceMax] = useState<string>('');
-  const [durationMinDays, setDurationMinDays] = useState(2);
-  const [durationMaxDays, setDurationMaxDays] = useState(2);
-  const [workloadWeight, setWorkloadWeight] = useState(1);
+  const [durationMinDays, setDurationMinDays] = useState<string | number>(2);
+  const [durationMaxDays, setDurationMaxDays] = useState<string | number>(2);
+  const [workloadWeight, setWorkloadWeight] = useState<string | number>(1);
   const [expressHours, setExpressHours] = useState<string>('');
   const [expressEligible, setExpressEligible] = useState(false);
   const [active, setActive] = useState(true);
@@ -385,8 +385,9 @@ export const ServicesAdminPage: React.FC = () => {
                       type="number"
                       step="0.25"
                       min="0"
+                      placeholder="1"
                       value={workloadWeight}
-                      onChange={(e) => setWorkloadWeight(Number(e.target.value))}
+                      onChange={(e) => setWorkloadWeight(e.target.value === '' ? '' : Number(e.target.value))}
                       required
                     />
                     <span className="hint">1 unit = standar 1 pasang Basic Clean</span>
@@ -399,8 +400,9 @@ export const ServicesAdminPage: React.FC = () => {
                     <input
                       type="number"
                       min="0"
+                      placeholder="35000"
                       value={priceMin}
-                      onChange={(e) => setPriceMin(Number(e.target.value))}
+                      onChange={(e) => setPriceMin(e.target.value === '' ? '' : Number(e.target.value))}
                       required
                     />
                   </label>
@@ -434,8 +436,9 @@ export const ServicesAdminPage: React.FC = () => {
                       <input
                         type="number"
                         min="0"
+                        placeholder="2"
                         value={durationMinDays}
-                        onChange={(e) => setDurationMinDays(Number(e.target.value))}
+                        onChange={(e) => setDurationMinDays(e.target.value === '' ? '' : Number(e.target.value))}
                       />
                     </label>
                     <label className="field">
@@ -443,8 +446,9 @@ export const ServicesAdminPage: React.FC = () => {
                       <input
                         type="number"
                         min="0"
+                        placeholder="2"
                         value={durationMaxDays}
-                        onChange={(e) => setDurationMaxDays(Number(e.target.value))}
+                        onChange={(e) => setDurationMaxDays(e.target.value === '' ? '' : Number(e.target.value))}
                       />
                     </label>
                   </div>

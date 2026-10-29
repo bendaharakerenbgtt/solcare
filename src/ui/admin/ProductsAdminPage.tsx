@@ -12,7 +12,7 @@ export const ProductsAdminPage: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productModal, setProductModal] = useState(false);
   const [pName, setPName] = useState('');
-  const [pPrice, setPPrice] = useState(15000);
+  const [pPrice, setPPrice] = useState<string | number>(15000);
   const [pDesc, setPDesc] = useState('');
   const [pActive, setPActive] = useState(true);
 
@@ -321,8 +321,9 @@ export const ProductsAdminPage: React.FC = () => {
                   <input
                     type="number"
                     min="0"
+                    placeholder="15000"
                     value={pPrice}
-                    onChange={(e) => setPPrice(Number(e.target.value))}
+                    onChange={(e) => setPPrice(e.target.value === '' ? '' : Number(e.target.value))}
                     required
                   />
                 </label>
