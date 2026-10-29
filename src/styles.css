@@ -1205,12 +1205,13 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 .cal-mob-pill {
   font-size: 0.62rem;
   font-weight: 800;
-  padding: 1px 4px;
+  padding: 2px 4px;
   border-radius: 4px;
   line-height: 1.1;
   display: inline-flex;
   align-items: center;
   gap: 2px;
+  white-space: nowrap;
 }
 .cal-mob-pill.done {
   background: #dcfce7;

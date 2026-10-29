@@ -69,7 +69,7 @@ export const CalendarPage: React.FC = () => {
     }
   });
 
-  // Calculate monthly stats for the visible month
+  // Calculate monthly stats for the visible month (mutually exclusive breakdown)
   const currentMonthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
   const monthOrders = (orders || []).filter(
     (o) => o.estimatedAt && o.estimatedAt.startsWith(currentMonthPrefix)
@@ -78,11 +78,11 @@ export const CalendarPage: React.FC = () => {
   const monthDoneOrders = monthOrders.filter(
     (o) => o.status === 'selesai' || o.status === 'diambil'
   ).length;
-  const monthActiveOrders = monthOrders.filter(
-    (o) => o.status !== 'selesai' && o.status !== 'diambil'
-  ).length;
   const monthLateOrders = monthOrders.filter(
     (o) => isLate(o, now) && o.status !== 'diambil' && o.status !== 'selesai'
+  ).length;
+  const monthOnTrackOrders = monthOrders.filter(
+    (o) => !isLate(o, now) && o.status !== 'diambil' && o.status !== 'selesai'
   ).length;
 
   const selectedOrders = ordersByEstDate.get(selectedDateKey) || [];
@@ -90,6 +90,16 @@ export const CalendarPage: React.FC = () => {
   const selectedHoliday = getNationalHolidayName(selectedDateKey);
   const isSelectedSunday = selectedDateObj.getDay() === 0;
   const isSelectedStoreClosed = settings ? !isOpenDay(selectedDateKey, settings) : false;
+
+  const selectedDoneCount = selectedOrders.filter(
+    (o) => o.status === 'selesai' || o.status === 'diambil'
+  ).length;
+  const selectedLateCount = selectedOrders.filter(
+    (o) => isLate(o, now) && o.status !== 'diambil' && o.status !== 'selesai'
+  ).length;
+  const selectedOnTrackCount = selectedOrders.filter(
+    (o) => !isLate(o, now) && o.status !== 'diambil' && o.status !== 'selesai'
+  ).length;
 
   return (
     <div className="stack" style={{ gap: '16px' }}>
@@ -124,7 +134,7 @@ export const CalendarPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Month Indicator Summary Bar */}
+          {/* Month Indicator Summary Bar (Mutually Exclusive: Selesai + Proses + Terlambat = Total) */}
           <div className="cal-month-summary">
             <div className="cal-summary-item">
               <span>Bulan ini: <strong>{monthTotalOrders}</strong> pesanan</span>
@@ -135,7 +145,7 @@ export const CalendarPage: React.FC = () => {
             </div>
             <div className="cal-summary-item">
               <span className="cal-dot blue" />
-              <span><strong>{monthActiveOrders}</strong> proses</span>
+              <span><strong>{monthOnTrackOrders}</strong> proses</span>
             </div>
             {monthLateOrders > 0 && (
               <div className="cal-summary-item">
@@ -163,15 +173,19 @@ export const CalendarPage: React.FC = () => {
               const isRedDate = isSunday || !!holidayName;
               const open = settings ? isOpenDay(d.key, settings) : true;
 
-              const completedCount = ords.filter(
+              // Mutually exclusive order classification (never double counted)
+              const doneCount = ords.filter(
                 (o) => o.status === 'selesai' || o.status === 'diambil'
-              ).length;
-              const inProgressCount = ords.filter(
-                (o) => o.status !== 'selesai' && o.status !== 'diambil'
               ).length;
               const lateCount = ords.filter(
                 (o) => isLate(o, now) && o.status !== 'diambil' && o.status !== 'selesai'
               ).length;
+              const onTrackCount = ords.filter(
+                (o) => !isLate(o, now) && o.status !== 'selesai' && o.status !== 'diambil'
+              ).length;
+
+              const isAllDone = ords.length > 0 && doneCount === ords.length;
+              const hasLate = lateCount > 0;
 
               return (
                 <div
@@ -184,16 +198,12 @@ export const CalendarPage: React.FC = () => {
                       <span className={`num ${isRedDate ? 'red' : ''}`}>{d.dayNum}</span>
                       {holidayName && <span className="cal-holiday-dot" title={holidayName} />}
                     </div>
-                    {ords.length > 0 && (
+
+                    {/* On Desktop: Show total count badge. On Mobile: Only show badge if > 1 order */}
+                    {ords.length > 1 && (
                       <span
-                        className={`cal-count-badge ${
-                          completedCount === ords.length
-                            ? 'all-done'
-                            : lateCount > 0
-                            ? 'has-late'
-                            : ''
-                        }`}
-                        title={`${ords.length} pesanan (${completedCount} selesai, ${inProgressCount} proses)`}
+                        className={`cal-count-badge ${isAllDone ? 'all-done' : hasLate ? 'has-late' : ''}`}
+                        title={`${ords.length} pesanan`}
                       >
                         {ords.length}
                       </span>
@@ -207,15 +217,15 @@ export const CalendarPage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Desktop Status Pills */}
-                  {completedCount > 0 && (
-                    <div className="cal-status-pill done" title={`${completedCount} Pesanan Selesai`}>
-                      <span className="cal-dot green" /> {completedCount} Selesai
+                  {/* Desktop Status Pills (mutually exclusive) */}
+                  {doneCount > 0 && (
+                    <div className="cal-status-pill done" title={`${doneCount} Pesanan Selesai`}>
+                      <span className="cal-dot green" /> {doneCount} Selesai
                     </div>
                   )}
-                  {inProgressCount > 0 && (
-                    <div className="cal-status-pill prog" title={`${inProgressCount} Sedang Dikerjakan`}>
-                      <span className="cal-dot blue" /> {inProgressCount} Proses
+                  {onTrackCount > 0 && (
+                    <div className="cal-status-pill prog" title={`${onTrackCount} Sedang Dikerjakan`}>
+                      <span className="cal-dot blue" /> {onTrackCount} Proses
                     </div>
                   )}
                   {lateCount > 0 && (
@@ -224,22 +234,31 @@ export const CalendarPage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Mobile Compact Indicators */}
-                  {ords.length > 0 && (
+                  {/* Mobile Status Indicators:
+                      - If exactly 1 order: show a single clear status badge (never 3 badges stacked!)
+                      - If multiple orders: show concise count badges that sum up to ords.length */}
+                  {ords.length === 1 && (
                     <div className="cal-mob-indicators">
-                      {completedCount > 0 && (
-                        <span className="cal-mob-pill done" title={`${completedCount} Selesai`}>
-                          {completedCount} ✓
+                      {doneCount === 1 && <span className="cal-mob-pill done">1 Selesai</span>}
+                      {onTrackCount === 1 && <span className="cal-mob-pill prog">1 Proses</span>}
+                      {lateCount === 1 && <span className="cal-mob-pill late">1 Lewat</span>}
+                    </div>
+                  )}
+                  {ords.length > 1 && (
+                    <div className="cal-mob-indicators">
+                      {doneCount > 0 && (
+                        <span className="cal-mob-pill done" title={`${doneCount} Selesai`}>
+                          {doneCount}✓
                         </span>
                       )}
-                      {inProgressCount > 0 && (
-                        <span className="cal-mob-pill prog" title={`${inProgressCount} Proses`}>
-                          {inProgressCount} ⚙
+                      {onTrackCount > 0 && (
+                        <span className="cal-mob-pill prog" title={`${onTrackCount} Proses`}>
+                          {onTrackCount}⚙
                         </span>
                       )}
                       {lateCount > 0 && (
                         <span className="cal-mob-pill late" title={`${lateCount} Terlambat`}>
-                          {lateCount} !
+                          {lateCount}!
                         </span>
                       )}
                     </div>
@@ -252,14 +271,58 @@ export const CalendarPage: React.FC = () => {
 
         {/* Selected Date Orders List */}
         <div className="card">
-          <h3 style={{ margin: 0, fontSize: '1.05rem', marginBottom: '8px' }}>
-            {selectedDateObj.toLocaleDateString('id-ID', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}
-          </h3>
+          <div className="row between" style={{ alignItems: 'flex-start', marginBottom: '8px', gap: '8px' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.05rem' }}>
+                {selectedDateObj.toLocaleDateString('id-ID', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </h3>
+              <div className="xs muted" style={{ marginTop: '3px' }}>
+                {selectedOrders.length === 0
+                  ? 'Tidak ada pesanan dijadwalkan selesai pada tanggal ini'
+                  : `Total ${selectedOrders.length} pesanan dengan target selesai hari ini`}
+              </div>
+            </div>
+            {selectedOrders.length > 0 && (
+              <span
+                className={`cal-count-badge ${
+                  selectedDoneCount === selectedOrders.length
+                    ? 'all-done'
+                    : selectedLateCount > 0
+                    ? 'has-late'
+                    : ''
+                }`}
+                style={{ fontSize: '0.78rem', padding: '3px 8px' }}
+              >
+                {selectedOrders.length} Pesanan
+              </span>
+            )}
+          </div>
+
+          {/* Quick status breakdown tags */}
+          {selectedOrders.length > 0 && (
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+              {selectedDoneCount > 0 && (
+                <span className="badge ok" style={{ fontSize: '0.74rem' }}>
+                  {selectedDoneCount} Selesai
+                </span>
+              )}
+              {selectedOnTrackCount > 0 && (
+                <span className="badge teal" style={{ fontSize: '0.74rem' }}>
+                  {selectedOnTrackCount} Dalam Proses
+                </span>
+              )}
+              {selectedLateCount > 0 && (
+                <span className="badge bad" style={{ fontSize: '0.74rem' }}>
+                  {selectedLateCount} Terlambat
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Tanggal Merah Alert */}
           {selectedHoliday && (
@@ -283,7 +346,7 @@ export const CalendarPage: React.FC = () => {
               Tidak ada pesanan dijadwalkan selesai pada tanggal ini.
             </div>
           ) : (
-            <div className="stack" style={{ gap: '10px', marginTop: '10px' }}>
+            <div className="stack" style={{ gap: '10px' }}>
               {selectedOrders.map((o) => {
                 const late = isLate(o, now) && o.status !== 'diambil' && o.status !== 'selesai';
                 const done = o.status === 'selesai' || o.status === 'diambil';
@@ -302,6 +365,7 @@ export const CalendarPage: React.FC = () => {
                       <strong className="mono">{displayCode(o.code)}</strong>
                       <span className={`badge ${done ? 'ok' : late ? 'bad' : 'teal'}`}>
                         {STATUS_LABEL[o.status]}
+                        {late ? ' (Lewat Target)' : ''}
                       </span>
                     </div>
                     <div style={{ marginTop: '6px', fontSize: '0.9rem' }}>
