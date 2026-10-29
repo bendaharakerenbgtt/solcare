@@ -165,39 +165,39 @@ export const ServicesAdminPage: React.FC = () => {
             )}
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="order-filter-pills" style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {/* Category Filter Pills (Matches OrdersListPage / Dashboard pills) */}
+          <div className="services-filter-pills">
             <button
               type="button"
-              className={`order-filter-pill ${categoryFilter === 'all' ? 'active' : ''}`}
+              className={`activity-filter-btn filter-all ${categoryFilter === 'all' ? 'active' : ''}`}
               onClick={() => setCategoryFilter('all')}
             >
               Semua ({services?.length || 0})
             </button>
             <button
               type="button"
-              className={`order-filter-pill ${categoryFilter === 'main' ? 'active' : ''}`}
+              className={`activity-filter-btn filter-main ${categoryFilter === 'main' ? 'active' : ''}`}
               onClick={() => setCategoryFilter('main')}
             >
               Main ({services?.filter((s) => s.category === 'main').length || 0})
             </button>
             <button
               type="button"
-              className={`order-filter-pill ${categoryFilter === 'express' ? 'active' : ''}`}
+              className={`activity-filter-btn filter-express ${categoryFilter === 'express' ? 'active' : ''}`}
               onClick={() => setCategoryFilter('express')}
             >
               Express ({services?.filter((s) => s.category === 'express').length || 0})
             </button>
             <button
               type="button"
-              className={`order-filter-pill ${categoryFilter === 'additional' ? 'active' : ''}`}
+              className={`activity-filter-btn filter-additional ${categoryFilter === 'additional' ? 'active' : ''}`}
               onClick={() => setCategoryFilter('additional')}
             >
               Additional ({services?.filter((s) => s.category === 'additional').length || 0})
             </button>
             <button
               type="button"
-              className={`order-filter-pill ${categoryFilter === 'other' ? 'active' : ''}`}
+              className={`activity-filter-btn filter-other ${categoryFilter === 'other' ? 'active' : ''}`}
               onClick={() => setCategoryFilter('other')}
             >
               Other ({services?.filter((s) => s.category === 'other').length || 0})
@@ -272,25 +272,28 @@ export const ServicesAdminPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Mobile Card View (Touch-friendly responsive) */}
+            {/* Mobile Card View (Touch-friendly responsive, matches OrdersListPage layout) */}
             <div className="mobile-only-cards">
               {filtered.map((s) => (
                 <div key={s.id} className="service-mobile-card">
-                  <div className="service-card-header">
-                    <div className="service-card-title-group">
-                      <strong className="service-card-name">{s.name}</strong>
-                      <div className="service-card-tags">
-                        <span className="badge" style={{ fontSize: '0.7rem' }}>
-                          {CATEGORY_LABEL[s.category]}
-                        </span>
-                        {s.expressEligible && (
-                          <span className="badge teal" style={{ fontSize: '0.7rem' }}>
-                            Express Eligible
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <span className={`badge ${s.active ? 'ok' : 'danger'}`} style={{ flexShrink: 0 }}>
+                  <div className="service-card-top">
+                    <strong className="service-card-name">{s.name}</strong>
+                    <span className="service-card-price">{priceLabel(s)}</span>
+                  </div>
+
+                  <div className="service-card-badges">
+                    <span className="badge" style={{ fontSize: '0.72rem' }}>
+                      {CATEGORY_LABEL[s.category]}
+                    </span>
+                    {s.expressEligible && (
+                      <span className="badge teal" style={{ fontSize: '0.72rem' }}>
+                        Express Eligible
+                      </span>
+                    )}
+                    <span
+                      className={`badge ${s.active ? 'ok' : 'danger'}`}
+                      style={{ fontSize: '0.72rem' }}
+                    >
                       {s.active ? 'Aktif' : 'Nonaktif'}
                     </span>
                   </div>
@@ -299,31 +302,20 @@ export const ServicesAdminPage: React.FC = () => {
                     <div className="service-card-desc">{s.description}</div>
                   )}
 
-                  {/* Metadata Grid */}
-                  <div className="service-card-meta-grid">
-                    <div className="service-meta-item">
-                      <span className="service-meta-label">Harga</span>
-                      <span className="service-meta-val price">{priceLabel(s)}</span>
-                    </div>
-                    <div className="service-meta-item">
-                      <span className="service-meta-label">Durasi Kerja</span>
-                      <span className="service-meta-val">{durationLabel(s) || '-'}</span>
-                    </div>
-                    <div className="service-meta-item">
-                      <span className="service-meta-label">Beban Estimasi</span>
-                      <span className="service-meta-val">{s.workloadWeight} unit</span>
-                    </div>
+                  {/* Metadata Row: Clean and subtle */}
+                  <div className="service-card-meta-row">
+                    <span>Durasi: <strong>{durationLabel(s) || '-'}</strong></span>
+                    <span>•</span>
+                    <span>Beban: <strong>{s.workloadWeight} unit</strong></span>
                     {s.terms && (
-                      <div className="service-meta-item">
-                        <span className="service-meta-label">Ketentuan</span>
-                        <span className="service-meta-val" style={{ fontSize: '0.78rem', fontWeight: 500 }}>
-                          {s.terms}
-                        </span>
-                      </div>
+                      <>
+                        <span>•</span>
+                        <span className="xs muted">{s.terms}</span>
+                      </>
                     )}
                   </div>
 
-                  {/* Card Actions */}
+                  {/* Card Actions: Standard subtle buttons */}
                   <div className="service-card-footer">
                     <div className="service-card-actions">
                       <button
@@ -331,7 +323,7 @@ export const ServicesAdminPage: React.FC = () => {
                         className="btn secondary sm"
                         onClick={() => openEdit(s)}
                       >
-                        Edit Layanan
+                        Edit
                       </button>
                       <button
                         type="button"
