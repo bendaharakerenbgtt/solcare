@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import { fmtDate, STATUS_LABEL, whatsappLink } from '../../lib/format';
-import { isLate } from '../../lib/estimation';
+import { isLate, countOrderItems, getQueueSlaStatus } from '../../lib/estimation';
 import { dateKey } from '../../lib/dates';
 import type { Order, OrderStatus } from '../../data/types';
 
@@ -76,6 +76,11 @@ export const DashboardPage: React.FC = () => {
   const todayEst = (orders || []).filter((o) => o.estimatedAt && o.estimatedAt.startsWith(todayStr) && o.status !== 'diambil');
   const completedOrders = (orders || []).filter((o) => o.status === 'selesai');
   const lateOrders = (orders || []).filter((o) => isLate(o, now) && o.status !== 'diambil');
+
+  const dailyCap = settings?.dailyCapacity ?? 8.5;
+  const activeItemsCount = countOrderItems(orders || []);
+  const slaInfo = getQueueSlaStatus(activeItemsCount, lateOrders.length, dailyCap);
+  const wipPercent = Math.min(100, Math.round((activeItemsCount / slaInfo.maxWipLimit) * 100));
 
   // Breakdown by activity status
   const washingOrders = (orders || []).filter((o) => o.status === 'pencucian');
@@ -152,6 +157,80 @@ export const DashboardPage: React.FC = () => {
             {completedOrders.length}
           </div>
           <div className="sub">Menunggu dijemput</div>
+        </div>
+      </div>
+
+      {/* Panduan Kapasitas Antrean (WIP) & Rekomendasi Janji Pelanggan (SLA) */}
+      <div className="card" style={{ padding: '14px 16px', borderLeft: `4px solid ${slaInfo.color}` }}>
+        <div className="row between" style={{ alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+          <div>
+            <strong style={{ fontSize: '0.96rem', display: 'block', color: 'var(--ink)' }}>
+              Status Antrean Rak & Panduan Janji Pelanggan
+            </strong>
+            <span className="xs muted">
+              Kapasitas: {dailyCap} sepatu/hari (~{slaInfo.weeklyCapacity}/minggu • ~{slaInfo.biweeklyCapacity}/2 minggu)
+            </span>
+          </div>
+          <span
+            className="badge"
+            style={{
+              background: slaInfo.bg,
+              color: slaInfo.color,
+              border: `1px solid ${slaInfo.border}`,
+              fontWeight: 700,
+              fontSize: '0.78rem',
+              padding: '4px 10px',
+            }}
+          >
+            {slaInfo.zoneLabel} • Janjikan {slaInfo.recommendedPromise}
+          </span>
+        </div>
+
+        {/* Progress Bar WIP (Maks 50 Sepatu) */}
+        <div style={{ marginBottom: '10px' }}>
+          <div className="row between xs" style={{ marginBottom: '4px', fontWeight: 600 }}>
+            <span>Antrean Aktif di Rak: {activeItemsCount} / {slaInfo.maxWipLimit} sepatu</span>
+            <span style={{ color: slaInfo.color }}>{wipPercent}% terisi</span>
+          </div>
+          <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '999px', overflow: 'hidden' }}>
+            <div
+              style={{
+                width: `${wipPercent}%`,
+                height: '100%',
+                background: slaInfo.color,
+                borderRadius: '999px',
+                transition: 'width 0.3s ease',
+              }}
+            />
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '8px',
+            flexWrap: 'wrap',
+            paddingTop: '8px',
+            borderTop: '1px dashed var(--line)',
+            fontSize: '0.8rem',
+          }}
+        >
+          <span className="muted" style={{ flex: 1, minWidth: '200px' }}>
+            {slaInfo.adviceText}
+          </span>
+          <span
+            className="badge"
+            style={{
+              background: slaInfo.expressAllowed ? '#f0fdf4' : '#fef2f2',
+              color: slaInfo.expressAllowed ? '#15803d' : '#bf2f3b',
+              border: `1px solid ${slaInfo.expressAllowed ? '#bbf7d0' : '#fecaca'}`,
+              fontWeight: 700,
+            }}
+          >
+            {slaInfo.expressStatusText}
+          </span>
         </div>
       </div>
 

@@ -59,56 +59,107 @@ export const RetentionPage: React.FC = () => {
 
       {report && (
         <div className="card">
-          <div className="row between" style={{ marginBottom: '16px' }}>
-            <h3>Hasil {report.dryRun ? 'Simulasi' : 'Eksekusi'} Retensi</h3>
-            <span className="small muted">Waktu Pemeriksaan: {fmtDateTime(report.ranAt)}</span>
+          <div className="row between" style={{ marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
+            <h3 style={{ margin: 0 }}>Hasil {report.dryRun ? 'Simulasi' : 'Eksekusi'} Retensi</h3>
+            <span className="xs muted">Waktu Pemeriksaan: {fmtDateTime(report.ranAt)}</span>
           </div>
 
-          <div className="grid grid-3" style={{ marginBottom: '20px' }}>
-            <div className="card flat" style={{ padding: '14px', border: '1px solid var(--line)' }}>
-              <div className="small muted">Total Foto Diperiksa</div>
-              <strong style={{ fontSize: '1.4rem' }}>{report.checked} foto</strong>
+          <div className="dash-metrics-grid" style={{ marginBottom: '20px' }}>
+            <div className="dash-metric-card">
+              <div className="icon-label">
+                <span>Total Foto Diperiksa</span>
+              </div>
+              <div className="val">{report.checked}</div>
+              <div className="sub">Dokumentasi kolase</div>
             </div>
-            <div className="card flat" style={{ padding: '14px', border: '1px solid var(--line)' }}>
-              <div className="small muted">Memenuhi Syarat Kedaluwarsa</div>
-              <strong style={{ fontSize: '1.4rem', color: 'var(--warn)' }}>
-                {report.items.filter((i) => i.eligible).length} foto
-              </strong>
+            <div className="dash-metric-card">
+              <div className="icon-label">
+                <span>Syarat Kedaluwarsa</span>
+              </div>
+              <div className="val" style={{ color: 'var(--warn)' }}>
+                {report.items.filter((i) => i.eligible).length}
+              </div>
+              <div className="sub">Melewati batas simpan</div>
             </div>
-            <div className="card flat" style={{ padding: '14px', border: '1px solid var(--line)' }}>
-              <div className="small muted">Status File Dihapus</div>
-              <strong style={{ fontSize: '1.4rem', color: 'var(--primary)' }}>
-                {report.dryRun ? '0 (Simulasi)' : `${report.deleted} berhasil`}
-              </strong>
+            <div className="dash-metric-card">
+              <div className="icon-label">
+                <span>File Dihapus</span>
+              </div>
+              <div className="val" style={{ color: 'var(--primary)' }}>
+                {report.dryRun ? '0' : report.deleted}
+              </div>
+              <div className="sub">{report.dryRun ? 'Mode simulasi' : 'Dihapus permanen'}</div>
             </div>
           </div>
 
-          <div className="table-scroll-hint">Geser ke samping untuk melihat tabel lengkap</div>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Kode Pesanan</th>
-                  <th>Tanggal Kedaluwarsa</th>
-                  <th>Status Syarat</th>
-                  <th>Alasan / Keterangan</th>
-                  <th className="right">Hasil Tindakan</th>
-                </tr>
-              </thead>
-              <tbody>
+          {report.items.length === 0 ? (
+            <div className="empty">Belum ada foto dokumentasi yang tersimpan di sistem.</div>
+          ) : (
+            <>
+              <div className="desktop-only-table">
+                <div className="table-scroll-hint">Geser ke samping untuk melihat tabel lengkap</div>
+                <div className="table-wrap">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Kode Pesanan</th>
+                        <th>Tanggal Kedaluwarsa</th>
+                        <th>Status Syarat</th>
+                        <th>Alasan / Keterangan</th>
+                        <th className="right">Hasil Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {report.items.map((it, idx) => (
+                        <tr key={idx}>
+                          <td>
+                            <strong className="mono">{it.orderCode ? displayCode(it.orderCode) : '-'}</strong>
+                          </td>
+                          <td>{it.expiresAt ? fmtDateTime(it.expiresAt) : '-'}</td>
+                          <td>
+                            <span className={`badge ${it.eligible ? 'warn' : 'teal'}`}>
+                              {it.eligible ? 'Kedaluwarsa' : 'Belum Kedaluwarsa'}
+                            </span>
+                          </td>
+                          <td className="small">{it.reason}</td>
+                          <td className="right">
+                            {it.result === 'deleted' ? (
+                              <span className="badge ok">Dihapus</span>
+                            ) : it.result === 'failed' ? (
+                              <span className="badge danger">Gagal: {it.error}</span>
+                            ) : report.dryRun && it.eligible ? (
+                              <span className="badge warn">Siap Dihapus</span>
+                            ) : (
+                              <span className="badge">Dipertahankan</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="mobile-only-cards">
                 {report.items.map((it, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <strong className="mono">{it.orderCode ? displayCode(it.orderCode) : '-'}</strong>
-                    </td>
-                    <td>{it.expiresAt ? fmtDateTime(it.expiresAt) : '-'}</td>
-                    <td>
+                  <div key={idx} className="service-mobile-card">
+                    <div className="service-card-top">
+                      <div>
+                        <strong className="mono" style={{ fontSize: '0.95rem', color: 'var(--ink)' }}>
+                          {it.orderCode ? displayCode(it.orderCode) : '-'}
+                        </strong>
+                        <div className="xs muted" style={{ marginTop: '2px' }}>
+                          Kedaluwarsa: {it.expiresAt ? fmtDateTime(it.expiresAt) : '-'}
+                        </div>
+                      </div>
                       <span className={`badge ${it.eligible ? 'warn' : 'teal'}`}>
-                        {it.eligible ? 'Kedaluwarsa' : 'Belum Kedaluwarsa'}
+                        {it.eligible ? 'Kedaluwarsa' : 'Aktif'}
                       </span>
-                    </td>
-                    <td className="small">{it.reason}</td>
-                    <td className="right">
+                    </div>
+                    <div className="xs muted" style={{ margin: '6px 0' }}>
+                      {it.reason}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '6px', borderTop: '1px dashed var(--line)' }}>
                       {it.result === 'deleted' ? (
                         <span className="badge ok">Dihapus</span>
                       ) : it.result === 'failed' ? (
@@ -118,12 +169,12 @@ export const RetentionPage: React.FC = () => {
                       ) : (
                         <span className="badge">Dipertahankan</span>
                       )}
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

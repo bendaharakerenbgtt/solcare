@@ -4,10 +4,11 @@ import { useAsync, toLocalInput, fromLocalInput } from '../hooks';
 import { repo } from '../../data';
 import type { OrderServiceLine, OrderProductLine, OrderItem } from '../../data/types';
 import type { OrderInput } from '../../data/repo';
-import { estimateCompletion, type WorkLine } from '../../lib/estimation';
+import { estimateCompletion, isLate, countOrderItems, getQueueSlaStatus, type WorkLine } from '../../lib/estimation';
 import { lineFromService, computeTotal, validateServiceLines } from '../../lib/pricing';
 import { rupiah, fmtDateTime } from '../../lib/format';
 import { dateKey, isOpenDay, atTime } from '../../lib/dates';
+import { getNationalHolidayName } from '../../lib/holidays';
 
 const STANDARD_ITEM_TYPES = ['Sepatu', 'Tas', 'Topi', 'Helm', 'Sandal / Wedges'];
 
@@ -114,6 +115,13 @@ export const OrderFormPage: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
 
   const allServices = items.flatMap((it) => it.selectedServices);
+  const hasExpressSelected = allServices.some((s) => s.category === 'express');
+
+  const nowDate = new Date();
+  const otherOrders = (existingOrders || []).filter((o) => o.id !== id);
+  const lateOrdersCount = otherOrders.filter((o) => isLate(o, nowDate) && o.status !== 'diambil').length;
+  const activeItemsCount = countOrderItems(otherOrders);
+  const slaInfo = getQueueSlaStatus(activeItemsCount, lateOrdersCount, settings?.dailyCapacity ?? 8.5);
 
   const updateItem = (index: number, patch: Partial<FormOrderItem>) => {
     setItems((prev) => {
@@ -440,6 +448,42 @@ export const OrderFormPage: React.FC = () => {
         </div>
       )}
 
+      {/* Panduan Kapasitas Antrean & Janji Pelanggan Saat Kasir Menerima Sepatu */}
+      <div className="card" style={{ padding: '14px 16px', marginBottom: '20px', borderLeft: `4px solid ${slaInfo.color}` }}>
+        <div className="row between" style={{ alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div>
+            <strong style={{ fontSize: '0.92rem', display: 'block', color: 'var(--ink)' }}>
+              Panduan Kasir: Antrean Rak Saat Ini ({slaInfo.activeItemsCount} / {slaInfo.maxWipLimit} sepatu)
+            </strong>
+            <span className="xs muted">{slaInfo.adviceText}</span>
+          </div>
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <span
+              className="badge"
+              style={{
+                background: slaInfo.bg,
+                color: slaInfo.color,
+                border: `1px solid ${slaInfo.border}`,
+                fontWeight: 700,
+              }}
+            >
+              Janjikan: {slaInfo.recommendedPromise}
+            </span>
+            <span
+              className="badge"
+              style={{
+                background: slaInfo.expressAllowed ? '#f0fdf4' : '#fef2f2',
+                color: slaInfo.expressAllowed ? '#15803d' : '#bf2f3b',
+                border: `1px solid ${slaInfo.expressAllowed ? '#bbf7d0' : '#fecaca'}`,
+                fontWeight: 700,
+              }}
+            >
+              {slaInfo.expressAllowed ? 'Express: Aman' : 'Express: Tolak'}
+            </span>
+          </div>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="stack" style={{ gap: '24px' }}>
         {/* Customer Data */}
         <div className="card">
@@ -683,7 +727,7 @@ export const OrderFormPage: React.FC = () => {
         {/* Fragrance & Products */}
         <div className="card">
           <div className="row between" style={{ alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
-            <h3 style={{ margin: 0 }}>4. Aroma Parfum Finishing & Produk Tambahan</h3>
+            <h3 style={{ margin: 0 }}>3. Aroma Parfum Finishing & Produk Tambahan</h3>
             <span className="badge ok">Gratis Termasuk Cuci</span>
           </div>
 
@@ -802,7 +846,7 @@ export const OrderFormPage: React.FC = () => {
 
         {/* Capacity-based Estimation */}
         <div className="card">
-          <h3>5. Estimasi Selesai</h3>
+          <h3>4. Estimasi Selesai</h3>
           <div className="grid grid-2" style={{ marginTop: '12px' }}>
             <label className="field">
               <span>Tanggal Masuk Pesanan</span>
@@ -836,6 +880,12 @@ export const OrderFormPage: React.FC = () => {
           </div>
 
           <div style={{ marginTop: '16px' }}>
+            {hasExpressSelected && !slaInfo.expressAllowed && (
+              <div className="alert error" style={{ marginBottom: '12px' }}>
+                <strong>Peringatan Kebijakan Express:</strong> {slaInfo.expressStatusText}. Disarankan menolak layanan Express saat ini agar pesanan reguler tidak terbengkalai.
+              </div>
+            )}
+
             {estimateError && (
               <div className="alert error" style={{ marginBottom: '12px' }}>
                 {estimateError}
@@ -916,7 +966,7 @@ export const OrderFormPage: React.FC = () => {
               </div>
 
               <div className="mini-cal-grid">
-                <div className="mini-cal-dow">Min</div>
+                <div className="mini-cal-dow" style={{ color: '#bf2f3b' }}>Min</div>
                 <div className="mini-cal-dow">Sen</div>
                 <div className="mini-cal-dow">Sel</div>
                 <div className="mini-cal-dow">Rab</div>
@@ -924,20 +974,25 @@ export const OrderFormPage: React.FC = () => {
                 <div className="mini-cal-dow">Jum</div>
                 <div className="mini-cal-dow">Sab</div>
 
-                {formCalDays.map((d) => {
+                {formCalDays.map((d, dIdx) => {
                   const isRec = d.key === recDateKey;
                   const isTarget = d.key === targetDateKey;
                   const isToday = d.key === dateKey(new Date());
                   const open = settings ? isOpenDay(d.key, settings) : true;
+                  const isSunday = dIdx % 7 === 0;
+                  const holidayName = getNationalHolidayName(d.key);
+                  const isRedDate = isSunday || !!holidayName;
 
                   return (
                     <div
                       key={d.key}
                       onClick={() => handleSelectCalDate(d.key)}
                       className={`mini-cal-day ${!d.inMonth ? 'out' : ''} ${!open ? 'closed' : ''} ${isToday ? 'today' : ''} ${isRec ? 'received-day' : ''} ${isTarget ? 'estimated-day' : ''}`}
-                      title={`${d.key} ${isRec ? '(Tanggal Masuk)' : isTarget ? '(Target Selesai)' : ''}`}
+                      title={`${d.key}${holidayName ? ` (${holidayName})` : ''} ${isRec ? '(Tanggal Masuk)' : isTarget ? '(Target Selesai)' : ''}`}
                     >
-                      <span>{d.dayNum}</span>
+                      <span style={{ color: isRedDate && d.inMonth ? '#bf2f3b' : undefined, fontWeight: isRedDate ? 800 : undefined }}>
+                        {d.dayNum}
+                      </span>
                       {isRec && <span className="mini-cal-badge" style={{ background: '#dbeafe', color: '#1e40af' }}>Masuk</span>}
                       {isTarget && <span className="mini-cal-badge" style={{ background: '#fee2e2', color: '#bf2f3b' }}>Selesai</span>}
                     </div>
@@ -957,7 +1012,7 @@ export const OrderFormPage: React.FC = () => {
                   </span>
                 </div>
                 <span className="xs muted">
-                  Kapasitas: {settings?.dailyCapacity || 20} unit/hari
+                  Kapasitas: {settings?.dailyCapacity ?? 8.5} unit/hari
                 </span>
               </div>
             </div>
@@ -966,7 +1021,7 @@ export const OrderFormPage: React.FC = () => {
 
         {/* Payment & Confirmation */}
         <div className="card">
-          <h3>6. Pembayaran di Tempat & Catatan Internal</h3>
+          <h3>5. Pembayaran di Tempat & Catatan Internal</h3>
           <div className="totals" style={{ marginBottom: '16px', color: 'var(--primary)' }}>
             <span>Total Tagihan Final:</span>
             <span>{rupiah(currentTotal)}</span>

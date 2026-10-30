@@ -99,25 +99,44 @@ export const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        {/* Quick Demo Template Fill Button */}
+        {/* Quick Demo Template Fill & Instant Login Button */}
         <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--line)' }}>
           <div className="small muted" style={{ marginBottom: '8px' }}>
-            <strong>Template Cepat Demo:</strong> Klik tombol di bawah untuk mengisi form login/registrasi secara otomatis:
+            <strong>Akses Cepat Uji Coba (Mitra / Staff):</strong> Klik tombol di bawah untuk langsung masuk ke dashboard tanpa mengetik manual:
           </div>
-          <button
-            type="button"
-            className="btn secondary sm"
-            style={{ width: '100%', padding: '10px 12px', whiteSpace: 'normal', lineHeight: 1.4 }}
-            onClick={() => {
-              if (needsSetup) {
-                setName('Admin Solecare');
-              }
-              setEmail('admin@solefulsoaks.id');
-              setPassword('admin12345');
-            }}
-          >
-            Isi Otomatis Akun Admin (admin@solefulsoaks.id / admin12345)
-          </button>
+          <div className="stack" style={{ gap: '8px' }}>
+            <button
+              type="button"
+              className="btn secondary sm"
+              disabled={loading}
+              style={{ width: '100%', padding: '10px 12px', whiteSpace: 'normal', lineHeight: 1.4, fontWeight: 700, borderColor: 'var(--primary)', color: 'var(--primary)' }}
+              onClick={async () => {
+                setLoading(true);
+                setError(null);
+                try {
+                  if (needsSetup) {
+                    await repo.setupFirstAdmin({
+                      name: 'Rafi (Admin Solecare)',
+                      email: 'admin@solefulsoaks.id',
+                      password: 'admin12345',
+                    });
+                    await refresh();
+                  } else {
+                    await signIn('admin@solefulsoaks.id', 'admin12345');
+                  }
+                  navigate('/admin');
+                } catch {
+                  setEmail('admin@solefulsoaks.id');
+                  setPassword('admin12345');
+                  if (needsSetup) setName('Rafi (Admin Solecare)');
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              Masuk Instan 1-Klik (admin@solefulsoaks.id / admin12345)
+            </button>
+          </div>
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '18px', paddingTop: '12px', borderTop: '1px solid var(--line)' }}>

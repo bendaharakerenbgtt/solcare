@@ -173,16 +173,35 @@ export const OrderDetailPage: React.FC = () => {
     }
   };
 
+  const handleQuickPayment = async (method: 'qris' | 'tunai') => {
+    if (!id || !order) return;
+    if (!confirm(`Konfirmasi bahwa pesanan ${displayCode(order.code)} telah dibayar LUNAS sebesar ${rupiah(order.total)} via ${method.toUpperCase()}?`)) {
+      return;
+    }
+    try {
+      await repo.recordPayment(id, {
+        method,
+        status: 'lunas',
+        paidAt: new Date().toISOString(),
+        confirmed: true,
+      });
+      await loadData();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Gagal mencatat pembayaran');
+    }
+  };
+
   if (loading) return <div className="empty">Memuat detail pesanan...</div>;
   if (error || !order) return <div className="card alert error">{error || 'Pesanan tidak ditemukan'}</div>;
 
+  const trackUrl = `${window.location.origin}/cek-pesanan?code=${order.code}`;
+  const waMessage =
+    order.status === 'selesai'
+      ? `Halo Kak ${order.customerName}, pesanan ${order.itemType} (${order.brand} ${order.model}) dengan kode ${displayCode(order.code)} di Soleful Soaks! SUDAH SELESAI dan siap diambil. Total tagihan: ${rupiah(order.total)} (${order.payment.status === 'lunas' ? 'LUNAS' : 'Belum Lunas'}). Cek detail & dokumentasi foto di: ${trackUrl}`
+      : `Halo Kak ${order.customerName}, terima kasih telah mempercayakan perawatan ${order.itemType} (${order.brand} ${order.model}) di Soleful Soaks! Kode pesanan Anda: ${displayCode(order.code)} (Status saat ini: ${STATUS_LABEL[order.status]}). Pantau progres & nota digital di: ${trackUrl}`;
+
   const waCustomer = order.customerPhone
-    ? whatsappLink(
-        order.customerPhone,
-        `Halo Kak ${order.customerName}, kami dari Soleful Soaks! menginfokan tentang pesanan ${displayCode(
-          order.code
-        )}.`
-      )
+    ? whatsappLink(order.customerPhone, waMessage)
     : null;
 
   return (
@@ -426,6 +445,48 @@ export const OrderDetailPage: React.FC = () => {
             {order.payment.paidAt ? `Dibayar pada: ${fmtDateTime(order.payment.paidAt)}` : 'Belum ada bukti bayar'}
           </div>
         </div>
+
+        {order.payment.status === 'belum_lunas' && (
+          <div
+            style={{
+              marginTop: '14px',
+              padding: '12px 14px',
+              background: '#fffbeb',
+              border: '1px solid #fde68a',
+              borderRadius: '10px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '10px',
+            }}
+          >
+            <div>
+              <strong style={{ fontSize: '0.88rem', color: '#92400e', display: 'block' }}>
+                Pesanan Ini Belum Lunas ({rupiah(order.total)})
+              </strong>
+              <span className="xs" style={{ color: '#b45309' }}>
+                Klik tombol di samping saat pelanggan melunasi tagihan:
+              </span>
+            </div>
+            <div className="row" style={{ gap: '8px' }}>
+              <button
+                type="button"
+                className="btn sm"
+                onClick={() => void handleQuickPayment('qris')}
+              >
+                Tandai Lunas (QRIS)
+              </button>
+              <button
+                type="button"
+                className="btn secondary sm"
+                onClick={() => void handleQuickPayment('tunai')}
+              >
+                Tandai Lunas (Tunai)
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Photo Documentation & 2x2 Collage */}

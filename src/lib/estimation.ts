@@ -239,3 +239,99 @@ export function isLate(o: { status: OrderStatus; estimatedAt: string | null; com
   }
   return now.toISOString() > o.estimatedAt;
 }
+
+export interface QueueSlaInfo {
+  activeItemsCount: number;
+  maxWipLimit: number;
+  weeklyCapacity: number;
+  biweeklyCapacity: number;
+  zone: 'normal' | 'ramai' | 'padat' | 'penuh';
+  zoneLabel: string;
+  recommendedPromise: string;
+  adviceText: string;
+  expressAllowed: boolean;
+  expressStatusText: string;
+  color: string;
+  bg: string;
+  border: string;
+}
+
+export function countOrderItems(orders: { status: OrderStatus; items?: unknown[] }[]): number {
+  return orders
+    .filter((o) => isActive(o.status))
+    .reduce((sum, o) => sum + (Array.isArray(o.items) && o.items.length > 0 ? o.items.length : 1), 0);
+}
+
+export function getQueueSlaStatus(
+  activeItemsCount: number,
+  lateCount: number,
+  dailyCapacity = 8.5
+): QueueSlaInfo {
+  const maxWipLimit = 50;
+  const weeklyCapacity = Math.round(dailyCapacity * 7);
+  const biweeklyCapacity = Math.round(dailyCapacity * 14);
+
+  let zone: QueueSlaInfo['zone'] = 'normal';
+  let zoneLabel = 'Normal (< 20 sepatu)';
+  let recommendedPromise = '2–3 Hari';
+  let adviceText = 'Antrean rak normal. Janjikan estimasi standar 2–3 hari ke pelanggan.';
+  let color = '#15803d';
+  let bg = '#dcfce7';
+  let border = '#86efac';
+
+  if (activeItemsCount > 50) {
+    zone = 'penuh';
+    zoneLabel = 'Slot Penuh (> 50 sepatu)';
+    recommendedPromise = '> 7 Hari / Slot Besok';
+    adviceText = 'Rak antrean melampaui batas maksimal 50 sepatu. Terapkan kuota harian atau infokan baru diproses besok.';
+    color = '#bf2f3b';
+    bg = '#fee2e2';
+    border = '#fca5a5';
+  } else if (activeItemsCount >= 40) {
+    zone = 'padat';
+    zoneLabel = 'Padat (40–50 sepatu)';
+    recommendedPromise = '6–7 Hari / Waiting List';
+    adviceText = 'Antrean mendekati batas rak (50 sepatu). Janjikan 6–7 hari atau masukkan daftar tunggu.';
+    color = '#c2410c';
+    bg = '#ffedd5';
+    border = '#fed7aa';
+  } else if (activeItemsCount >= 20) {
+    zone = 'ramai';
+    zoneLabel = 'Ramai (20–40 sepatu)';
+    recommendedPromise = '4–5 Hari';
+    adviceText = 'Kondisi workshop sedang ramai. Janjikan estimasi aman 4–5 hari ke pelanggan.';
+    color = '#b45309';
+    bg = '#fef3c7';
+    border = '#fde68a';
+  }
+
+  let expressAllowed = true;
+  let expressStatusText = 'Layanan Express Aman Diterima';
+
+  if (lateCount > 0) {
+    expressAllowed = false;
+    expressStatusText = `Tolak Express (${lateCount} pesanan sedang terlambat, prioritaskan antrean reguler)`;
+  } else if (activeItemsCount >= 40) {
+    expressAllowed = false;
+    expressStatusText = 'Tolak Express (Antrean rak padat >= 40 sepatu)';
+  } else if (activeItemsCount >= 20) {
+    expressAllowed = true;
+    expressStatusText = 'Batasi Express (Antrean sedang ramai, cek slot pengerjaan)';
+  }
+
+  return {
+    activeItemsCount,
+    maxWipLimit,
+    weeklyCapacity,
+    biweeklyCapacity,
+    zone,
+    zoneLabel,
+    recommendedPromise,
+    adviceText,
+    expressAllowed,
+    expressStatusText,
+    color,
+    bg,
+    border,
+  };
+}
