@@ -286,7 +286,7 @@ export const HomePage: React.FC = () => {
 
           <div className="center mt" style={{ marginTop: '20px' }}>
             <Link to="/layanan" className="btn secondary sm">
-              Buka Katalog Lengkap dengan Rincian Syarat & Ketentuan →
+              Lihat Katalog & Ketentuan Lengkap →
             </Link>
           </div>
         </div>

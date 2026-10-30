@@ -8,6 +8,9 @@ export const ProductsAdminPage: React.FC = () => {
   const { data: products, reload: reloadProducts } = useAsync(() => repo.listProducts(true), []);
   const { data: fragrances, reload: reloadFragrances } = useAsync(() => repo.listFragrances(true), []);
 
+  const [tab, setTab] = useState<'all' | 'products' | 'fragrances'>('all');
+  const [search, setSearch] = useState('');
+
   // Product form modal
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productModal, setProductModal] = useState(false);
@@ -98,200 +101,301 @@ export const ProductsAdminPage: React.FC = () => {
     await reloadFragrances();
   };
 
+  const filteredProducts = (products || []).filter((p) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return p.name.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q));
+  });
+
+  const filteredFragrances = (fragrances || []).filter((f) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return f.name.toLowerCase().includes(q) || (f.description && f.description.toLowerCase().includes(q));
+  });
+
   return (
-    <div className="stack" style={{ gap: '24px' }}>
+    <div className="stack" style={{ gap: '16px' }}>
       <div className="admin-page-header">
         <h1>Produk & Pewangi</h1>
+        <div className="row" style={{ gap: '6px' }}>
+          <button type="button" className="btn sm" onClick={openNewProduct}>
+            + Produk
+          </button>
+          <button type="button" className="btn secondary sm" onClick={openNewFragrance}>
+            + Aroma
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-2">
-        {/* Products Section */}
-        <div className="card">
-          <div className="row between" style={{ marginBottom: '16px' }}>
-            <div>
-              <h3>Produk Tambahan (Add-ons)</h3>
-              <div className="small muted">Dapat ditambahkan saat drop-off</div>
-            </div>
-            <button type="button" className="btn sm" onClick={openNewProduct}>
-              + Tambah Produk
-            </button>
+      {/* Unified Search & Category Filter Card */}
+      <div className="card" style={{ padding: '14px 16px' }}>
+        <div className="order-filter-container" style={{ marginBottom: 0 }}>
+          <div className="order-search-wrap">
+            <svg
+              className="order-search-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              className="order-search-field"
+              placeholder="Cari nama produk tambahan atau aroma pewangi..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button
+                type="button"
+                className="order-search-clear"
+                onClick={() => setSearch('')}
+                title="Hapus pencarian"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
-          {!products || products.length === 0 ? (
-            <div className="empty">Belum ada produk tambahan.</div>
-          ) : (
-            <>
-              {/* Desktop Table */}
-              <div className="desktop-only-table">
-                <div className="table-scroll-hint">Geser untuk melihat aksi</div>
-                <div className="table-wrap">
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Nama & Ket.</th>
-                        <th>Harga</th>
-                        <th>Status</th>
-                        <th className="right">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {products.map((p) => (
-                        <tr key={p.id}>
-                          <td>
-                            <strong>{p.name}</strong>
-                            {p.description && <div className="xs muted">{p.description}</div>}
-                          </td>
-                          <td>{rupiah(p.price)}</td>
-                          <td>
-                            <span className={`badge ${p.active ? 'ok' : 'danger'}`}>
-                              {p.active ? 'Aktif' : 'Nonaktif'}
-                            </span>
-                          </td>
-                          <td className="right">
-                            <button type="button" className="btn secondary sm" onClick={() => openEditProduct(p)}>
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              className="btn danger sm"
-                              style={{ marginLeft: '4px' }}
-                              onClick={() => void deleteProduct(p.id, p.name)}
-                            >
-                              Hapus
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Mobile Cards */}
-              <div className="mobile-only-cards">
-                {products.map((p) => (
-                  <div key={p.id} className="service-mobile-card">
-                    <div className="service-card-header">
-                      <div>
-                        <strong className="service-card-name">{p.name}</strong>
-                        {p.description && <div className="service-card-desc">{p.description}</div>}
-                      </div>
-                      <span className={`badge ${p.active ? 'ok' : 'danger'}`}>
-                        {p.active ? 'Aktif' : 'Nonaktif'}
-                      </span>
-                    </div>
-                    <div className="service-card-meta-grid" style={{ gridTemplateColumns: '1fr' }}>
-                      <div className="service-meta-item">
-                        <span className="service-meta-label">Harga Satuan</span>
-                        <span className="service-meta-val price">{rupiah(p.price)}</span>
-                      </div>
-                    </div>
-                    <div className="service-card-footer">
-                      <div className="service-card-actions">
-                        <button type="button" className="btn secondary sm" onClick={() => openEditProduct(p)}>
-                          Edit
-                        </button>
-                        <button type="button" className="btn danger sm" onClick={() => void deleteProduct(p.id, p.name)}>
-                          Hapus
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+          <div className="services-filter-pills">
+            <button
+              type="button"
+              className={`activity-filter-btn filter-all ${tab === 'all' ? 'active' : ''}`}
+              onClick={() => setTab('all')}
+            >
+              Semua ({(products?.length || 0) + (fragrances?.length || 0)})
+            </button>
+            <button
+              type="button"
+              className={`activity-filter-btn filter-main ${tab === 'products' ? 'active' : ''}`}
+              onClick={() => setTab('products')}
+            >
+              Produk Tambahan ({products?.length || 0})
+            </button>
+            <button
+              type="button"
+              className={`activity-filter-btn filter-additional ${tab === 'fragrances' ? 'active' : ''}`}
+              onClick={() => setTab('fragrances')}
+            >
+              Aroma Pewangi ({fragrances?.length || 0})
+            </button>
+          </div>
         </div>
+      </div>
+
+      <div className={tab === 'all' ? 'grid grid-2' : 'stack'}>
+        {/* Products Section */}
+        {(tab === 'all' || tab === 'products') && (
+          <div className="card">
+            <div className="row between" style={{ marginBottom: '14px', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: 0 }}>Produk Tambahan (Add-ons)</h3>
+                <div className="xs muted">Dapat dibeli pelanggan saat drop-off</div>
+              </div>
+              <span className="badge teal">{filteredProducts.length} Item</span>
+            </div>
+
+            {filteredProducts.length === 0 ? (
+              <div className="empty">Tidak ada produk tambahan yang cocok.</div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="desktop-only-table">
+                  <div className="table-scroll-hint">Geser untuk melihat aksi</div>
+                  <div className="table-wrap">
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>Nama & Ket.</th>
+                          <th>Harga</th>
+                          <th>Status</th>
+                          <th className="right">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredProducts.map((p) => (
+                          <tr key={p.id}>
+                            <td>
+                              <strong>{p.name}</strong>
+                              {p.description && <div className="xs muted">{p.description}</div>}
+                            </td>
+                            <td>
+                              <strong style={{ color: 'var(--primary)' }}>{rupiah(p.price)}</strong>
+                            </td>
+                            <td>
+                              <span className={`badge ${p.active ? 'ok' : 'danger'}`}>
+                                {p.active ? 'Aktif' : 'Nonaktif'}
+                              </span>
+                            </td>
+                            <td className="right">
+                              <button type="button" className="btn secondary sm" onClick={() => openEditProduct(p)}>
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                className="btn danger sm"
+                                style={{ marginLeft: '4px' }}
+                                onClick={() => void deleteProduct(p.id, p.name)}
+                              >
+                                Hapus
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Mobile Cards (Consistent with ServicesAdminPage) */}
+                <div className="mobile-only-cards">
+                  {filteredProducts.map((p) => (
+                    <div key={p.id} className="service-mobile-card">
+                      <div className="service-card-top">
+                        <strong className="service-card-name">{p.name}</strong>
+                        <span className="service-card-price">{rupiah(p.price)}</span>
+                      </div>
+
+                      <div className="service-card-badges">
+                        <span className="badge" style={{ fontSize: '0.72rem' }}>
+                          Produk Tambahan
+                        </span>
+                        <span
+                          className={`badge ${p.active ? 'ok' : 'danger'}`}
+                          style={{ fontSize: '0.72rem' }}
+                        >
+                          {p.active ? 'Aktif' : 'Nonaktif'}
+                        </span>
+                      </div>
+
+                      {p.description && <div className="service-card-desc">{p.description}</div>}
+
+                      <div className="service-card-footer">
+                        <div className="service-card-actions">
+                          <button type="button" className="btn secondary sm" onClick={() => openEditProduct(p)}>
+                            Edit
+                          </button>
+                          <button type="button" className="btn danger sm" onClick={() => void deleteProduct(p.id, p.name)}>
+                            Hapus
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Fragrance Section */}
-        <div className="card">
-          <div className="row between" style={{ marginBottom: '16px' }}>
-            <div>
-              <h3>Pilihan Pewangi & Deodorant</h3>
-              <div className="small muted">Dipilih pegawai saat proses finishing</div>
+        {(tab === 'all' || tab === 'fragrances') && (
+          <div className="card">
+            <div className="row between" style={{ marginBottom: '14px', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: 0 }}>Pilihan Pewangi & Deodorant</h3>
+                <div className="xs muted">Gratis dipilih saat proses finishing cuci</div>
+              </div>
+              <span className="badge teal">{filteredFragrances.length} Aroma</span>
             </div>
-            <button type="button" className="btn sm" onClick={openNewFragrance}>
-              + Tambah Aroma
-            </button>
-          </div>
 
-          {!fragrances || fragrances.length === 0 ? (
-            <div className="empty">Belum ada pilihan pewangi.</div>
-          ) : (
-            <>
-              {/* Desktop Table */}
-              <div className="desktop-only-table">
-                <div className="table-scroll-hint">Geser untuk melihat aksi</div>
-                <div className="table-wrap">
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Aroma Pewangi</th>
-                        <th>Status</th>
-                        <th className="right">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {fragrances.map((f) => (
-                        <tr key={f.id}>
-                          <td>
-                            <strong>{f.name}</strong>
-                            {f.description && <div className="xs muted">{f.description}</div>}
-                          </td>
-                          <td>
-                            <span className={`badge ${f.active ? 'ok' : 'danger'}`}>
-                              {f.active ? 'Aktif' : 'Nonaktif'}
-                            </span>
-                          </td>
-                          <td className="right">
-                            <button type="button" className="btn secondary sm" onClick={() => openEditFragrance(f)}>
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              className="btn danger sm"
-                              style={{ marginLeft: '4px' }}
-                              onClick={() => void deleteFragrance(f.id, f.name)}
-                            >
-                              Hapus
-                            </button>
-                          </td>
+            {filteredFragrances.length === 0 ? (
+              <div className="empty">Tidak ada pilihan pewangi yang cocok.</div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="desktop-only-table">
+                  <div className="table-scroll-hint">Geser untuk melihat aksi</div>
+                  <div className="table-wrap">
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>Aroma Pewangi</th>
+                          <th>Status</th>
+                          <th className="right">Aksi</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Mobile Cards */}
-              <div className="mobile-only-cards">
-                {fragrances.map((f) => (
-                  <div key={f.id} className="service-mobile-card">
-                    <div className="service-card-header">
-                      <div>
-                        <strong className="service-card-name">{f.name}</strong>
-                        {f.description && <div className="service-card-desc">{f.description}</div>}
-                      </div>
-                      <span className={`badge ${f.active ? 'ok' : 'danger'}`}>
-                        {f.active ? 'Aktif' : 'Nonaktif'}
-                      </span>
-                    </div>
-                    <div className="service-card-footer">
-                      <div className="service-card-actions">
-                        <button type="button" className="btn secondary sm" onClick={() => openEditFragrance(f)}>
-                          Edit
-                        </button>
-                        <button type="button" className="btn danger sm" onClick={() => void deleteFragrance(f.id, f.name)}>
-                          Hapus
-                        </button>
-                      </div>
-                    </div>
+                      </thead>
+                      <tbody>
+                        {filteredFragrances.map((f) => (
+                          <tr key={f.id}>
+                            <td>
+                              <strong>{f.name}</strong>
+                              {f.description && <div className="xs muted">{f.description}</div>}
+                            </td>
+                            <td>
+                              <span className={`badge ${f.active ? 'ok' : 'danger'}`}>
+                                {f.active ? 'Aktif' : 'Nonaktif'}
+                              </span>
+                            </td>
+                            <td className="right">
+                              <button type="button" className="btn secondary sm" onClick={() => openEditFragrance(f)}>
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                className="btn danger sm"
+                                style={{ marginLeft: '4px' }}
+                                onClick={() => void deleteFragrance(f.id, f.name)}
+                              >
+                                Hapus
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+                </div>
+
+                {/* Mobile Cards (Consistent with ServicesAdminPage) */}
+                <div className="mobile-only-cards">
+                  {filteredFragrances.map((f) => (
+                    <div key={f.id} className="service-mobile-card">
+                      <div className="service-card-top">
+                        <strong className="service-card-name">{f.name}</strong>
+                        <span className="badge ok" style={{ fontSize: '0.72rem' }}>
+                          Gratis Cuci
+                        </span>
+                      </div>
+
+                      <div className="service-card-badges">
+                        <span className="badge" style={{ fontSize: '0.72rem' }}>
+                          Parfum Finishing
+                        </span>
+                        <span
+                          className={`badge ${f.active ? 'ok' : 'danger'}`}
+                          style={{ fontSize: '0.72rem' }}
+                        >
+                          {f.active ? 'Aktif' : 'Nonaktif'}
+                        </span>
+                      </div>
+
+                      {f.description && <div className="service-card-desc">{f.description}</div>}
+
+                      <div className="service-card-footer">
+                        <div className="service-card-actions">
+                          <button type="button" className="btn secondary sm" onClick={() => openEditFragrance(f)}>
+                            Edit
+                          </button>
+                          <button type="button" className="btn danger sm" onClick={() => void deleteFragrance(f.id, f.name)}>
+                            Hapus
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Product Modal */}

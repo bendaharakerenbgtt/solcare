@@ -205,9 +205,10 @@ export const OrderDetailPage: React.FC = () => {
     : null;
 
   return (
-    <div className="stack" style={{ gap: '24px', maxWidth: '1000px', margin: '0 auto' }}>
-      {/* Top Navigation */}
-      <div>
+    <div className="stack" style={{ gap: '16px', maxWidth: '1000px', margin: '0 auto' }}>
+      {/* Standardized Admin Header */}
+      <div className="admin-page-header">
+        <h1>Detail Pesanan</h1>
         <Link to="/admin/orders" className="admin-back-btn">
           ← Kembali
         </Link>
@@ -469,20 +470,22 @@ export const OrderDetailPage: React.FC = () => {
                 Klik tombol di samping saat pelanggan melunasi tagihan:
               </span>
             </div>
-            <div className="row" style={{ gap: '8px' }}>
+            <div className="row" style={{ gap: '8px', width: '100%' }}>
               <button
                 type="button"
                 className="btn sm"
+                style={{ flex: 1 }}
                 onClick={() => void handleQuickPayment('qris')}
               >
-                Tandai Lunas (QRIS)
+                Lunas (QRIS)
               </button>
               <button
                 type="button"
                 className="btn secondary sm"
+                style={{ flex: 1 }}
                 onClick={() => void handleQuickPayment('tunai')}
               >
-                Tandai Lunas (Tunai)
+                Lunas (Tunai)
               </button>
             </div>
           </div>
@@ -491,16 +494,14 @@ export const OrderDetailPage: React.FC = () => {
 
       {/* Photo Documentation & 2x2 Collage */}
       <div className="card">
-        <div className="row between" style={{ marginBottom: '12px' }}>
-          <div>
-            <h3>Dokumentasi Foto & Kolase 2×2</h3>
-            <p className="small muted">
-              Unggah 4 foto (sebelum & sesudah). Sistem browser akan otomatis memotong, mengompres, dan menggabungkannya menjadi 1 file kolase 2×2.
-            </p>
+        <div style={{ marginBottom: '12px' }}>
+          <div className="row between" style={{ alignItems: 'center', marginBottom: '4px' }}>
+            <h3 style={{ margin: 0 }}>Dokumentasi Foto & Kolase 2×2</h3>
+            <span className="badge teal">{repo.photoIntegration().label}</span>
           </div>
-          <div>
-            <span className="badge">{repo.photoIntegration().label}</span>
-          </div>
+          <p className="xs muted" style={{ margin: 0 }}>
+            Unggah 4 foto (sebelum & sesudah). Sistem otomatis menggabungkannya menjadi 1 file kolase 2×2.
+          </p>
         </div>
 
         {/* Existing uploaded photos */}

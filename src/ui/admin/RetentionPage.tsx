@@ -25,7 +25,7 @@ export const RetentionPage: React.FC = () => {
   };
 
   return (
-    <div className="stack" style={{ gap: '24px' }}>
+    <div className="stack" style={{ gap: '16px' }}>
       <div className="admin-page-header">
         <h1>Retensi Foto</h1>
       </div>

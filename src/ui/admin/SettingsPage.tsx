@@ -54,7 +54,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="stack" style={{ gap: '24px', maxWidth: '850px' }}>
+    <div className="stack" style={{ gap: '16px', maxWidth: '850px' }}>
       <div className="admin-page-header">
         <h1>Pengaturan Toko</h1>
       </div>
@@ -65,7 +65,7 @@ export const SettingsPage: React.FC = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="stack" style={{ gap: '20px' }}>
+      <form onSubmit={handleSubmit} className="stack" style={{ gap: '16px' }}>
         {/* Identitas Bisnis & Kontak */}
         <div className="card">
           <h3>Identitas Bisnis & Kontak Publik</h3>
@@ -194,26 +194,26 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           <div style={{ marginTop: '16px' }}>
-            <span className="field" style={{ marginBottom: '8px' }}>
-              <span>Hari Libur Rutin Mingguan:</span>
+            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '8px' }}>
+              Hari Libur Rutin Mingguan (Klik untuk menandai libur):
             </span>
-            <div className="row" style={{ gap: '12px' }}>
+            <div className="item-type-grid">
               {WEEKDAY_LABEL.map((name, idx) => {
                 const isClosed = form.closedWeekdays?.includes(idx);
                 return (
-                  <label key={idx} className="check">
-                    <input
-                      type="checkbox"
-                      checked={isClosed}
-                      onChange={() => toggleClosedWeekday(idx)}
-                    />
-                    <span>{name}</span>
-                  </label>
+                  <button
+                    key={idx}
+                    type="button"
+                    className={`item-type-chip ${isClosed ? 'active' : ''}`}
+                    onClick={() => toggleClosedWeekday(idx)}
+                  >
+                    {isClosed ? '✓ ' : ''}{name}
+                  </button>
                 );
               })}
             </div>
             <span className="hint" style={{ display: 'block', marginTop: '6px' }}>
-              Hari yang dicentang tidak akan dihitung sebagai hari pengerjaan dalam jadwal estimasi.
+              Hari yang dipilih tidak akan dihitung sebagai hari pengerjaan dalam jadwal estimasi.
             </span>
           </div>
 
@@ -287,7 +287,7 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="row" style={{ justifyContent: 'flex-end' }}>
+        <div className="form-submit-bar">
           <button type="submit" className="btn lg" disabled={saving}>
             {saving ? 'Menyimpan...' : 'Simpan Semua Pengaturan'}
           </button>

@@ -113,6 +113,7 @@ export const OrderFormPage: React.FC = () => {
 
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [svcCatFilter, setSvcCatFilter] = useState<'all' | 'main' | 'express' | 'additional' | 'other'>('all');
 
   const allServices = items.flatMap((it) => it.selectedServices);
   const hasExpressSelected = allServices.some((s) => s.category === 'express');
@@ -428,18 +429,11 @@ export const OrderFormPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <div className="admin-page-header" style={{ alignItems: 'flex-start', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
-        <Link
-          to="/admin/orders"
-          className="admin-back-btn"
-        >
-          Kembali
+      <div className="admin-page-header">
+        <h1>{isEdit ? 'Edit Data Pesanan' : 'Input Pesanan Baru'}</h1>
+        <Link to="/admin/orders" className="admin-back-btn">
+          ← Kembali
         </Link>
-        <div>
-          <h1>
-            {isEdit ? 'Edit Data Pesanan' : 'Input Pesanan Baru'}
-          </h1>
-        </div>
       </div>
 
       {formError && (
@@ -449,7 +443,7 @@ export const OrderFormPage: React.FC = () => {
       )}
 
       {/* Panduan Kapasitas Antrean & Janji Pelanggan Saat Kasir Menerima Sepatu */}
-      <div className="card" style={{ padding: '14px 16px', marginBottom: '20px', borderLeft: `4px solid ${slaInfo.color}` }}>
+      <div className="card" style={{ padding: '14px 16px', marginBottom: '16px', borderLeft: `4px solid ${slaInfo.color}` }}>
         <div className="row between" style={{ alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <div>
             <strong style={{ fontSize: '0.92rem', display: 'block', color: 'var(--ink)' }}>
@@ -484,7 +478,7 @@ export const OrderFormPage: React.FC = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="stack" style={{ gap: '24px' }}>
+      <form onSubmit={handleSubmit} className="stack" style={{ gap: '16px' }}>
         {/* Customer Data */}
         <div className="card">
           <h3>1. Data Pelanggan</h3>
@@ -626,27 +620,69 @@ export const OrderFormPage: React.FC = () => {
 
             {/* Service Selection for this item */}
             <div style={{ borderTop: '1px solid var(--line)', paddingTop: '14px' }}>
-              <div className="row between" style={{ marginBottom: '10px' }}>
+              <div className="row between" style={{ marginBottom: '8px' }}>
                 <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--ink)' }}>
                   Pilih Layanan untuk {items.length > 1 ? `Barang ${itemIdx + 1}` : 'Barang Ini'} *
                 </span>
                 <span className="xs muted">Pilih minimal 1 layanan</span>
               </div>
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
-                {services?.map((svc) => {
-                  const active = item.selectedServices.some((x) => x.serviceId === svc.id);
-                  return (
-                    <button
-                      type="button"
-                      key={svc.id}
-                      onClick={() => toggleItemService(itemIdx, svc.id)}
-                      className={`btn sm ${active ? '' : 'secondary'}`}
-                    >
-                      {active ? '✓ ' : '+ '} {svc.name}
-                    </button>
-                  );
-                })}
+              {/* Filter Kategori Layanan agar mudah dipilih di HP */}
+              <div className="services-filter-pills" style={{ marginBottom: '10px' }}>
+                <button
+                  type="button"
+                  className={`activity-filter-btn filter-all ${svcCatFilter === 'all' ? 'active' : ''}`}
+                  onClick={() => setSvcCatFilter('all')}
+                >
+                  Semua ({services?.length || 0})
+                </button>
+                <button
+                  type="button"
+                  className={`activity-filter-btn filter-main ${svcCatFilter === 'main' ? 'active' : ''}`}
+                  onClick={() => setSvcCatFilter('main')}
+                >
+                  Main ({services?.filter((s) => s.category === 'main').length || 0})
+                </button>
+                <button
+                  type="button"
+                  className={`activity-filter-btn filter-express ${svcCatFilter === 'express' ? 'active' : ''}`}
+                  onClick={() => setSvcCatFilter('express')}
+                >
+                  Express ({services?.filter((s) => s.category === 'express').length || 0})
+                </button>
+                <button
+                  type="button"
+                  className={`activity-filter-btn filter-additional ${svcCatFilter === 'additional' ? 'active' : ''}`}
+                  onClick={() => setSvcCatFilter('additional')}
+                >
+                  Additional ({services?.filter((s) => s.category === 'additional').length || 0})
+                </button>
+                <button
+                  type="button"
+                  className={`activity-filter-btn filter-other ${svcCatFilter === 'other' ? 'active' : ''}`}
+                  onClick={() => setSvcCatFilter('other')}
+                >
+                  Other ({services?.filter((s) => s.category === 'other').length || 0})
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
+                {services
+                  ?.filter((svc) => svcCatFilter === 'all' || svc.category === svcCatFilter)
+                  .map((svc) => {
+                    const active = item.selectedServices.some((x) => x.serviceId === svc.id);
+                    return (
+                      <button
+                        type="button"
+                        key={svc.id}
+                        onClick={() => toggleItemService(itemIdx, svc.id)}
+                        className={`btn sm ${active ? '' : 'secondary'}`}
+                        style={{ padding: '7px 11px', fontSize: '0.8rem' }}
+                      >
+                        {active ? '✓ ' : '+ '} {svc.name}
+                      </button>
+                    );
+                  })}
               </div>
 
               {item.selectedServices.length === 0 ? (
@@ -659,23 +695,21 @@ export const OrderFormPage: React.FC = () => {
                     Atur harga final yang disepakati jika terdapat tingkat kotoran khusus:
                   </div>
                   {item.selectedServices.map((l, sIdx) => (
-                    <div key={sIdx} className="line-row">
-                      <div>
+                    <div key={sIdx} className="service-line-card">
+                      <div className="service-line-info">
                         <strong>{l.name}</strong>
                         <div className="xs muted">
                           Kategori: {l.category} • Beban: {l.workloadWeight} unit
                           {l.priceMax ? ` (Rentang: ${rupiah(l.priceMin)} - ${rupiah(l.priceMax)})` : ''}
                         </div>
                       </div>
-                      <div>
+                      <div className="service-line-controls">
                         <input
                           type="number"
                           value={l.price}
                           onChange={(e) => updateItemServicePrice(itemIdx, sIdx, Number(e.target.value))}
-                          style={{ textAlign: 'right' }}
+                          className="service-line-price-input"
                         />
-                      </div>
-                      <div>
                         <button
                           type="button"
                           className="btn danger sm"
@@ -684,6 +718,7 @@ export const OrderFormPage: React.FC = () => {
                             updateItem(itemIdx, { selectedServices: next });
                           }}
                           title="Hapus layanan"
+                          style={{ padding: '7px 10px' }}
                         >
                           ✕
                         </button>
@@ -1108,7 +1143,7 @@ export const OrderFormPage: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="row" style={{ justifyContent: 'flex-end', gap: '12px' }}>
+        <div className="form-submit-bar">
           <button
             type="button"
             className="btn secondary"

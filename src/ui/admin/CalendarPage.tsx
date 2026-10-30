@@ -253,7 +253,7 @@ export const CalendarPage: React.FC = () => {
                       )}
                       {onTrackCount > 0 && (
                         <span className="cal-mob-pill prog" title={`${onTrackCount} Proses`}>
-                          {onTrackCount}⚙
+                          {onTrackCount}P
                         </span>
                       )}
                       {lateCount > 0 && (
@@ -317,7 +317,7 @@ export const CalendarPage: React.FC = () => {
                 </span>
               )}
               {selectedLateCount > 0 && (
-                <span className="badge bad" style={{ fontSize: '0.74rem' }}>
+                <span className="badge danger" style={{ fontSize: '0.74rem' }}>
                   {selectedLateCount} Terlambat
                 </span>
               )}
@@ -363,7 +363,7 @@ export const CalendarPage: React.FC = () => {
                   >
                     <div className="row between" style={{ alignItems: 'center' }}>
                       <strong className="mono">{displayCode(o.code)}</strong>
-                      <span className={`badge ${done ? 'ok' : late ? 'bad' : 'teal'}`}>
+                      <span className={`badge ${done ? 'ok' : late ? 'danger' : 'teal'}`}>
                         {STATUS_LABEL[o.status]}
                         {late ? ' (Lewat Target)' : ''}
                       </span>
