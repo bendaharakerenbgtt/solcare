@@ -55,6 +55,14 @@ describe('LocalRepo', () => {
     expect(u.name).toBe('Admin');
   });
 
+  it('quickDemoLogin provides instant admin access', async () => {
+    const admin = await repo.quickDemoLogin();
+    expect(admin.email).toBe('admin@solefulsoaks.id');
+    expect(admin.role).toBe('admin');
+    const cur = await repo.currentUser();
+    expect(cur?.id).toBe(admin.id);
+  });
+
   describe('as staff', () => {
     beforeEach(async () => {
       await repo.setupFirstAdmin({ name: 'Admin', email: 'admin@example.com', password: 'rahasia123' });

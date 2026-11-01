@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { repo } from '../../data';
 
 export const LoginPage: React.FC = () => {
-  const { user, needsSetup, signIn, refresh } = useAuth();
-  const navigate = useNavigate();
+  const { user, needsSetup, signIn, setupFirstAdmin, quickDemoLogin } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,8 +12,7 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   if (user) {
-    navigate('/admin', { replace: true });
-    return null;
+    return <Navigate to="/admin" replace />;
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -24,17 +21,37 @@ export const LoginPage: React.FC = () => {
     setError(null);
     try {
       if (needsSetup) {
-        await repo.setupFirstAdmin({ name, email, password });
-        await refresh();
+        await setupFirstAdmin({ name, email, password });
       } else {
         await signIn(email, password);
       }
-      navigate('/admin');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login gagal');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleQuickLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await quickDemoLogin();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login demo gagal');
+      setEmail('admin@solefulsoaks.id');
+      setPassword('admin12345');
+      if (needsSetup) setName('Rafi (Admin Solecare)');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fillTemplate = () => {
+    setEmail('admin@solefulsoaks.id');
+    setPassword('admin12345');
+    if (needsSetup) setName('Rafi (Admin Solecare)');
+    setError(null);
   };
 
   return (
@@ -57,6 +74,43 @@ export const LoginPage: React.FC = () => {
             {error}
           </div>
         )}
+
+        {/* Highlighted 1-Click Fast Login for Mitra / Staff */}
+        <div style={{ marginBottom: '20px', padding: '12px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '10px' }}>
+          <div className="xs" style={{ color: '#0369a1', fontWeight: 600, marginBottom: '8px' }}>
+            Akses Cepat Uji Coba Mitra / Staff:
+          </div>
+          <button
+            type="button"
+            className="btn"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              background: '#0284c7',
+              color: '#ffffff',
+              border: 'none',
+              boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
+              cursor: 'pointer',
+            }}
+            onClick={handleQuickLogin}
+          >
+            {loading ? 'Menghubungkan...' : 'Masuk Instan 1-Klik'}
+          </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+            <span className="mono xs muted" style={{ fontSize: '0.72rem' }}>admin@solefulsoaks.id</span>
+            <button
+              type="button"
+              className="btn text xs"
+              style={{ padding: '2px 6px', fontSize: '0.72rem', color: '#0284c7' }}
+              onClick={fillTemplate}
+            >
+              Isi ke Form
+            </button>
+          </div>
+        </div>
 
         <form onSubmit={handleLogin} className="stack">
           {needsSetup && (
@@ -98,46 +152,6 @@ export const LoginPage: React.FC = () => {
             {loading ? 'Memproses...' : needsSetup ? 'Buat Akun Administrator' : 'Masuk Dashboard'}
           </button>
         </form>
-
-        {/* Quick Demo Template Fill & Instant Login Button */}
-        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--line)' }}>
-          <div className="small muted" style={{ marginBottom: '8px' }}>
-            <strong>Akses Cepat Uji Coba (Mitra / Staff):</strong> Klik tombol di bawah untuk langsung masuk ke dashboard tanpa mengetik manual:
-          </div>
-          <div className="stack" style={{ gap: '8px' }}>
-            <button
-              type="button"
-              className="btn secondary sm"
-              disabled={loading}
-              style={{ width: '100%', padding: '10px 12px', whiteSpace: 'normal', lineHeight: 1.4, fontWeight: 700, borderColor: 'var(--primary)', color: 'var(--primary)' }}
-              onClick={async () => {
-                setLoading(true);
-                setError(null);
-                try {
-                  if (needsSetup) {
-                    await repo.setupFirstAdmin({
-                      name: 'Rafi (Admin Solecare)',
-                      email: 'admin@solefulsoaks.id',
-                      password: 'admin12345',
-                    });
-                    await refresh();
-                  } else {
-                    await signIn('admin@solefulsoaks.id', 'admin12345');
-                  }
-                  navigate('/admin');
-                } catch {
-                  setEmail('admin@solefulsoaks.id');
-                  setPassword('admin12345');
-                  if (needsSetup) setName('Rafi (Admin Solecare)');
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            >
-              Masuk Instan 1-Klik (admin@solefulsoaks.id / admin12345)
-            </button>
-          </div>
-        </div>
 
         <div style={{ textAlign: 'center', marginTop: '18px', paddingTop: '12px', borderTop: '1px solid var(--line)' }}>
           <a href="/" className="small muted" style={{ textDecoration: 'none' }}>

@@ -7,7 +7,9 @@ interface AuthState {
   ready: boolean;
   needsSetup: boolean;
   refresh: () => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<StaffUser>;
+  setupFirstAdmin: (input: { name: string; email: string; password: string }) => Promise<StaffUser>;
+  quickDemoLogin: () => Promise<StaffUser>;
   signOut: () => Promise<void>;
 }
 
@@ -34,7 +36,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     needsSetup,
     refresh,
     signIn: async (e, p) => {
-      setUser(await repo.signIn(e, p));
+      const u = await repo.signIn(e, p);
+      setUser(u);
+      setNeedsSetup(false);
+      return u;
+    },
+    setupFirstAdmin: async (input) => {
+      const u = await repo.setupFirstAdmin(input);
+      setUser(u);
+      setNeedsSetup(false);
+      return u;
+    },
+    quickDemoLogin: async () => {
+      const u = await repo.quickDemoLogin();
+      setUser(u);
+      setNeedsSetup(false);
+      return u;
     },
     signOut: async () => {
       await repo.signOut();

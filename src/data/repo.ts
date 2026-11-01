@@ -105,6 +105,7 @@ export interface Repo {
   needsSetup(): Promise<boolean>;
   setupFirstAdmin(input: { name: string; email: string; password: string }): Promise<StaffUser>;
   signIn(email: string, password: string): Promise<StaffUser>;
+  quickDemoLogin(): Promise<StaffUser>;
   signOut(): Promise<void>;
   currentUser(): Promise<StaffUser | null>;
   listStaff(): Promise<StaffUser[]>;
