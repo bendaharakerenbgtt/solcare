@@ -562,6 +562,8 @@ export const OrderFormPage: React.FC = () => {
                   <span>Nama Pelanggan *</span>
                   <input
                     type="text"
+                    name="customerName"
+                    autoComplete="name"
                     placeholder="Contoh: Budi Pratama"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
@@ -572,6 +574,9 @@ export const OrderFormPage: React.FC = () => {
                   <span>No. WhatsApp *</span>
                   <input
                     type="tel"
+                    name="customerPhone"
+                    autoComplete="tel"
+                    inputMode="tel"
                     placeholder="081234567890"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}

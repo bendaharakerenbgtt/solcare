@@ -98,6 +98,10 @@ export const TrackOrderPage: React.FC = () => {
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   className="mono"
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  autoComplete="off"
                   required
                 />
               </label>
@@ -107,18 +111,21 @@ export const TrackOrderPage: React.FC = () => {
                 <label className="field">
                   <span>4 Digit Akhir No. WA</span>
                   <input
-                    type="text"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     maxLength={4}
                     placeholder="Contoh: 7890"
                     value={phoneSuffix}
                     onChange={(e) => setPhoneSuffix(e.target.value)}
+                    autoComplete="off"
                   />
                 </label>
               </div>
             )}
             <div className="track-btn-wrap">
               <button type="submit" className="btn track-submit-btn" disabled={loading}>
-                {loading ? 'Mencari...' : 'Lacak'}
+                {loading ? 'Mencari…' : 'Lacak'}
               </button>
             </div>
           </div>

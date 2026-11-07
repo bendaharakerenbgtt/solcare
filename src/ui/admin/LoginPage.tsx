@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 
 export const LoginPage: React.FC = () => {
@@ -130,6 +130,9 @@ export const LoginPage: React.FC = () => {
             <span>Email *</span>
             <input
               type="email"
+              name="email"
+              autoComplete="email"
+              spellCheck={false}
               placeholder="admin@solefulsoaks.id"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -141,6 +144,8 @@ export const LoginPage: React.FC = () => {
             <span>Password *</span>
             <input
               type="password"
+              name="password"
+              autoComplete="current-password"
               placeholder="Minimal 8 karakter"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -149,14 +154,14 @@ export const LoginPage: React.FC = () => {
           </label>
 
           <button type="submit" className="btn" disabled={loading} style={{ marginTop: '8px', height: '46px', fontSize: '1rem' }}>
-            {loading ? 'Memproses...' : needsSetup ? 'Buat Akun Administrator' : 'Masuk Dashboard'}
+            {loading ? 'Memproses…' : needsSetup ? 'Buat Akun Administrator' : 'Masuk Dashboard'}
           </button>
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '18px', paddingTop: '12px', borderTop: '1px solid var(--line)' }}>
-          <a href="/" className="small muted" style={{ textDecoration: 'none' }}>
+          <Link to="/" className="small muted" style={{ textDecoration: 'none' }}>
             ← Kembali ke Website Pelanggan
-          </a>
+          </Link>
         </div>
       </div>
     </div>

@@ -77,6 +77,10 @@ export const HomePage: React.FC = () => {
                       value={searchCode}
                       onChange={(e) => setSearchCode(e.target.value)}
                       className="mono"
+                      autoCapitalize="characters"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      autoComplete="off"
                       required
                     />
                   </label>
