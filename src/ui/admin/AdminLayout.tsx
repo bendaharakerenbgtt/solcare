@@ -29,7 +29,8 @@ export const AdminLayout: React.FC = () => {
           <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em' }}>Soleful Staff</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '0.78rem', color: '#cbd5e1', background: 'rgba(255,255,255,0.08)', padding: '4px 8px', borderRadius: '6px', fontWeight: 500 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', color: '#e2e8f0', background: 'rgba(255,255,255,0.1)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4ade80' }} />
             {user.name}
           </span>
         </div>
@@ -45,14 +46,24 @@ export const AdminLayout: React.FC = () => {
 
       <div className="admin">
         <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-          <div className="brand">
-            <div className="brand-mark">
-              <img src="/solecare_logo.jpg" alt="Solecare Logo" />
+          <div className="brand" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div className="brand-mark">
+                <img src="/solecare_logo.jpg" alt="Solecare Logo" />
+              </div>
+              <div>
+                Soleful Soaks!
+                <small>Staff Dashboard</small>
+              </div>
             </div>
-            <div>
-              Soleful Soaks!
-              <small>Staff Dashboard</small>
-            </div>
+            <button
+              type="button"
+              className="mobile-sidebar-close"
+              onClick={closeSidebar}
+              aria-label="Tutup Menu"
+            >
+              ✕
+            </button>
           </div>
 
           <div className="group">Operasional</div>

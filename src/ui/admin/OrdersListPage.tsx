@@ -207,7 +207,7 @@ export const OrdersListPage: React.FC = () => {
                       </div>
 
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--primary)' }}>
+                        <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--navy)' }}>
                           {rupiah(o.total)}
                         </div>
                         <span className={`badge sm ${o.payment.status === 'lunas' ? 'ok' : 'warn'}`} style={{ marginTop: '2px', display: 'inline-block' }}>

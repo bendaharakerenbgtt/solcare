@@ -527,8 +527,32 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
     text-align: center;
     justify-content: center;
   }
-  .btn-new-order-header {
+  .btn-new-order-header,
+  .admin-page-header .btn-new-order-header {
     display: none !important;
+  }
+}
+
+.mobile-sidebar-close {
+  display: none;
+}
+@media (max-width: 900px) {
+  .mobile-sidebar-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.12);
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .mobile-sidebar-close:active {
+    background: rgba(255, 255, 255, 0.25);
   }
 }
 
@@ -645,15 +669,16 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   flex-direction: column;
   gap: 4px;
   cursor: pointer;
-  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   text-decoration: none !important;
   color: inherit;
   text-align: left;
+  box-shadow: 0 1px 3px rgba(0, 27, 58, 0.04);
 }
 .dash-metric-card:hover, .dash-metric-card.active {
   transform: translateY(-2px);
-  border-color: var(--primary);
-  box-shadow: 0 4px 14px rgba(191, 47, 59, 0.12);
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 14px rgba(0, 27, 58, 0.08);
 }
 .dash-metric-card .icon-label {
   display: flex;
@@ -741,6 +766,15 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   .bottom-nav-item.active {
     color: var(--navy);
     font-weight: 700;
+  }
+  .bottom-nav-item.active::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 4px;
+    background: var(--navy);
+    border-radius: 50%;
+    margin-top: 1px;
   }
   .bottom-nav-icon {
     font-size: 1.25rem;
@@ -1802,7 +1836,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 .order-card-modern {
   background: #ffffff;
   border: 1px solid var(--line);
-  border-left: 5px solid var(--primary);
+  border-left: 4px solid var(--navy);
   border-radius: 14px;
   padding: 14px;
   display: flex;
@@ -2472,10 +2506,15 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 }
 .order-detail-action-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 8px;
   width: 100%;
+}
+@media (max-width: 680px) {
+  .order-detail-action-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 .order-detail-action-grid .btn {
   width: 100% !important;

@@ -111,7 +111,12 @@ export const DashboardPage: React.FC = () => {
     <div className="stack" style={{ gap: '16px' }}>
       {/* Top Header Row: Clean title & compact Add button */}
       <div className="admin-page-header">
-        <h1>Dashboard Operasional</h1>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>Dashboard Operasional</h1>
+          <span className="xs muted" style={{ display: 'block', marginTop: '2px' }}>
+            {new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }).format(now)}
+          </span>
+        </div>
         <Link to="/admin/orders/new" className="btn sm btn-new-order-header">
           + Pesanan
         </Link>
@@ -123,7 +128,7 @@ export const DashboardPage: React.FC = () => {
           <div className="icon-label">
             <span>Pesanan Aktif</span>
           </div>
-          <div className="val" style={{ color: 'var(--primary)' }}>
+          <div className="val" style={{ color: 'var(--navy)' }}>
             {activeOrders.length}
           </div>
           <div className="sub">Kapasitas: {settings?.dailyCapacity ?? 8.5} unit/hari</div>
@@ -165,10 +170,10 @@ export const DashboardPage: React.FC = () => {
         <div className="row between" style={{ alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
           <div>
             <strong style={{ fontSize: '0.96rem', display: 'block', color: 'var(--ink)' }}>
-              Status Antrean Rak & Panduan Janji Pelanggan
+              Kapasitas Rak & Janji Pelanggan
             </strong>
             <span className="xs muted">
-              Kapasitas: {dailyCap} sepatu/hari (~{slaInfo.weeklyCapacity}/minggu • ~{slaInfo.biweeklyCapacity}/2 minggu)
+              Kapasitas: {dailyCap} sepatu/hari (~{slaInfo.weeklyCapacity}/minggu)
             </span>
           </div>
           <span
@@ -189,7 +194,7 @@ export const DashboardPage: React.FC = () => {
         {/* Progress Bar WIP (Maks 50 Sepatu) */}
         <div style={{ marginBottom: '10px' }}>
           <div className="row between xs" style={{ marginBottom: '4px', fontWeight: 600 }}>
-            <span>Antrean Aktif di Rak: {activeItemsCount} / {slaInfo.maxWipLimit} sepatu</span>
+            <span>Antrean Aktif di Rak: {activeItemsCount} / {slaInfo.maxWipLimit} unit</span>
             <span style={{ color: slaInfo.color }}>{wipPercent}% terisi</span>
           </div>
           <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '999px', overflow: 'hidden' }}>
@@ -217,7 +222,7 @@ export const DashboardPage: React.FC = () => {
             fontSize: '0.8rem',
           }}
         >
-          <span className="muted" style={{ flex: 1, minWidth: '200px' }}>
+          <span className="muted" style={{ flex: 1, minWidth: '180px' }}>
             {slaInfo.adviceText}
           </span>
           <span
@@ -227,9 +232,10 @@ export const DashboardPage: React.FC = () => {
               color: slaInfo.expressAllowed ? '#15803d' : '#bf2f3b',
               border: `1px solid ${slaInfo.expressAllowed ? '#bbf7d0' : '#fecaca'}`,
               fontWeight: 700,
+              fontSize: '0.75rem',
             }}
           >
-            {slaInfo.expressStatusText}
+            {slaInfo.expressAllowed ? 'Express: Diterima' : 'Express: Tolak Sementara'}
           </span>
         </div>
       </div>
@@ -373,6 +379,9 @@ export const DashboardPage: React.FC = () => {
                         className="order-card-btn-wa"
                         title="Chat WhatsApp Pelanggan"
                       >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                        </svg>
                         WhatsApp
                       </a>
                     ) : (
@@ -390,7 +399,7 @@ export const DashboardPage: React.FC = () => {
                       className="order-card-btn-detail"
                       title="Buka Detail Pesanan"
                     >
-                      Detail Pesanan
+                      Detail Pesanan →
                     </Link>
                   </div>
                 </div>
