@@ -76,8 +76,8 @@ export const LoginPage: React.FC = () => {
         )}
 
         {/* Highlighted 1-Click Fast Login for Mitra / Staff */}
-        <div style={{ marginBottom: '20px', padding: '12px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '10px' }}>
-          <div className="xs" style={{ color: '#0369a1', fontWeight: 600, marginBottom: '8px' }}>
+        <div style={{ marginBottom: '20px', padding: '12px', background: '#f0f4f9', border: '1px solid #cbd5e1', borderRadius: '10px' }}>
+          <div className="xs" style={{ color: '#001b3a', fontWeight: 700, marginBottom: '8px' }}>
             Akses Cepat Uji Coba Mitra / Staff:
           </div>
           <button
@@ -89,10 +89,10 @@ export const LoginPage: React.FC = () => {
               padding: '10px 14px',
               fontSize: '0.88rem',
               fontWeight: 700,
-              background: '#0284c7',
+              background: '#001b3a',
               color: '#ffffff',
               border: 'none',
-              boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
+              boxShadow: '0 2px 6px rgba(0, 27, 58, 0.25)',
               cursor: 'pointer',
             }}
             onClick={handleQuickLogin}
@@ -104,7 +104,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               className="btn text xs"
-              style={{ padding: '2px 6px', fontSize: '0.72rem', color: '#0284c7' }}
+              style={{ padding: '2px 6px', fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 600 }}
               onClick={fillTemplate}
             >
               Isi ke Form

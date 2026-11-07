@@ -283,7 +283,7 @@ export const CalendarPage: React.FC = () => {
               </h3>
               <div className="xs muted" style={{ marginTop: '3px' }}>
                 {selectedOrders.length === 0
-                  ? 'Tidak ada pesanan dijadwalkan selesai pada tanggal ini'
+                  ? 'Pilih tanggal pada kalender untuk melihat daftar pesanan'
                   : `Total ${selectedOrders.length} pesanan dengan target selesai hari ini`}
               </div>
             </div>

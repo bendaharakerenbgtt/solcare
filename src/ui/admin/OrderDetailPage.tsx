@@ -250,7 +250,7 @@ export const OrderDetailPage: React.FC = () => {
             className="btn sm"
             onClick={() => setInvoiceOpen(true)}
             style={{
-              background: '#0284c7',
+              background: '#001b3a',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
@@ -274,7 +274,7 @@ export const OrderDetailPage: React.FC = () => {
             Edit
           </Link>
           <Link to={`/cek-pesanan?code=${order.code}`} target="_blank" className="btn secondary sm">
-            Cek Nota ↗
+            Lacak Web ↗
           </Link>
         </div>
       </div>
@@ -503,7 +503,7 @@ export const OrderDetailPage: React.FC = () => {
               <button
                 type="button"
                 className="btn sm"
-                style={{ flex: 1 }}
+                style={{ flex: 1, background: '#16a34a', borderColor: '#16a34a', color: '#ffffff' }}
                 onClick={() => void handleQuickPayment('qris')}
               >
                 Lunas (QRIS)
@@ -511,7 +511,7 @@ export const OrderDetailPage: React.FC = () => {
               <button
                 type="button"
                 className="btn secondary sm"
-                style={{ flex: 1 }}
+                style={{ flex: 1, color: '#15803d', borderColor: '#86efac' }}
                 onClick={() => void handleQuickPayment('tunai')}
               >
                 Lunas (Tunai)

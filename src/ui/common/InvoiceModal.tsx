@@ -136,7 +136,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
               padding: '8px 12px',
               fontSize: '0.84rem',
               fontWeight: 700,
-              background: '#0284c7',
+              background: '#001b3a',
               color: '#ffffff',
               border: 'none',
               borderRadius: '8px',

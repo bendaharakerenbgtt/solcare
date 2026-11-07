@@ -133,7 +133,7 @@ export const DashboardPage: React.FC = () => {
           <div className="icon-label">
             <span>Target Hari Ini</span>
           </div>
-          <div className="val" style={{ color: todayEst.length > 0 ? '#0284c7' : 'inherit' }}>
+          <div className="val" style={{ color: todayEst.length > 0 ? '#001b3a' : 'inherit' }}>
             {todayEst.length}
           </div>
           <div className="sub">Perlu selesai hari ini</div>

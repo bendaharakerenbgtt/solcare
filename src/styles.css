@@ -543,36 +543,28 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 
 /* Orders Filter Grid (No Horizontal Scroll - Matches Dashboard Activity Buttons) */
 .orders-filter-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   width: 100%;
 }
-@media (max-width: 540px) {
-  .orders-filter-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-  }
-  .orders-filter-grid .activity-filter-btn {
-    font-size: 0.72rem;
-    padding: 0 2px;
-    height: 34px;
-  }
+.orders-filter-grid::-webkit-scrollbar {
+  display: none;
 }
-@media (max-width: 360px) {
-  .orders-filter-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 3px;
-  }
-  .orders-filter-grid .activity-filter-btn {
-    font-size: 0.68rem;
-    padding: 0 1px;
-    height: 32px;
-  }
+.orders-filter-grid .activity-filter-btn {
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  height: 34px;
+  white-space: nowrap;
 }
 @media (min-width: 680px) {
   .orders-filter-grid {
-    display: flex;
     flex-wrap: wrap;
     gap: 8px;
   }
@@ -1890,20 +1882,32 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 
 /* Activity Filter Grid (No Horizontal Scroll / No Text Clipping on Mobile) */
 .activity-filter-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
   gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   margin-bottom: 14px;
+}
+.activity-filter-grid::-webkit-scrollbar {
+  display: none;
+}
+@media (min-width: 680px) {
+  .activity-filter-grid {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 }
 .activity-filter-btn {
   background: #f8fafc;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  height: 36px;
+  border-radius: 999px;
+  height: 34px;
   box-sizing: border-box;
-  padding: 0 4px;
+  padding: 6px 14px;
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #475569;
   cursor: pointer;
@@ -1912,6 +1916,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   justify-content: center;
   gap: 3px;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.15s ease;
   user-select: none;
 }
@@ -2951,6 +2956,17 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
     box-shadow: none !important;
     border-radius: 0 !important;
     background: transparent !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .soleful-receipt-container {
+    padding: 16px 12px !important;
+    font-size: 0.82rem !important;
+  }
+  .invoice-modal-card {
+    max-height: 96vh !important;
+    margin: 8px !important;
   }
 }
 
