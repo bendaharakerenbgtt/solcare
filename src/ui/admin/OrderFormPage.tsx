@@ -378,7 +378,7 @@ export const OrderFormPage: React.FC = () => {
         navigate(`/admin/orders/${id}`);
       } else {
         const created = await repo.createOrder(orderInput);
-        navigate(`/admin/orders/${created.id}`);
+        navigate(`/admin/orders/${created.id}?invoice=1`);
       }
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Gagal menyimpan pesanan.');

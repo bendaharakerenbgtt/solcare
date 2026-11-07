@@ -4,6 +4,7 @@ import { repo } from '../../data';
 import type { PublicOrderView } from '../../data/types';
 import { fmtDateTime, rupiah, STATUS_LABEL, whatsappLink, displayCode } from '../../lib/format';
 import { useAsync } from '../hooks';
+import { InvoiceModal } from '../common/InvoiceModal';
 
 export const TrackOrderPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -15,6 +16,7 @@ export const TrackOrderPage: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [order, setOrder] = useState<PublicOrderView | null>(null);
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   const { data: settings } = useAsync(() => repo.getSettings(), []);
 
@@ -310,6 +312,22 @@ export const TrackOrderPage: React.FC = () => {
                 </span>
               </div>
             </div>
+
+            <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px dashed var(--line)', textAlign: 'center' }}>
+              <button
+                type="button"
+                className="btn secondary sm"
+                onClick={() => setInvoiceOpen(true)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                  <rect width="12" height="8" x="6" y="14"/>
+                </svg>
+                Lihat & Unduh Nota Resmi (PDF)
+              </button>
+            </div>
           </div>
 
           {/* Foto Dokumentasi Kolase */}
@@ -346,6 +364,14 @@ export const TrackOrderPage: React.FC = () => {
             </div>
           )}
         </div>
+      )}
+
+      {invoiceOpen && order && (
+        <InvoiceModal
+          order={order}
+          settings={settings}
+          onClose={() => setInvoiceOpen(false)}
+        />
       )}
     </div>
   );

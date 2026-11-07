@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { repo } from '../../data';
-import type { Order, OrderPhoto, StatusHistoryEntry, EstimateHistoryEntry } from '../../data/types';
+import type { Order, OrderPhoto, StatusHistoryEntry, EstimateHistoryEntry, Settings } from '../../data/types';
 import { ORDER_STATUSES, type OrderStatus } from '../../data/types';
 import { fmtDateTime, rupiah, STATUS_LABEL, displayCode, whatsappLink } from '../../lib/format';
 import { buildCollage, validateInputFile } from '../../lib/collage';
 import { toLocalInput, fromLocalInput } from '../hooks';
+import { InvoiceModal } from '../common/InvoiceModal';
 
 export const OrderDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
 
   const [order, setOrder] = useState<Order | null>(null);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [photos, setPhotos] = useState<OrderPhoto[]>([]);
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [statusHistory, setStatusHistory] = useState<StatusHistoryEntry[]>([]);
@@ -18,6 +21,7 @@ export const OrderDetailPage: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   // Status update modal / form
   const [targetStatus, setTargetStatus] = useState<OrderStatus>('menunggu');
@@ -45,15 +49,17 @@ export const OrderDetailPage: React.FC = () => {
     if (!id) return;
     setLoading(true);
     try {
-      const [ord, phs, sHist, eHist] = await Promise.all([
+      const [ord, phs, sHist, eHist, sets] = await Promise.all([
         repo.getOrder(id),
         repo.listPhotos(id),
         repo.statusHistory(id),
         repo.estimateHistory(id),
+        repo.getSettings().catch(() => null),
       ]);
 
       if (!ord) throw new Error('Pesanan tidak ditemukan.');
       setOrder(ord);
+      setSettings(sets);
       setTargetStatus(ord.status);
       setPhotos(phs);
       setStatusHistory(sHist);
@@ -80,7 +86,10 @@ export const OrderDetailPage: React.FC = () => {
 
   useEffect(() => {
     void loadData();
-  }, [id]);
+    if (searchParams.get('invoice') === '1') {
+      setInvoiceOpen(true);
+    }
+  }, [id, searchParams]);
 
   const handleUpdateStatus = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,6 +245,26 @@ export const OrderDetailPage: React.FC = () => {
         </div>
 
         <div className="order-detail-action-grid">
+          <button
+            type="button"
+            className="btn sm"
+            onClick={() => setInvoiceOpen(true)}
+            style={{
+              background: '#0284c7',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: 700,
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect width="12" height="8" x="6" y="14"/>
+            </svg>
+            Cetak / Unduh Nota
+          </button>
           {waCustomer && (
             <a href={waCustomer} target="_blank" rel="noreferrer" className="btn wa sm">
               WhatsApp
@@ -655,6 +684,14 @@ export const OrderDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {invoiceOpen && order && (
+        <InvoiceModal
+          order={order}
+          settings={settings}
+          onClose={() => setInvoiceOpen(false)}
+        />
+      )}
     </div>
   );
 };
