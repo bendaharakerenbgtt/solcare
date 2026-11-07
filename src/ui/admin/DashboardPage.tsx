@@ -112,7 +112,7 @@ export const DashboardPage: React.FC = () => {
       {/* Top Header Row: Clean title & compact Add button */}
       <div className="admin-page-header">
         <h1>Dashboard Operasional</h1>
-        <Link to="/admin/orders/new" className="btn sm">
+        <Link to="/admin/orders/new" className="btn sm btn-new-order-header">
           + Pesanan
         </Link>
       </div>
@@ -400,35 +400,6 @@ export const DashboardPage: React.FC = () => {
         )}
       </div>
 
-      {/* Shortcut Card to Full Orders Management */}
-      <div
-        className="card flat"
-        style={{
-          border: '1px solid var(--line)',
-          padding: '14px 16px',
-          background: '#ffffff',
-          borderRadius: '14px',
-          boxShadow: 'var(--shadow)',
-        }}
-      >
-        <div className="row between" style={{ alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <div>
-            <strong style={{ fontSize: '0.95rem', display: 'block', marginBottom: '2px' }}>
-              Kelola & Daftar Semua Pesanan
-            </strong>
-            <div className="xs muted">
-              Buka menu pencarian lengkap, nota, dan riwayat ({orders?.length || 0} pesanan).
-            </div>
-          </div>
-          <Link
-            to="/admin/orders"
-            className="btn secondary sm"
-            style={{ padding: '8px 14px', fontWeight: 600, fontSize: '0.82rem' }}
-          >
-            Buka Kelola Pesanan →
-          </Link>
-        </div>
-      </div>
 
       {/* Bottom Sheet / Modal for Selecting Order Stage (Clean, No Emoji) */}
       {stageModalOrder && (

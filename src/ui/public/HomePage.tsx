@@ -51,7 +51,7 @@ export const HomePage: React.FC = () => {
                 Perawatan mendalam, unyellowing, recolor hingga pembersihan harian untuk sepatu, tas, helm, dan topi dengan standar pengerjaan profesional.
               </p>
               <div className="hero-cta-row">
-                <Link to="/cek-pesanan" className="btn lg hero-btn">
+                <Link to="/cek-pesanan" className="btn lg hero-btn hero-cta-track">
                   Lacak Pesanan Anda
                 </Link>
                 <Link to="/layanan" className="btn secondary lg hero-btn">

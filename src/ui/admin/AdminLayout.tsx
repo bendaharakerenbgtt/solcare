@@ -20,22 +20,19 @@ export const AdminLayout: React.FC = () => {
   return (
     <div>
       <div className="admin-mobile-bar">
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle Navigation" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <img
             src="/solecare_logo.jpg"
             alt="Solecare Logo"
             style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }}
           />
-          <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Soleful Staff</span>
+          <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em' }}>Soleful Staff</span>
         </div>
-        <div style={{ width: '38px' }} aria-hidden="true" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '0.78rem', color: '#cbd5e1', background: 'rgba(255,255,255,0.08)', padding: '4px 8px', borderRadius: '6px', fontWeight: 500 }}>
+            {user.name}
+          </span>
+        </div>
       </div>
 
       {sidebarOpen && (
