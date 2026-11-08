@@ -2993,20 +2993,27 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 /* Soleful Soaks! Official Receipt & Invoice Styling */
 .receipt-dashed-divider {
   width: 100%;
-  height: 2.5px;
+  height: 2px;
   background: repeating-linear-gradient(
     90deg,
-    #2563eb 0px,
-    #2563eb 12px,
-    transparent 12px,
-    transparent 16px,
-    #ef4444 16px,
-    #ef4444 28px,
-    transparent 28px,
-    transparent 32px
+    #0c2340 0px,
+    #0c2340 10px,
+    transparent 10px,
+    transparent 14px,
+    #c82d38 14px,
+    #c82d38 24px,
+    transparent 24px,
+    transparent 28px
   );
-  margin: 12px 0;
+  margin: 10px 0;
   border: none;
+}
+
+.receipt-dashed-divider.black {
+  background: none;
+  height: 0;
+  border-bottom: 1.5px dashed #000000;
+  margin: 10px 0;
 }
 
 .soleful-receipt-container {

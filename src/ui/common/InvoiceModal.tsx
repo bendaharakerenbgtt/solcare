@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import type { Order, PublicOrderView, Settings } from '../../data/types';
-import { InvoiceReceipt } from './InvoiceReceipt';
+import { InvoiceReceipt, type ReceiptTheme } from './InvoiceReceipt';
 import { downloadReceiptPDF } from '../../lib/pdf';
 import { displayCode, whatsappLink } from '../../lib/format';
 
@@ -18,6 +18,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
   onClose,
 }) => {
   const receiptRef = useRef<HTMLDivElement>(null);
+  const [theme, setTheme] = useState<ReceiptTheme>('black');
   const [downloading, setDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
@@ -30,7 +31,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
     setDownloading(true);
     setDownloadSuccess(false);
     try {
-      const filename = `Nota-SolefulSoaks-${order.code}`;
+      const filename = `Nota-SolefulSoaks-${order.code}-${theme === 'color' ? 'Warna' : 'Hitam'}`;
       await downloadReceiptPDF(receiptRef.current, filename);
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 3000);
@@ -116,11 +117,67 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
           </button>
         </div>
 
+        {/* Theme Selector Toggle (Versi Hitam vs Versi Warna) */}
+        <div
+          style={{
+            padding: '8px 18px',
+            background: '#ffffff',
+            borderBottom: '1px solid #e2e8f0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
+            Pilihan Tampilan:
+          </span>
+          <div style={{ display: 'inline-flex', background: '#f1f5f9', padding: '3px', borderRadius: '8px', gap: '4px' }}>
+            <button
+              type="button"
+              onClick={() => setTheme('black')}
+              style={{
+                padding: '6px 14px',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                background: theme === 'black' ? '#0f172a' : 'transparent',
+                color: theme === 'black' ? '#ffffff' : '#475569',
+                boxShadow: theme === 'black' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+              }}
+            >
+              🖤 Versi Hitam (B&W)
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme('color')}
+              style={{
+                padding: '6px 14px',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                background: theme === 'color' ? '#0284c7' : 'transparent',
+                color: theme === 'color' ? '#ffffff' : '#475569',
+                boxShadow: theme === 'color' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+              }}
+            >
+              🎨 Versi Warna
+            </button>
+          </div>
+        </div>
+
         {/* Action Bar (Print, Download PDF, WhatsApp) */}
         <div
           style={{
             padding: '10px 18px',
-            background: '#f1f5f9',
+            background: '#f8fafc',
             borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             gap: '8px',
@@ -208,11 +265,6 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
           )}
         </div>
 
-        {/* Mitra Notice Banner */}
-        <div style={{ padding: '6px 18px', background: '#ecfdf5', borderBottom: '1px solid #d1fae5', fontSize: '0.74rem', color: '#065f46' }}>
-          Panjang nota otomatis dinamis mengikuti jumlah sepatu & layanan (bisa muat 6, 8, atau lebih layanan tanpa perlu pisah nota).
-        </div>
-
         {/* Scrollable Receipt Area */}
         <div
           style={{
@@ -230,13 +282,14 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
               boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
               borderRadius: '6px',
               width: '100%',
-              maxWidth: '440px',
+              maxWidth: '420px',
             }}
           >
             <InvoiceReceipt
               order={order}
               settings={settings}
               cashierName={cashierName}
+              theme={theme}
               forwardRef={receiptRef}
             />
           </div>
