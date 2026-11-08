@@ -163,8 +163,8 @@ export class LocalRepo implements Repo {
     const now = this.now();
     this.kv.set('settings', {
       ...defaultSettings(now),
-      address: 'Jl. Surya Kencana No. 45, Bogor Tengah',
-      whatsappNumber: '081234567890',
+      address: 'Jl. Mampang Prapatan XV No.32',
+      whatsappNumber: '081210043758',
       instagramUrl: 'https://instagram.com/solefulsoaks',
       publicHoursText: 'Senin - Sabtu: 09.00 - 18.00 WIB (Minggu Libur)',
     });

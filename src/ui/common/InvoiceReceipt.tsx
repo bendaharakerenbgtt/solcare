@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Order, PublicOrderView, Settings } from '../../data/types';
-import { displayCode } from '../../lib/format';
+
 
 export type ReceiptTheme = 'color' | 'black';
 
@@ -63,7 +63,10 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
 
   const productsToDisplay = order.products || [];
 
-  const storeAddress = settings?.address || 'Jl. Mampang Prapatan XV No.32';
+  const rawAddress = settings?.address?.trim();
+  const storeAddress = rawAddress && !rawAddress.includes('Surya Kencana')
+    ? rawAddress
+    : 'Jl. Mampang Prapatan XV No.32';
   const storePhone = settings?.whatsappNumber ? `Telp. ${settings.whatsappNumber}` : 'Telp. 081210043758';
 
   const customerName = 'customerName' in order ? order.customerName : order.customerDisplayName;
