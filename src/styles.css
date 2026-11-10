@@ -790,44 +790,299 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
     letter-spacing: -0.01em;
     font-weight: 600;
   }
+}
 
-  /* Center Action Button for + Catat Pesanan (Flush & Elegant Navy) */
-  .bottom-nav-fab {
+/* ---------- Bilas.id Bottom Navigation & Floating Center Button ---------- */
+.bilas-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .bilas-bottom-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -4px 16px rgba(0, 27, 58, 0.07);
+    z-index: 45;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .bilas-nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex: 1;
     height: 100%;
+    color: #94a3b8;
     text-decoration: none !important;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 4px 0;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    padding: 2px 0;
   }
-  .bottom-nav-fab-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+  .bilas-nav-item.active {
+    color: var(--navy);
+  }
+  .bilas-nav-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    margin-bottom: 2px;
+    transition: transform 0.15s ease;
+  }
+  .bilas-nav-item.active .bilas-nav-icon {
+    transform: scale(1.08);
+  }
+  .bilas-nav-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .bilas-nav-item.active .bilas-nav-label {
+    font-weight: 800;
+    color: var(--navy);
+  }
+
+  /* Bilas Center Floating Action Button (+) */
+  .bilas-nav-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    position: relative;
+    padding: 0;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .bilas-nav-fab-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
     background: var(--navy);
     color: #ffffff;
-    display: grid;
-    place-items: center;
-    font-size: 1.35rem;
-    font-weight: 700;
-    line-height: 1;
-    box-shadow: 0 2px 6px rgba(0, 27, 58, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 27, 58, 0.35);
+    transform: translateY(-8px);
     transition: transform 0.15s ease, background 0.15s ease;
   }
-  .bottom-nav-fab:active .bottom-nav-fab-icon {
-    transform: scale(0.92);
+  .bilas-nav-fab:active .bilas-nav-fab-circle {
+    transform: translateY(-6px) scale(0.92);
   }
-  .bottom-nav-fab-label {
-    font-size: 0.66rem;
-    font-weight: 700;
-    color: var(--navy);
-    margin-top: 2px;
-    white-space: nowrap;
-  }
+}
+
+/* Bilas Transaction Customer Selection Sheet */
+.bilas-sheet-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  padding: 16px 18px 28px;
+  box-shadow: 0 -8px 30px rgba(0, 27, 58, 0.18);
+  z-index: 120;
+  max-width: 500px;
+  margin: 0 auto;
+  animation: slideUpBilas 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+@keyframes slideUpBilas {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.bilas-sheet-handle-bar {
+  width: 40px;
+  height: 4px;
+  background: #cbd5e1;
+  border-radius: 999px;
+  margin: 0 auto 12px;
+}
+.bilas-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.bilas-sheet-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.bilas-sheet-close {
+  background: #f1f5f9;
+  border: 0;
+  color: #64748b;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.bilas-sheet-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bilas-card-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+.bilas-card-option:active, .bilas-card-option:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+.bilas-card-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.bilas-card-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.bilas-card-text strong {
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+.bilas-card-text span {
+  font-size: 0.74rem;
+  color: #64748b;
+}
+.bilas-card-arrow {
+  font-size: 1.3rem;
+  color: #94a3b8;
+  font-weight: 300;
+}
+.bilas-customer-list {
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bilas-customer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.bilas-customer-row:hover, .bilas-customer-row:active {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* Bilas Dashboard TabLayout and Sections */
+.bilas-dash-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 12px;
+}
+.bilas-dash-tab {
+  flex: 1;
+  padding: 7px 0;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.bilas-dash-tab.active {
+  background: #ffffff;
+  color: var(--navy);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.bilas-shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bilas-shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  text-decoration: none !important;
+  color: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+.bilas-shortcut-item:hover, .bilas-shortcut-item:active {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.bilas-shortcut-icon {
+  font-size: 1.25rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.bilas-shortcut-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.bilas-shortcut-info strong {
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+.bilas-shortcut-info span {
+  font-size: 0.74rem;
+  color: #64748b;
+}
+.bilas-shortcut-arrow {
+  color: #94a3b8;
+  font-size: 1.1rem;
 }
 
 /* Mobile Order Cards vs Desktop Table */
