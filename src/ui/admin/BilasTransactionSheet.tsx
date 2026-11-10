@@ -4,6 +4,7 @@ import { repo } from '../../data';
 import type { Customer } from '../../data/types';
 import { useAsync } from '../hooks';
 import { MapsPickerModal } from '../common/MapsPickerModal';
+import { CloseIcon, PinIcon } from '../common/Icons';
 
 interface BilasTransactionSheetProps {
   isOpen: boolean;
@@ -134,8 +135,8 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
               {subMode === 'contacts' && 'Daftar Kontak Saya'}
             </div>
           </div>
-          <button type="button" className="bilas-sheet-close" onClick={onClose}>
-            ✕
+          <button type="button" className="bilas-sheet-close" onClick={onClose} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CloseIcon size={18} color="#64748b" />
           </button>
         </div>
 
@@ -440,9 +441,13 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
                     fontWeight: 700,
                     cursor: 'pointer',
                     padding: '2px 0',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
                   }}
                 >
-                  📍 Maps
+                  <PinIcon size={14} color="#0284c7" />
+                  <span>Maps</span>
                 </button>
               </div>
               <textarea

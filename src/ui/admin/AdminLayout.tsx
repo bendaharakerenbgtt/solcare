@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { BilasTransactionSheet } from './BilasTransactionSheet';
+import { CloseIcon } from '../common/Icons';
 
 export const AdminLayout: React.FC = () => {
   const { user, ready, signOut } = useAuth();
@@ -19,40 +20,46 @@ export const AdminLayout: React.FC = () => {
 
   const closeSidebar = () => setSidebarOpen(false);
 
+  const isOrderNew = location.pathname === '/admin/orders/new';
+  const isOrderDetail = location.pathname.startsWith('/admin/orders/') && !isOrderNew;
+  const isSubPageWithAction = isOrderNew || isOrderDetail;
+
   const isBeranda = location.pathname === '/admin';
-  const isPesanan = location.pathname.startsWith('/admin/orders') && location.pathname !== '/admin/orders/new';
+  const isPesanan = location.pathname.startsWith('/admin/orders') && !isOrderNew;
   const isLaporan = location.pathname === '/admin/reports';
   const isAkun = sidebarOpen || location.pathname === '/admin/settings';
 
   return (
     <div>
-      <div className="admin-mobile-bar">
-        <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <img
-            src="/logo-color.jpg"
-            alt="Solecare Logo"
-            style={{ width: '28px', height: '28px', borderRadius: '7px', objectFit: 'cover' }}
-          />
-          <span style={{ fontWeight: 800, fontSize: '1.28rem', color: '#0284c7', letterSpacing: '-0.03em' }}>
-            solecare
-          </span>
-        </Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            type="button"
-            className="mobile-header-icon-btn"
-            title="Notifikasi"
-            onClick={() => alert('Tidak ada notifikasi baru')}
-            aria-label="Notifikasi"
-            style={{ background: 'transparent', border: 'none', padding: '6px', cursor: 'pointer' }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-          </button>
+      {!isSubPageWithAction && (
+        <div className="admin-mobile-bar">
+          <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+            <img
+              src="/logo-color.jpg"
+              alt="Solecare Logo"
+              style={{ width: '28px', height: '28px', borderRadius: '7px', objectFit: 'cover' }}
+            />
+            <span style={{ fontWeight: 800, fontSize: '1.28rem', color: '#0284c7', letterSpacing: '-0.03em' }}>
+              solecare
+            </span>
+          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              className="mobile-header-icon-btn"
+              title="Notifikasi"
+              onClick={() => alert('Tidak ada notifikasi baru')}
+              aria-label="Notifikasi"
+              style={{ background: 'transparent', border: 'none', padding: '6px', cursor: 'pointer' }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {sidebarOpen && (
         <div
@@ -79,8 +86,9 @@ export const AdminLayout: React.FC = () => {
               className="mobile-sidebar-close"
               onClick={closeSidebar}
               aria-label="Tutup Menu"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
             >
-              ✕
+              <CloseIcon size={18} color="#64748b" />
             </button>
           </div>
 
@@ -198,93 +206,95 @@ export const AdminLayout: React.FC = () => {
       </div>
 
       {/* Bilas-Style Mobile App Bottom Navigation Bar with Floating (+) Button */}
-      <nav className="bilas-bottom-nav" aria-label="Menu Navigasi Bawah Bilas">
-        {/* 1. Beranda */}
-        <Link
-          to="/admin"
-          className={`bilas-nav-item ${isBeranda ? 'active' : ''}`}
-          onClick={closeSidebar}
-        >
-          <img
-            src={isBeranda ? '/bilas_icons/icon_menu_home.webp' : '/bilas_icons/icon_menu_home_disable.webp'}
-            alt="Beranda"
-            className="bilas-nav-icon"
-          />
-          <span className="bilas-nav-label">Beranda</span>
-        </Link>
+      {!isSubPageWithAction && (
+        <nav className="bilas-bottom-nav" aria-label="Menu Navigasi Bawah Bilas">
+          {/* 1. Beranda */}
+          <Link
+            to="/admin"
+            className={`bilas-nav-item ${isBeranda ? 'active' : ''}`}
+            onClick={closeSidebar}
+          >
+            <img
+              src={isBeranda ? '/bilas_icons/icon_menu_home.webp' : '/bilas_icons/icon_menu_home_disable.webp'}
+              alt="Beranda"
+              className="bilas-nav-icon"
+            />
+            <span className="bilas-nav-label">Beranda</span>
+          </Link>
 
-        {/* 2. Pesanan */}
-        <Link
-          to="/admin/orders"
-          className={`bilas-nav-item ${isPesanan ? 'active' : ''}`}
-          onClick={closeSidebar}
-        >
-          <img
-            src={isPesanan ? '/bilas_icons/icon_menu_pesanan.webp' : '/bilas_icons/icon_menu_pesanan_disable.webp'}
-            alt="Pesanan"
-            className="bilas-nav-icon"
-          />
-          <span className="bilas-nav-label">Pesanan</span>
-        </Link>
+          {/* 2. Pesanan */}
+          <Link
+            to="/admin/orders"
+            className={`bilas-nav-item ${isPesanan ? 'active' : ''}`}
+            onClick={closeSidebar}
+          >
+            <img
+              src={isPesanan ? '/bilas_icons/icon_menu_pesanan.webp' : '/bilas_icons/icon_menu_pesanan_disable.webp'}
+              alt="Pesanan"
+              className="bilas-nav-icon"
+            />
+            <span className="bilas-nav-label">Pesanan</span>
+          </Link>
 
-        {/* Center Floating (+) Button */}
-        <button
-          type="button"
-          className={`bilas-nav-fab ${transactionSheetOpen ? 'open' : ''}`}
-          onClick={() => setTransactionSheetOpen(!transactionSheetOpen)}
-          aria-label="Buat Transaksi Baru"
-          title="Buat Transaksi"
-        >
-          <div className="bilas-nav-fab-circle">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{
-                transform: transactionSheetOpen ? 'rotate(45deg)' : 'none',
-                transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-              }}
-            >
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-          </div>
-        </button>
+          {/* Center Floating (+) Button */}
+          <button
+            type="button"
+            className={`bilas-nav-fab ${transactionSheetOpen ? 'open' : ''}`}
+            onClick={() => setTransactionSheetOpen(!transactionSheetOpen)}
+            aria-label="Buat Transaksi Baru"
+            title="Buat Transaksi"
+          >
+            <div className="bilas-nav-fab-circle">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  transform: transactionSheetOpen ? 'rotate(45deg)' : 'none',
+                  transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </div>
+          </button>
 
-        {/* 3. Laporan */}
-        <Link
-          to="/admin/reports"
-          className={`bilas-nav-item ${isLaporan ? 'active' : ''}`}
-          onClick={closeSidebar}
-        >
-          <img
-            src={isLaporan ? '/bilas_icons/icon_menu_laporan.webp' : '/bilas_icons/icon_menu_laporan_disable.webp'}
-            alt="Laporan"
-            className="bilas-nav-icon"
-          />
-          <span className="bilas-nav-label">Laporan</span>
-        </Link>
+          {/* 3. Laporan */}
+          <Link
+            to="/admin/reports"
+            className={`bilas-nav-item ${isLaporan ? 'active' : ''}`}
+            onClick={closeSidebar}
+          >
+            <img
+              src={isLaporan ? '/bilas_icons/icon_menu_laporan.webp' : '/bilas_icons/icon_menu_laporan_disable.webp'}
+              alt="Laporan"
+              className="bilas-nav-icon"
+            />
+            <span className="bilas-nav-label">Laporan</span>
+          </Link>
 
-        {/* 4. Akun */}
-        <Link
-          to="/admin/settings"
-          className={`bilas-nav-item ${isAkun ? 'active' : ''}`}
-          onClick={closeSidebar}
-          aria-label="Buka Menu Akun & Toko"
-        >
-          <img
-            src={isAkun ? '/bilas_icons/icon_menu_akun.webp' : '/bilas_icons/icon_menu_akun_disable.webp'}
-            alt="Akun"
-            className="bilas-nav-icon"
-          />
-          <span className="bilas-nav-label">Akun</span>
-        </Link>
-      </nav>
+          {/* 4. Akun */}
+          <Link
+            to="/admin/settings"
+            className={`bilas-nav-item ${isAkun ? 'active' : ''}`}
+            onClick={closeSidebar}
+            aria-label="Buka Menu Akun & Toko"
+          >
+            <img
+              src={isAkun ? '/bilas_icons/icon_menu_akun.webp' : '/bilas_icons/icon_menu_akun_disable.webp'}
+              alt="Akun"
+              className="bilas-nav-icon"
+            />
+            <span className="bilas-nav-label">Akun</span>
+          </Link>
+        </nav>
+      )}
 
       {/* Transaction Customer Selection Sheet (Pilih pelanggan sebelum melakukan transaksi) */}
       <BilasTransactionSheet

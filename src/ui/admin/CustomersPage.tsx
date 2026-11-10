@@ -5,6 +5,19 @@ import { repo } from '../../data';
 import type { Customer, Order } from '../../data/types';
 import { fmtDateTime, rupiah, whatsappLink } from '../../lib/format';
 import { MapsPickerModal } from '../common/MapsPickerModal';
+import {
+  WhatsAppIcon,
+  PhoneIcon,
+  PencilIcon,
+  UserIcon,
+  WalletIcon,
+  ReceiptIcon,
+  BoxIcon,
+  PinIcon,
+  CloseIcon,
+  DocumentIcon,
+  ChevronDownIcon,
+} from '../common/Icons';
 
 export const CustomersPage: React.FC = () => {
   const navigate = useNavigate();
@@ -237,7 +250,8 @@ export const CustomersPage: React.FC = () => {
                         textDecoration: 'none',
                       }}
                     >
-                      💬 Chat WA
+                      <WhatsAppIcon size={14} color="#ffffff" />
+                      <span>Chat WA</span>
                     </a>
                   ) : null}
 
@@ -257,7 +271,8 @@ export const CustomersPage: React.FC = () => {
                         textDecoration: 'none',
                       }}
                     >
-                      📞 Panggil
+                      <PhoneIcon size={13} color="#334155" />
+                      <span>Panggil</span>
                     </a>
                   ) : null}
 
@@ -278,7 +293,8 @@ export const CustomersPage: React.FC = () => {
                       cursor: 'pointer',
                     }}
                   >
-                    ✏️ Edit Profil
+                    <PencilIcon size={13} color="#ffffff" />
+                    <span>Edit Profil</span>
                   </button>
                 </div>
               </div>
@@ -302,7 +318,7 @@ export const CustomersPage: React.FC = () => {
                 onClick={() => setExpandedAccordion(expandedAccordion === 'profil' ? null : 'profil')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span>👤</span>
+                  <UserIcon size={18} color="#0284c7" />
                   <strong style={{ fontSize: '0.94rem' }}>Profil & Kontak</strong>
                 </div>
                 <span style={{ color: '#94a3b8', transform: expandedAccordion === 'profil' ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -345,7 +361,7 @@ export const CustomersPage: React.FC = () => {
                 onClick={() => setExpandedAccordion(expandedAccordion === 'keuangan' ? null : 'keuangan')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span>💰</span>
+                  <WalletIcon size={18} color="#0284c7" />
                   <strong style={{ fontSize: '0.94rem' }}>Data Keuangan</strong>
                 </div>
                 <span style={{ color: '#94a3b8', transform: expandedAccordion === 'keuangan' ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -388,7 +404,7 @@ export const CustomersPage: React.FC = () => {
                 onClick={() => setExpandedAccordion(expandedAccordion === 'transaksi' ? null : 'transaksi')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span>🧾</span>
+                  <ReceiptIcon size={18} color="#0284c7" />
                   <strong style={{ fontSize: '0.94rem' }}>Data Transaksi ({customerOrders.length})</strong>
                 </div>
                 <span style={{ color: '#94a3b8', transform: expandedAccordion === 'transaksi' ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -439,7 +455,7 @@ export const CustomersPage: React.FC = () => {
                 onClick={() => setExpandedAccordion(expandedAccordion === 'paket' ? null : 'paket')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span>📦</span>
+                  <BoxIcon size={18} color="#0284c7" />
                   <strong style={{ fontSize: '0.94rem' }}>Data Paket</strong>
                 </div>
                 <span style={{ color: '#94a3b8', transform: expandedAccordion === 'paket' ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -580,7 +596,7 @@ export const CustomersPage: React.FC = () => {
               }}
             >
               <span>BUAT TRANSAKSI</span>
-              <span>{showTxOptions ? '✕' : '▴'}</span>
+              {showTxOptions ? <CloseIcon size={14} color="#ffffff" /> : <ChevronDownIcon size={14} color="#ffffff" />}
             </button>
           </div>
         </div>
@@ -624,7 +640,8 @@ export const CustomersPage: React.FC = () => {
               }}
               title="Export ke XLS/Excel"
             >
-              📥 XLS
+              <DocumentIcon size={14} color="#0284c7" />
+              <span>XLS</span>
             </button>
           </div>
 
@@ -836,9 +853,9 @@ export const CustomersPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                style={{ background: 'transparent', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#94a3b8' }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
               >
-                ✕
+                <CloseIcon size={18} color="#94a3b8" />
               </button>
             </div>
 
@@ -966,9 +983,13 @@ export const CustomersPage: React.FC = () => {
                       fontSize: '0.8rem',
                       fontWeight: 700,
                       cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
                     }}
                   >
-                    📍 Maps
+                    <PinIcon size={14} color="#0284c7" />
+                    <span>Maps</span>
                   </button>
                 </div>
                 <textarea

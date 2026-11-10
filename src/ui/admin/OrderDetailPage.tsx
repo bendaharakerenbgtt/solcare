@@ -6,6 +6,20 @@ import { fmtDateTime, rupiah, displayCode, whatsappLink } from '../../lib/format
 import { buildCollage, validateInputFile } from '../../lib/collage';
 import { toLocalInput, fromLocalInput } from '../hooks';
 import { InvoiceModal } from '../common/InvoiceModal';
+import {
+  PhoneIcon,
+  TruckIcon,
+  PencilIcon,
+  CheckIcon,
+  CameraIcon,
+  CloseIcon,
+  QrisIcon,
+  CashIcon,
+  ClockIcon,
+  PrinterIcon,
+  DocumentIcon,
+  SneakerIllustration,
+} from '../common/Icons';
 
 function formatBilasDateTime(iso: string | null | undefined): string {
   if (!iso) return '-';
@@ -28,16 +42,6 @@ const BILAS_STAGE_LABEL: Record<OrderStatus, string> = {
   selesai: 'Siap Ambil',
   diambil: 'Selesai (Diambil)',
 };
-
-const SneakerThumb: React.FC = () => (
-  <svg width="34" height="22" viewBox="0 0 100 65" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M10 52C25 52 75 52 90 52C93 52 95 49 93 46L86 32C84 28 80 25 75 25H55L45 10C42 5 35 5 30 8L15 18C10 22 8 28 8 34V48C8 50.2 8.9 52 10 52Z" fill="#0284c7" />
-    <path d="M5 52H95C96.5 52 98 54 98 56C98 58 96.5 60 95 60H5C3.5 60 2 58 2 56C2 54 3.5 52 5 52Z" fill="#e2e8f0" />
-    <path d="M8 58H92V61C92 62.5 90.5 64 89 64H11C9.5 64 8 62.5 8 61V58Z" fill="#cbd5e1" />
-    <path d="M15 52C12 45 15 35 22 30L32 23C36 20 42 22 44 26L48 35C45 42 35 48 25 52H15Z" fill="#fed7aa" />
-    <path d="M40 32L65 42M48 28L73 38" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-  </svg>
-);
 
 export const OrderDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -348,13 +352,7 @@ export const OrderDetailPage: React.FC = () => {
               alignItems: 'center',
             }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
+            <DocumentIcon size={22} color="#0284c7" />
           </button>
 
           {/* Print Icon */}
@@ -375,11 +373,7 @@ export const OrderDetailPage: React.FC = () => {
               alignItems: 'center',
             }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 6 2 18 2 18 9"></polyline>
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-              <rect x="6" y="14" width="12" height="8"></rect>
-            </svg>
+            <PrinterIcon size={22} color="#0284c7" />
           </button>
         </div>
       </div>
@@ -477,12 +471,10 @@ export const OrderDetailPage: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 textDecoration: 'none',
-                color: '#64748b',
-                fontSize: '0.9rem',
               }}
               title="Panggil Telepon"
             >
-              📞
+              <PhoneIcon size={16} color="#64748b" />
             </a>
           )}
         </div>
@@ -506,7 +498,7 @@ export const OrderDetailPage: React.FC = () => {
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '1.1rem' }}>🚚</span>
+            <TruckIcon size={20} color="#0284c7" />
             <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>Informasi Antar/Jemput</strong>
           </div>
           <span style={{ color: '#94a3b8', transform: deliveryExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -612,10 +604,12 @@ export const OrderDetailPage: React.FC = () => {
               fontSize: '0.78rem',
               color: '#0284c7',
               padding: 0,
+              display: 'flex',
+              alignItems: 'center',
             }}
             title="Ubah Estimasi"
           >
-            ✏️
+            <PencilIcon size={14} color="#0284c7" />
           </button>
         </div>
       </div>
@@ -666,7 +660,7 @@ export const OrderDetailPage: React.FC = () => {
                       flexShrink: 0,
                     }}
                   >
-                    <SneakerThumb />
+                    <SneakerIllustration width={38} height={24} />
                   </div>
                   <div>
                     <strong style={{ fontSize: '0.9rem', color: '#0f172a', display: 'block' }}>
@@ -813,12 +807,10 @@ export const OrderDetailPage: React.FC = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '0.72rem',
-                      fontWeight: 800,
                       marginTop: '2px',
                     }}
                   >
-                    ✓
+                    <CheckIcon size={12} color="#ffffff" />
                   </div>
                   <div>
                     <strong style={{ fontSize: '0.88rem', color: '#0f172a', display: 'block' }}>
@@ -848,12 +840,10 @@ export const OrderDetailPage: React.FC = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '0.72rem',
-                        fontWeight: 800,
                         marginTop: '2px',
                       }}
                     >
-                      ✓
+                      <CheckIcon size={12} color="#ffffff" />
                     </div>
                     <div>
                       <strong style={{ fontSize: '0.88rem', color: '#0f172a', display: 'block' }}>
@@ -884,12 +874,10 @@ export const OrderDetailPage: React.FC = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '0.72rem',
-                        fontWeight: 800,
                         marginTop: '2px',
                       }}
                     >
-                      ⏱
+                      <ClockIcon size={12} color="#ffffff" />
                     </div>
                     <div>
                       <strong style={{ fontSize: '0.88rem', color: '#0f172a', display: 'block' }}>
@@ -928,7 +916,7 @@ export const OrderDetailPage: React.FC = () => {
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>📸</span>
+            <CameraIcon size={20} color="#0284c7" />
             <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Dokumentasi Foto & Kolase 2×2</strong>
           </div>
           <span style={{ color: '#94a3b8', transform: collageExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -1095,7 +1083,7 @@ export const OrderDetailPage: React.FC = () => {
             boxShadow: '0 4px 12px rgba(0, 82, 204, 0.25)',
           }}
         >
-          {updatingStatus ? 'Menyimpan...' : order.status === 'diambil' ? 'PESANAN SELESAI ✓' : 'SELESAIKAN PROSES'}
+          {updatingStatus ? 'Menyimpan...' : order.status === 'diambil' ? 'PESANAN SELESAI' : 'SELESAIKAN PROSES'}
         </button>
       </div>
 
@@ -1114,9 +1102,9 @@ export const OrderDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setDetailModalOpen(false)}
-                style={{ background: 'transparent', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#94a3b8' }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
               >
-                ✕
+                <CloseIcon size={18} color="#94a3b8" />
               </button>
             </div>
 
@@ -1184,9 +1172,9 @@ export const OrderDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setPayModalOpen(false)}
-                style={{ background: 'transparent', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#94a3b8' }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
               >
-                ✕
+                <CloseIcon size={18} color="#94a3b8" />
               </button>
             </div>
 
@@ -1213,7 +1201,8 @@ export const OrderDetailPage: React.FC = () => {
                   gap: '8px',
                 }}
               >
-                <span>📱</span> QRIS (Lunas Langsung)
+                <QrisIcon size={18} color="#ffffff" />
+                <span>QRIS (Lunas Langsung)</span>
               </button>
 
               <button
@@ -1234,7 +1223,8 @@ export const OrderDetailPage: React.FC = () => {
                   gap: '8px',
                 }}
               >
-                <span>💵</span> Tunai / Cash (Lunas Langsung)
+                <CashIcon size={18} color="#ffffff" />
+                <span>Tunai / Cash (Lunas Langsung)</span>
               </button>
             </div>
           </div>
@@ -1256,9 +1246,9 @@ export const OrderDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setAdjustModalOpen(false)}
-                style={{ background: 'transparent', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#94a3b8' }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
               >
-                ✕
+                <CloseIcon size={18} color="#94a3b8" />
               </button>
             </div>
 

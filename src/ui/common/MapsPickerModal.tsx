@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { PinIcon, CloseIcon, TargetIcon } from './Icons';
 
 interface MapsPickerModalProps {
   isOpen: boolean;
@@ -84,7 +85,7 @@ export const MapsPickerModal: React.FC<MapsPickerModalProps> = ({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '1.2rem' }}>📍</span>
+            <PinIcon size={20} color="#0284c7" />
             <strong style={{ fontSize: '1.05rem', color: '#0f172a' }}>Pilih Titik Lokasi Alamat</strong>
           </div>
           <button
@@ -93,12 +94,11 @@ export const MapsPickerModal: React.FC<MapsPickerModalProps> = ({
             style={{
               background: 'transparent',
               border: 'none',
-              fontSize: '1.2rem',
-              color: '#94a3b8',
               cursor: 'pointer',
+              padding: 0,
             }}
           >
-            ✕
+            <CloseIcon size={18} color="#94a3b8" />
           </button>
         </div>
 
@@ -135,10 +135,14 @@ export const MapsPickerModal: React.FC<MapsPickerModalProps> = ({
                 fontWeight: 700,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
               }}
               title="Gunakan GPS perangkat"
             >
-              {locating ? 'Mendeteksi...' : '🎯 GPS'}
+              <TargetIcon size={14} color="#ffffff" />
+              <span>{locating ? 'Mendeteksi...' : 'GPS'}</span>
             </button>
           </div>
         </div>
@@ -163,11 +167,10 @@ export const MapsPickerModal: React.FC<MapsPickerModalProps> = ({
               left: '50%',
               transform: 'translate(-50%, -100%)',
               pointerEvents: 'none',
-              fontSize: '2rem',
               filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.3))',
             }}
           >
-            📍
+            <PinIcon size={34} color="#ef4444" />
           </div>
 
           <div

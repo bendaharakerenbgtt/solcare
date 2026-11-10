@@ -4,6 +4,25 @@ import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import type { Order } from '../../data/types';
 import { InvoiceModal } from '../common/InvoiceModal';
+import {
+  TruckIcon,
+  StarIcon,
+  TagIcon,
+  TrashIcon,
+  SearchIcon,
+  PrinterIcon,
+  CreditCardIcon,
+  CheckIcon,
+  CloseIcon,
+  PlusIcon,
+  MinusIcon,
+  SneakerIllustration,
+  BagIllustration,
+  CapIllustration,
+  HelmetIllustration,
+  SparklesIllustration,
+  ChevronRightIcon,
+} from '../common/Icons';
 
 interface SelectedServiceItem {
   id: string;
@@ -22,44 +41,33 @@ interface ServiceDef {
   name: string;
   price: number;
   days: number;
-  icon: string;
 }
-
-const SneakerThumb: React.FC = () => (
-  <svg width="34" height="22" viewBox="0 0 100 65" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M10 52C25 52 75 52 90 52C93 52 95 49 93 46L86 32C84 28 80 25 75 25H55L45 10C42 5 35 5 30 8L15 18C10 22 8 28 8 34V48C8 50.2 8.9 52 10 52Z" fill="#0284c7" />
-    <path d="M5 52H95C96.5 52 98 54 98 56C98 58 96.5 60 95 60H5C3.5 60 2 58 2 56C2 54 3.5 52 5 52Z" fill="#e2e8f0" />
-    <path d="M8 58H92V61C92 62.5 90.5 64 89 64H11C9.5 64 8 62.5 8 61V58Z" fill="#cbd5e1" />
-    <path d="M15 52C12 45 15 35 22 30L32 23C36 20 42 22 44 26L48 35C45 42 35 48 25 52H15Z" fill="#fed7aa" />
-    <path d="M40 32L65 42M48 28L73 38" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-  </svg>
-);
 
 const SOLECARE_SERVICES: ServiceDef[] = [
   // 1. Sepatu
-  { id: 'sc-deep-clean', category: 'Sepatu', name: 'Deep Clean', price: 35000, days: 3, icon: '👟' },
-  { id: 'sc-fast-clean', category: 'Sepatu', name: 'Fast Clean', price: 25000, days: 2, icon: '👟' },
-  { id: 'sc-leather-suede', category: 'Sepatu', name: 'Leather & Suede Clean', price: 45000, days: 3, icon: '👟' },
-  { id: 'sc-white-canvas', category: 'Sepatu', name: 'White Canvas Treatment', price: 50000, days: 3, icon: '👟' },
-  { id: 'sc-heavy-clean', category: 'Sepatu', name: 'Heavy Clean (Lumpur/Noda)', price: 65000, days: 4, icon: '👟' },
+  { id: 'sc-deep-clean', category: 'Sepatu', name: 'Deep Clean', price: 35000, days: 3 },
+  { id: 'sc-fast-clean', category: 'Sepatu', name: 'Fast Clean', price: 25000, days: 2 },
+  { id: 'sc-leather-suede', category: 'Sepatu', name: 'Leather & Suede Clean', price: 45000, days: 3 },
+  { id: 'sc-white-canvas', category: 'Sepatu', name: 'White Canvas Treatment', price: 50000, days: 3 },
+  { id: 'sc-heavy-clean', category: 'Sepatu', name: 'Heavy Clean (Lumpur/Noda)', price: 65000, days: 4 },
 
   // 2. Tas
-  { id: 'sc-tas-kecil', category: 'Tas', name: 'Tas Kecil / Slingbag', price: 35000, days: 3, icon: '👜' },
-  { id: 'sc-tas-sedang', category: 'Tas', name: 'Tas Sedang / Backpack', price: 50000, days: 3, icon: '🎒' },
-  { id: 'sc-tas-kulit', category: 'Tas', name: 'Tas Kulit / Leather Bag', price: 75000, days: 4, icon: '💼' },
+  { id: 'sc-tas-kecil', category: 'Tas', name: 'Tas Kecil / Slingbag', price: 35000, days: 3 },
+  { id: 'sc-tas-sedang', category: 'Tas', name: 'Tas Sedang / Backpack', price: 50000, days: 3 },
+  { id: 'sc-tas-kulit', category: 'Tas', name: 'Tas Kulit / Leather Bag', price: 75000, days: 4 },
 
   // 3. Topi
-  { id: 'sc-topi-snapback', category: 'Topi', name: 'Topi Baseball / Snapback', price: 25000, days: 2, icon: '🧢' },
-  { id: 'sc-topi-bucket', category: 'Topi', name: 'Bucket Hat / Fedora', price: 25000, days: 2, icon: '👒' },
+  { id: 'sc-topi-snapback', category: 'Topi', name: 'Topi Baseball / Snapback', price: 25000, days: 2 },
+  { id: 'sc-topi-bucket', category: 'Topi', name: 'Bucket Hat / Fedora', price: 25000, days: 2 },
 
   // 4. Helm
-  { id: 'sc-helm-half', category: 'Helm', name: 'Helm Half Face', price: 30000, days: 2, icon: '🪖' },
-  { id: 'sc-helm-full', category: 'Helm', name: 'Helm Full Face', price: 45000, days: 3, icon: '🪖' },
+  { id: 'sc-helm-half', category: 'Helm', name: 'Helm Half Face', price: 30000, days: 2 },
+  { id: 'sc-helm-full', category: 'Helm', name: 'Helm Full Face', price: 45000, days: 3 },
 
   // 5. Perawatan Khusus
-  { id: 'sc-unyellowing', category: 'Perawatan Khusus', name: 'Unyellowing Midsole', price: 70000, days: 3, icon: '✨' },
-  { id: 'sc-reglue', category: 'Perawatan Khusus', name: 'Reglue Sole', price: 30000, days: 2, icon: '🔧' },
-  { id: 'sc-repaint', category: 'Perawatan Khusus', name: 'Repaint Upper / Midsole', price: 135000, days: 7, icon: '🎨' },
+  { id: 'sc-unyellowing', category: 'Perawatan Khusus', name: 'Unyellowing Midsole', price: 70000, days: 3 },
+  { id: 'sc-reglue', category: 'Perawatan Khusus', name: 'Reglue Sole', price: 30000, days: 2 },
+  { id: 'sc-repaint', category: 'Perawatan Khusus', name: 'Repaint Upper / Midsole', price: 135000, days: 7 },
 ];
 
 const CATEGORIES = [
@@ -293,15 +301,30 @@ export const OrderFormPage: React.FC = () => {
     );
   }, [search]);
 
+  const renderCategoryIcon = (catName: string) => {
+    switch (catName) {
+      case 'Sepatu':
+        return <SneakerIllustration width={38} height={24} />;
+      case 'Tas':
+        return <BagIllustration size={22} color="#0284c7" />;
+      case 'Topi':
+        return <CapIllustration size={22} color="#0284c7" />;
+      case 'Helm':
+        return <HelmetIllustration size={22} color="#0284c7" />;
+      default:
+        return <SparklesIllustration size={22} color="#d97706" />;
+    }
+  };
+
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', paddingBottom: '90px' }}>
+    <div style={{ maxWidth: '480px', margin: '0 auto', background: '#f8fafc', minHeight: '100vh', padding: '12px 16px 130px' }}>
       {/* ======================================================== */}
       {/* SCREEN 1: PILIH LAYANAN (Persis Foto Bilas 1, 2, 3)      */}
       {/* ======================================================== */}
       {screenMode === 'catalog' && (
         <div className="stack" style={{ gap: '14px' }}>
           {/* Top Bar: Back & Title */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
             <button
               type="button"
               onClick={() => {
@@ -323,32 +346,38 @@ export const OrderFormPage: React.FC = () => {
             >
               ←
             </button>
-            <h1 style={{ margin: 0, fontSize: '1.22rem', fontWeight: 800, color: '#0f172a' }}>
+            <h1 style={{ margin: 0, fontSize: '1.24rem', fontWeight: 800, color: '#0f172a' }}>
               Pilih Layanan
             </h1>
           </div>
 
           {/* Search Bar Persis Foto 1 */}
-          <div className="order-search-wrap" style={{ margin: 0, borderRadius: '999px', border: '1px solid #cbd5e1' }}>
-            <svg className="order-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              background: '#ffffff',
+              borderRadius: '999px',
+              border: '1px solid #cbd5e1',
+              padding: '8px 16px',
+            }}
+          >
+            <SearchIcon size={18} color="#94a3b8" />
             <input
               type="text"
-              className="order-search-field"
               placeholder="Pencarian"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ border: 'none', background: 'transparent' }}
+              style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '0.9rem' }}
             />
             {search && (
               <button
                 type="button"
-                className="order-search-clear"
                 onClick={() => setSearch('')}
+                style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0 }}
               >
-                ×
+                <CloseIcon size={16} />
               </button>
             )}
           </div>
@@ -409,11 +438,10 @@ export const OrderFormPage: React.FC = () => {
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  fontSize: '1.4rem',
                                   flexShrink: 0,
                                 }}
                               >
-                                {svc.category === 'Sepatu' ? <SneakerThumb /> : svc.icon}
+                                {renderCategoryIcon(svc.category)}
                               </div>
                               <div>
                                 <strong style={{ display: 'block', fontSize: '0.94rem', color: '#0f172a' }}>
@@ -445,12 +473,10 @@ export const OrderFormPage: React.FC = () => {
                                       display: 'flex',
                                       alignItems: 'center',
                                       justifyContent: 'center',
-                                      fontSize: '1.1rem',
-                                      fontWeight: 800,
                                       cursor: 'pointer',
                                     }}
                                   >
-                                    +
+                                    <PlusIcon size={14} color="#ffffff" />
                                   </button>
                                   <button
                                     type="button"
@@ -503,11 +529,16 @@ export const OrderFormPage: React.FC = () => {
             <div
               style={{
                 position: 'fixed',
-                bottom: 'calc(65px + env(safe-area-inset-bottom, 0px))',
+                bottom: 0,
                 left: 0,
                 right: 0,
-                padding: '0 16px',
-                zIndex: 35,
+                padding: '12px 16px max(12px, env(safe-area-inset-bottom, 12px))',
+                background: '#ffffff',
+                borderTop: '1px solid #e2e8f0',
+                boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
+                zIndex: 100,
+                maxWidth: '480px',
+                margin: '0 auto',
               }}
             >
               <button
@@ -518,15 +549,20 @@ export const OrderFormPage: React.FC = () => {
                   background: '#0284c7',
                   color: '#ffffff',
                   border: 'none',
-                  borderRadius: '999px',
-                  padding: '13px',
-                  fontSize: '0.95rem',
+                  borderRadius: '14px',
+                  padding: '14px',
+                  fontSize: '0.98rem',
                   fontWeight: 800,
-                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)',
                   cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
                 }}
               >
-                Lanjutkan {totalQty} Layanan
+                <span>Lanjutkan {totalQty} Layanan</span>
+                <ChevronRightIcon size={18} color="#ffffff" />
               </button>
             </div>
           )}
@@ -534,14 +570,14 @@ export const OrderFormPage: React.FC = () => {
       )}
 
       {/* ======================================================== */}
-      {/* MODAL: TAMBAH LAYANAN SATUAN (Persis Foto Bilas 2)       */}
+      {/* MODAL 1: TAMBAH LAYANAN SATUAN (Persis Foto Bilas 2)     */}
       {/* ======================================================== */}
       {activeModalSvc && (
-        <div className="modal-backdrop" onClick={() => setActiveModalSvc(null)}>
+        <div className="modal-backdrop" onClick={() => setActiveModalSvc(null)} style={{ zIndex: 120 }}>
           <div
             className="modal"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '400px', borderRadius: '18px', padding: '18px' }}
+            style={{ maxWidth: '380px', width: '92%', borderRadius: '20px', padding: '20px' }}
           >
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -551,9 +587,9 @@ export const OrderFormPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveModalSvc(null)}
-                style={{ background: 'transparent', border: 'none', fontSize: '1.2rem', color: '#f97316', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
               >
-                ✕
+                <CloseIcon size={18} color="#f97316" />
               </button>
             </div>
 
@@ -582,9 +618,9 @@ export const OrderFormPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setModalQty(Math.max(1, modalQty - 1))}
-                  style={{ background: 'transparent', border: 'none', color: '#0284c7', fontSize: '1.2rem', fontWeight: 800, cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
                 >
-                  —
+                  <MinusIcon size={14} color="#0284c7" />
                 </button>
                 <span style={{ fontWeight: 800, fontSize: '0.92rem', minWidth: '16px', textAlign: 'center' }}>
                   {modalQty}
@@ -592,9 +628,9 @@ export const OrderFormPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setModalQty(modalQty + 1)}
-                  style={{ background: 'transparent', border: 'none', color: '#0284c7', fontSize: '1.2rem', fontWeight: 800, cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
                 >
-                  +
+                  <PlusIcon size={14} color="#0284c7" />
                 </button>
               </div>
             </div>
@@ -636,17 +672,15 @@ export const OrderFormPage: React.FC = () => {
                   borderRadius: '12px',
                   background: '#fee2e2',
                   border: 'none',
-                  color: '#dc2626',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '1.2rem',
                   cursor: 'pointer',
                   flexShrink: 0,
                 }}
                 title="Hapus Layanan"
               >
-                🗑️
+                <TrashIcon size={20} color="#dc2626" />
               </button>
               <button
                 type="button"
@@ -658,8 +692,8 @@ export const OrderFormPage: React.FC = () => {
                   border: 'none',
                   borderRadius: '12px',
                   padding: '12px',
-                  fontSize: '0.92rem',
                   fontWeight: 800,
+                  fontSize: '0.92rem',
                   cursor: 'pointer',
                 }}
               >
@@ -731,7 +765,7 @@ export const OrderFormPage: React.FC = () => {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '1.3rem' }}>🚚</span>
+                <TruckIcon size={22} color="#0284c7" />
                 <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Layanan Antar Jemput</strong>
               </div>
               <select
@@ -777,10 +811,9 @@ export const OrderFormPage: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '0.85rem',
                 }}
               >
-                ★
+                <StarIcon size={14} color="#ffffff" />
               </span>
               <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Jadikan Prioritas</strong>
               <button
@@ -810,19 +843,23 @@ export const OrderFormPage: React.FC = () => {
               <span
                 style={{
                   position: 'absolute',
-                  inset: 0,
-                  backgroundColor: isPriority ? '#0284c7' : '#cbd5e1',
-                  borderRadius: '999px',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: isPriority ? '#6d28d9' : '#cbd5e1',
+                  borderRadius: '24px',
                   transition: '0.2s',
                 }}
               >
                 <span
                   style={{
                     position: 'absolute',
-                    left: isPriority ? '22px' : '2px',
-                    top: '2px',
-                    width: '20px',
-                    height: '20px',
+                    content: '""',
+                    height: '18px',
+                    width: '18px',
+                    left: isPriority ? '22px' : '3px',
+                    bottom: '3px',
                     backgroundColor: '#ffffff',
                     borderRadius: '50%',
                     transition: '0.2s',
@@ -858,8 +895,8 @@ export const OrderFormPage: React.FC = () => {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {it.category === 'Sepatu' ? <SneakerThumb /> : <span>📦</span>}
+                    <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {renderCategoryIcon(it.category)}
                     </div>
                     <div>
                       <strong style={{ display: 'block', fontSize: '0.9rem', color: '#0f172a' }}>
@@ -871,48 +908,58 @@ export const OrderFormPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Counter */}
-                  <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: '999px', padding: '1px 8px', gap: '8px' }}>
+                  {/* Counter Pill */}
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      border: '1px solid #0284c7',
+                      borderRadius: '999px',
+                      padding: '2px 8px',
+                      gap: '8px',
+                    }}
+                  >
                     <button
                       type="button"
                       onClick={() => handleUpdateItemQty(it.serviceId, -1)}
-                      style={{ background: 'transparent', border: 'none', color: '#0284c7', fontWeight: 800, cursor: 'pointer' }}
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
                     >
-                      —
+                      <MinusIcon size={12} color="#0284c7" />
                     </button>
-                    <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{it.qty}</span>
+                    <span style={{ fontWeight: 800, fontSize: '0.85rem', minWidth: '14px', textAlign: 'center' }}>
+                      {it.qty}
+                    </span>
                     <button
                       type="button"
                       onClick={() => handleUpdateItemQty(it.serviceId, 1)}
-                      style={{ background: 'transparent', border: 'none', color: '#0284c7', fontWeight: 800, cursor: 'pointer' }}
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
                     >
-                      +
+                      <PlusIcon size={12} color="#0284c7" />
                     </button>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* + Layanan Button */}
-            <div style={{ marginTop: '12px', textAlign: 'center' }}>
-              <button
-                type="button"
-                onClick={() => setScreenMode('catalog')}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#0284c7',
-                  fontSize: '0.88rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                + Layanan
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setScreenMode('catalog')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#0284c7',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                marginTop: '12px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: 0,
+              }}
+            >
+              <PlusIcon size={14} color="#0284c7" /> Layanan
+            </button>
           </div>
 
           {/* 4. Pilihan Parfum */}
@@ -924,19 +971,19 @@ export const OrderFormPage: React.FC = () => {
               padding: '14px 16px',
             }}
           >
-            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a', marginBottom: '10px' }}>
               Pilihan Parfum
             </div>
-
-            <div className="stack" style={{ gap: '8px' }}>
+            <div className="stack" style={{ gap: '8px', fontSize: '0.85rem' }}>
               {['Tanpa Parfum', 'Vanilla Sweet Shoes', 'Fresh Apple Mint', 'Bubblegum Fresh'].map((p) => (
-                <label key={p} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', cursor: 'pointer' }}>
+                <label key={p} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                   <input
                     type="radio"
                     name="parfum"
+                    value={p}
                     checked={selectedParfum === p}
-                    onChange={() => setSelectedParfum(p)}
-                    style={{ accentColor: '#f97316' }}
+                    onChange={(e) => setSelectedParfum(e.target.value)}
+                    style={{ accentColor: '#ea580c' }}
                   />
                   <span>{p}</span>
                 </label>
@@ -958,7 +1005,7 @@ export const OrderFormPage: React.FC = () => {
             </div>
             <input
               type="text"
-              placeholder="Misalnya : Upper kotor pekat, jangan disikat kawat"
+              placeholder="Misalnya : Upper kotor pekat, jangan disikat kasar"
               value={extraNotes}
               onChange={(e) => setExtraNotes(e.target.value)}
               style={{
@@ -987,10 +1034,10 @@ export const OrderFormPage: React.FC = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>🏷️</span>
+              <TagIcon size={18} color="#f59e0b" />
               <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>Pilih Promo</strong>
             </div>
-            <span style={{ color: '#94a3b8' }}>›</span>
+            <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
           </div>
 
           {/* 7. Informasi Tagihan */}
@@ -1022,17 +1069,19 @@ export const OrderFormPage: React.FC = () => {
               right: 0,
               background: '#ffffff',
               borderTop: '1px solid #e2e8f0',
-              padding: '10px 16px max(10px, env(safe-area-inset-bottom, 10px))',
+              padding: '12px 16px max(12px, env(safe-area-inset-bottom, 12px))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              boxShadow: '0 -4px 12px rgba(0,0,0,0.06)',
-              zIndex: 35,
+              boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.12)',
+              zIndex: 100,
+              maxWidth: '480px',
+              margin: '0 auto',
             }}
           >
             <div>
-              <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Total Tagihan</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#b91c1c' }}>
+              <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Total Tagihan</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#b91c1c', letterSpacing: '-0.3px' }}>
                 {totalAmount.toLocaleString('id-ID')}
               </div>
             </div>
@@ -1045,12 +1094,15 @@ export const OrderFormPage: React.FC = () => {
                 background: '#f97316',
                 color: '#ffffff',
                 border: 'none',
-                borderRadius: '12px',
-                padding: '12px 28px',
-                fontSize: '0.95rem',
+                borderRadius: '14px',
+                padding: '13px 28px',
+                fontSize: '0.96rem',
                 fontWeight: 800,
                 cursor: submitting ? 'not-allowed' : 'pointer',
-                boxShadow: '0 4px 12px rgba(249, 115, 22, 0.35)',
+                boxShadow: '0 4px 14px rgba(249, 115, 22, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
               }}
             >
               {submitting ? 'Memproses...' : 'Buat Transaksi'}
@@ -1063,11 +1115,11 @@ export const OrderFormPage: React.FC = () => {
       {/* MODAL: PESANAN PRIORITAS (Persis Foto Bilas 6)           */}
       {/* ======================================================== */}
       {priorityModalOpen && (
-        <div className="modal-backdrop" onClick={() => setPriorityModalOpen(false)}>
+        <div className="modal-backdrop" onClick={() => setPriorityModalOpen(false)} style={{ zIndex: 120 }}>
           <div
             className="modal"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '360px', borderRadius: '18px', padding: '20px', textAlign: 'center' }}
+            style={{ maxWidth: '360px', width: '90%', borderRadius: '18px', padding: '20px', textAlign: 'center' }}
           >
             <h3 style={{ margin: '0 0 10px', fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
               Pesanan Prioritas
@@ -1083,10 +1135,10 @@ export const OrderFormPage: React.FC = () => {
                 background: '#0284c7',
                 color: '#ffffff',
                 border: 'none',
-                borderRadius: '10px',
+                borderRadius: '12px',
                 padding: '11px',
-                fontSize: '0.92rem',
                 fontWeight: 800,
+                fontSize: '0.92rem',
                 cursor: 'pointer',
               }}
             >
@@ -1100,28 +1152,33 @@ export const OrderFormPage: React.FC = () => {
       {/* MODAL: TRANSAKSI BERHASIL DISIMPAN (Persis Foto Bilas 5) */}
       {/* ======================================================== */}
       {successModalOpen && createdOrder && (
-        <div className="modal-backdrop">
+        <div className="modal-backdrop" style={{ zIndex: 125 }}>
           <div
             className="modal"
-            style={{ maxWidth: '420px', borderRadius: '20px', padding: '24px 20px', textAlign: 'center' }}
+            style={{
+              maxWidth: '380px',
+              width: '92%',
+              borderRadius: '24px',
+              padding: '24px 20px',
+              textAlign: 'center',
+            }}
           >
-            {/* Green Checkmark Circle */}
+            {/* Big Green Circle with Checkmark */}
             <div
               style={{
-                width: '68px',
-                height: '68px',
+                width: '64px',
+                height: '64px',
                 borderRadius: '50%',
                 background: '#22c55e',
                 color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '2.2rem',
                 margin: '0 auto 16px',
                 boxShadow: '0 6px 16px rgba(34, 197, 94, 0.35)',
               }}
             >
-              ✓
+              <CheckIcon size={32} color="#ffffff" />
             </div>
 
             <h3 style={{ margin: '0 0 4px', fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
@@ -1152,7 +1209,7 @@ export const OrderFormPage: React.FC = () => {
                   cursor: 'pointer',
                 }}
               >
-                <span>🔍</span>
+                <SearchIcon size={20} color="#0284c7" />
                 <span>Lihat Detail Transaksi</span>
               </button>
 
@@ -1175,7 +1232,7 @@ export const OrderFormPage: React.FC = () => {
                   cursor: 'pointer',
                 }}
               >
-                <span>🖨️</span>
+                <PrinterIcon size={20} color="#0284c7" />
                 <span>Lihat / Cetak Nota</span>
               </button>
 
@@ -1207,7 +1264,7 @@ export const OrderFormPage: React.FC = () => {
                   cursor: 'pointer',
                 }}
               >
-                <span>💳</span>
+                <CreditCardIcon size={20} color="#0284c7" />
                 <span>Bayar Sekarang</span>
               </button>
             </div>
