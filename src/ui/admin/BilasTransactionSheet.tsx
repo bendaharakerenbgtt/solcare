@@ -11,34 +11,61 @@ interface BilasTransactionSheetProps {
 
 export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
-  const [subMode, setSubMode] = useState<'menu' | 'search' | 'new'>('menu');
+  const [subMode, setSubMode] = useState<'menu' | 'search' | 'new' | 'contacts'>('menu');
   const [searchQuery, setSearchQuery] = useState('');
+  const [contactSearch, setContactSearch] = useState('');
+
+  // Form state for Tambah Pelanggan persis foto WhatsApp Image 2026-11-10 at 2.42.14 PM.jpeg
   const [newCustName, setNewCustName] = useState('');
   const [newCustPhone, setNewCustPhone] = useState('');
+  const [noPhone, setNoPhone] = useState(false);
+  const [newCustEmail, setNewCustEmail] = useState('');
+  const [newCustBirthDate, setNewCustBirthDate] = useState('');
+  const [newCustGender, setNewCustGender] = useState<'laki' | 'perempuan'>('laki');
+  const [newCustAddress, setNewCustAddress] = useState('');
 
-  const { data: customers } = useAsync(() => repo.listCustomers(), [isOpen]);
+  const { data: customers, reload } = useAsync(() => repo.listCustomers(), [isOpen]);
 
   if (!isOpen) return null;
 
   const handleSelectCustomer = (c: Customer) => {
     onClose();
-    navigate(`/admin/orders/new?customerId=${c.id}&name=${encodeURIComponent(c.name)}&phone=${encodeURIComponent(c.phone)}`);
+    // Buka detail pelanggan dengan opsi BUAT TRANSAKSI persis Bilas
+    navigate(`/admin/customers?selectedId=${c.id}`);
   };
 
   const handleCreateCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCustName.trim() || !newCustPhone.trim()) {
-      alert('Nama dan Nomor WhatsApp wajib diisi');
+    if (!newCustName.trim()) {
+      alert('Nama pelanggan wajib diisi');
       return;
     }
+    const finalPhone = noPhone ? '-' : newCustPhone.trim();
+    if (!noPhone && !finalPhone) {
+      alert('Nomor WhatsApp wajib diisi atau centang Tanpa nomor telepon');
+      return;
+    }
+
     try {
+      const fullNotes = [
+        newCustAddress ? `Alamat: ${newCustAddress}` : '',
+        newCustEmail ? `Email: ${newCustEmail}` : '',
+        newCustBirthDate ? `Lahir: ${newCustBirthDate}` : '',
+        newCustGender ? `Gender: ${newCustGender}` : '',
+      ]
+        .filter(Boolean)
+        .join(' | ');
+
       const created = await repo.saveCustomer({
         name: newCustName.trim(),
-        phone: newCustPhone.trim(),
-        notes: '',
+        phone: finalPhone,
+        notes: fullNotes,
       });
+
+      await reload();
       onClose();
-      navigate(`/admin/orders/new?customerId=${created.id}&name=${encodeURIComponent(created.name)}&phone=${encodeURIComponent(created.phone)}`);
+      // Buka detail pelanggan persis Bilas
+      navigate(`/admin/customers?selectedId=${created.id}`);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal menambahkan pelanggan');
     }
@@ -49,25 +76,70 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
     return c.name.toLowerCase().includes(q) || c.phone.includes(q);
   });
 
+  // Contoh data kontak HP persis foto WhatsApp Image 2026-11-10 at 2.42.14 PM (1).jpeg
+  const phoneContacts = [
+    { name: 'Adit Sepatu', phone: '081234567891' },
+    { name: 'Budi Santoso', phone: '081298765432' },
+    { name: 'Citra Kirana', phone: '085712345678' },
+    { name: 'Dimas Kurnia', phone: '087812345678' },
+    { name: 'Eka Prasetya', phone: '081399887766' },
+    { name: 'Fajar Maulana', phone: '082155443322' },
+    { name: 'Gita Savitri', phone: '089611223344' },
+    { name: 'Hendra Saputra', phone: '085233445566' },
+  ].filter((ct) => {
+    if (!contactSearch.trim()) return true;
+    const q = contactSearch.toLowerCase();
+    return ct.name.toLowerCase().includes(q) || ct.phone.includes(q);
+  });
+
   return (
     <div className="modal-backdrop" onClick={onClose} style={{ zIndex: 110 }}>
       <div
         className="bilas-sheet-container"
         onClick={(e) => e.stopPropagation()}
+        style={{
+          maxHeight: subMode === 'new' ? '92vh' : '82vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
       >
         <div className="bilas-sheet-handle-bar" />
 
+        {/* Header Bar Sheet */}
         <div className="bilas-sheet-header">
-          <div className="bilas-sheet-title">
-            {subMode === 'menu' && 'Pilih pelanggan sebelum melakukan transaksi!'}
-            {subMode === 'search' && 'Cari Pelanggan Terdaftar'}
-            {subMode === 'new' && 'Tambah Pelanggan Baru'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {subMode !== 'menu' && (
+              <button
+                type="button"
+                onClick={() => setSubMode('menu')}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: '1.2rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  color: '#0f172a',
+                  padding: '0 4px',
+                }}
+              >
+                ←
+              </button>
+            )}
+            <div className="bilas-sheet-title">
+              {subMode === 'menu' && 'Pilih pelanggan sebelum melakukan transaksi!'}
+              {subMode === 'search' && 'Cari Pelanggan'}
+              {subMode === 'new' && 'Tambah Pelanggan'}
+              {subMode === 'contacts' && 'Daftar Kontak Saya'}
+            </div>
           </div>
           <button type="button" className="bilas-sheet-close" onClick={onClose}>
             ✕
           </button>
         </div>
 
+        {/* ======================================================== */}
+        {/* SUBMODE 1: MENU 3 OPSI (Persis Foto Bilas 2.42.13 PM (2)) */}
+        {/* ======================================================== */}
         {subMode === 'menu' && (
           <div className="bilas-sheet-cards">
             {/* 1. Cari Pelanggan */}
@@ -110,14 +182,7 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
             <button
               type="button"
               className="bilas-card-option"
-              onClick={() => {
-                const phoneInput = prompt('Masukkan nomor WhatsApp pelanggan (contoh: 08123456789):');
-                if (phoneInput) {
-                  const nameInput = prompt('Masukkan nama pelanggan:') || 'Pelanggan';
-                  onClose();
-                  navigate(`/admin/orders/new?name=${encodeURIComponent(nameInput)}&phone=${encodeURIComponent(phoneInput)}`);
-                }
-              }}
+              onClick={() => setSubMode('contacts')}
             >
               <img
                 src="/bilas_icons/icon_pelanggankontak.webp"
@@ -133,6 +198,9 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
           </div>
         )}
 
+        {/* ======================================================== */}
+        {/* SUBMODE 2: CARI PELANGGAN TERDAFTAR                     */}
+        {/* ======================================================== */}
         {subMode === 'search' && (
           <div className="bilas-sheet-subcontent">
             <div className="order-search-wrap" style={{ marginBottom: '12px' }}>
@@ -148,15 +216,15 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
 
             <div className="bilas-customer-list">
               {filteredCustomers.length === 0 ? (
-                <div className="empty" style={{ padding: '16px 0' }}>
-                  Pelanggan tidak ditemukan.{' '}
+                <div className="empty" style={{ padding: '24px 0', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 10px', color: '#64748b' }}>Pelanggan tidak ditemukan.</p>
                   <button
                     type="button"
                     className="btn sm"
-                    style={{ background: 'var(--navy)', color: '#fff', marginTop: '6px' }}
+                    style={{ background: '#001b3a', color: '#fff', borderRadius: '10px' }}
                     onClick={() => setSubMode('new')}
                   >
-                    + Tambah Sebagai Pelanggan Baru
+                    + Tambah Pelanggan Baru
                   </button>
                 </div>
               ) : (
@@ -165,81 +233,312 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
                     key={c.id}
                     className="bilas-customer-row"
                     onClick={() => handleSelectCustomer(c)}
+                    style={{ cursor: 'pointer' }}
                   >
                     <div>
-                      <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--ink)' }}>
+                      <strong style={{ display: 'block', fontSize: '0.94rem', color: '#0f172a' }}>
                         {c.name}
                       </strong>
                       <span className="xs muted">{c.phone}</span>
                     </div>
-                    <span className="btn sm secondary" style={{ fontSize: '0.75rem' }}>
+                    <span className="btn sm secondary" style={{ fontSize: '0.78rem' }}>
                       Pilih →
                     </span>
                   </div>
                 ))
               )}
             </div>
-
-            <button
-              type="button"
-              className="btn secondary sm"
-              style={{ width: '100%', marginTop: '12px' }}
-              onClick={() => setSubMode('menu')}
-            >
-              ← Kembali ke Pilihan
-            </button>
           </div>
         )}
 
+        {/* ======================================================== */}
+        {/* SUBMODE 3: TAMBAH PELANGGAN LENGKAP                     */}
+        {/* (Persis Foto Bilas 2.42.14 PM: Nama, Telepon, Email,    */}
+        {/*  Tanggal Lahir, Jenis Kelamin, Alamat, Maps, SIMPAN)    */}
+        {/* ======================================================== */}
         {subMode === 'new' && (
-          <form onSubmit={handleCreateCustomer} className="bilas-sheet-subcontent">
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
-                Nama Pelanggan *
-              </label>
+          <form
+            onSubmit={handleCreateCustomer}
+            style={{
+              padding: '12px 18px 24px',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+            }}
+          >
+            {/* 1. Nama * */}
+            <label className="field">
+              <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#334155' }}>
+                Nama *
+              </span>
               <input
                 type="text"
-                className="order-search-field"
-                placeholder="Contoh: Mas Faris"
+                placeholder="Nama pelanggan"
                 value={newCustName}
                 onChange={(e) => setNewCustName(e.target.value)}
                 required
                 autoFocus
+                style={{
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  padding: '10px 12px',
+                  fontSize: '0.9rem',
+                }}
               />
-            </div>
+            </label>
 
-            <div style={{ marginBottom: '14px' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
-                Nomor WhatsApp *
-              </label>
+            {/* 2. Telepon * dengan bendera +62 */}
+            <label className="field">
+              <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#334155' }}>
+                Telepon *
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div
+                  style={{
+                    background: '#f1f5f9',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '10px',
+                    padding: '10px 12px',
+                    fontSize: '0.88rem',
+                    fontWeight: 700,
+                    color: '#334155',
+                    whiteSpace: 'nowrap',
+                    userSelect: 'none',
+                  }}
+                >
+                  🇮🇩 +62
+                </div>
+                <input
+                  type="tel"
+                  placeholder="81234567890"
+                  value={newCustPhone}
+                  onChange={(e) => setNewCustPhone(e.target.value)}
+                  disabled={noPhone}
+                  required={!noPhone}
+                  style={{
+                    flex: 1,
+                    borderRadius: '10px',
+                    border: '1px solid #cbd5e1',
+                    padding: '10px 12px',
+                    fontSize: '0.9rem',
+                    background: noPhone ? '#f1f5f9' : '#ffffff',
+                  }}
+                />
+              </div>
+            </label>
+
+            {/* Checkbox: Tanpa nomor telepon */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.84rem', cursor: 'pointer', color: '#475569', marginTop: '-4px' }}>
               <input
-                type="tel"
-                className="order-search-field"
-                placeholder="Contoh: 081210043758"
-                value={newCustPhone}
-                onChange={(e) => setNewCustPhone(e.target.value)}
-                required
+                type="checkbox"
+                checked={noPhone}
+                onChange={(e) => setNoPhone(e.target.checked)}
+                style={{ width: '16px', height: '16px', accentColor: '#001b3a' }}
               />
+              <span>Tanpa nomor telepon</span>
+            </label>
+
+            {/* 3. Email */}
+            <label className="field">
+              <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#334155' }}>
+                Email
+              </span>
+              <input
+                type="email"
+                placeholder="Email"
+                value={newCustEmail}
+                onChange={(e) => setNewCustEmail(e.target.value)}
+                style={{
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  padding: '10px 12px',
+                  fontSize: '0.9rem',
+                }}
+              />
+            </label>
+
+            {/* 4. Tanggal Lahir */}
+            <label className="field">
+              <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#334155' }}>
+                Tanggal Lahir
+              </span>
+              <input
+                type="date"
+                value={newCustBirthDate}
+                onChange={(e) => setNewCustBirthDate(e.target.value)}
+                style={{
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  padding: '10px 12px',
+                  fontSize: '0.9rem',
+                }}
+              />
+            </label>
+
+            {/* 5. Jenis Kelamin */}
+            <div className="field">
+              <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>
+                Jenis Kelamin
+              </span>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setNewCustGender('laki')}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '10px',
+                    border: newCustGender === 'laki' ? '2px solid #001b3a' : '1px solid #cbd5e1',
+                    background: newCustGender === 'laki' ? '#f0f4f9' : '#ffffff',
+                    color: newCustGender === 'laki' ? '#001b3a' : '#475569',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  Laki-laki
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewCustGender('perempuan')}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '10px',
+                    border: newCustGender === 'perempuan' ? '2px solid #001b3a' : '1px solid #cbd5e1',
+                    background: newCustGender === 'perempuan' ? '#f0f4f9' : '#ffffff',
+                    color: newCustGender === 'perempuan' ? '#001b3a' : '#475569',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  Perempuan
+                </button>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                className="btn secondary"
-                style={{ flex: 1 }}
-                onClick={() => setSubMode('menu')}
-              >
-                Kembali
-              </button>
+            {/* 6. Alamat & Tombol Maps */}
+            <label className="field">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#334155' }}>
+                  Alamat
+                </span>
+                <button
+                  type="button"
+                  onClick={() => alert('Pilih pin lokasi Google Maps')}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#0284c7',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    padding: '2px 0',
+                  }}
+                >
+                  📍 Maps
+                </button>
+              </div>
+              <textarea
+                placeholder="Masukkan alamat lengkap..."
+                value={newCustAddress}
+                onChange={(e) => setNewCustAddress(e.target.value)}
+                rows={2}
+                style={{
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  padding: '10px 12px',
+                  fontSize: '0.9rem',
+                }}
+              />
+            </label>
+
+            {/* 7. Sticky Tombol SIMPAN (Persis Foto Bilas) */}
+            <div style={{ marginTop: '8px' }}>
               <button
                 type="submit"
-                className="btn"
-                style={{ flex: 2, background: 'var(--navy)', color: '#fff', fontWeight: 700 }}
+                style={{
+                  width: '100%',
+                  background: '#001b3a',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '13px',
+                  fontSize: '0.95rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  letterSpacing: '0.02em',
+                }}
               >
-                Lanjut ke Transaksi →
+                SIMPAN
               </button>
             </div>
           </form>
+        )}
+
+        {/* ======================================================== */}
+        {/* SUBMODE 4: DAFTAR KONTAK SAYA (Persis Foto 2.42.14 PM (1))*/}
+        {/* ======================================================== */}
+        {subMode === 'contacts' && (
+          <div className="bilas-sheet-subcontent">
+            <div className="order-search-wrap" style={{ marginBottom: '12px' }}>
+              <input
+                type="text"
+                className="order-search-field"
+                placeholder="Cari kontak buku telepon..."
+                value={contactSearch}
+                onChange={(e) => setContactSearch(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <div className="bilas-customer-list">
+              {phoneContacts.map((ct, idx) => (
+                <div
+                  key={idx}
+                  className="bilas-customer-row"
+                  onClick={() => {
+                    setNewCustName(ct.name);
+                    setNewCustPhone(ct.phone);
+                    setSubMode('new');
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div
+                      style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '50%',
+                        background: '#e0f2fe',
+                        color: '#0284c7',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.92rem',
+                        fontWeight: 800,
+                      }}
+                    >
+                      {ct.name.slice(0, 1).toUpperCase()}
+                    </div>
+                    <div>
+                      <strong style={{ display: 'block', fontSize: '0.92rem', color: '#0f172a' }}>
+                        {ct.name}
+                      </strong>
+                      <span className="xs muted">{ct.phone}</span>
+                    </div>
+                  </div>
+                  <span className="btn sm secondary" style={{ fontSize: '0.78rem' }}>
+                    Gunakan →
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </div>
