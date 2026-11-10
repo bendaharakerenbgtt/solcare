@@ -5,6 +5,7 @@ import type { Order, StatusHistoryEntry, EstimateHistoryEntry, Settings, OrderSt
 import { rupiah, displayCode, whatsappLink } from '../../lib/format';
 import { toLocalInput, fromLocalInput } from '../hooks';
 import { InvoiceModal } from '../common/InvoiceModal';
+import { ModalPortal } from '../common/ModalPortal';
 import {
   PhoneIcon,
   TruckIcon,
@@ -198,7 +199,18 @@ export const OrderDetailPage: React.FC = () => {
   const isLunas = order.payment.status === 'lunas';
 
   return (
-    <div style={{ maxWidth: '480px', margin: '0 auto', background: '#f8fafc', minHeight: '100vh', paddingBottom: '90px' }}>
+    <div
+      style={{
+        maxWidth: '480px',
+        margin: '0 auto',
+        minHeight: '100vh',
+        background: '#f8fafc',
+        display: 'flex',
+        flexDirection: 'column',
+        // Ruang untuk bar aksi fixed di bawah agar card terakhir tidak tertutup.
+        paddingBottom: 'calc(92px + env(safe-area-inset-bottom, 0px))',
+      }}
+    >
       {/* ======================================================== */}
       {/* 1. TOP HEADER (Persis Foto Bilas Image 4)                */}
       {/* ======================================================== */}
@@ -843,38 +855,18 @@ export const OrderDetailPage: React.FC = () => {
       {/* ======================================================== */}
       {/* 10. STICKY BOTTOM ACTIONS (Persis Foto Bilas Image 4)    */}
       {/* ======================================================== */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: '#ffffff',
-          borderTop: '1px solid #e2e8f0',
-          padding: '12px 16px calc(12px + env(safe-area-inset-bottom, 0px))',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          zIndex: 40,
-          maxWidth: '480px',
-          margin: '0 auto',
-        }}
-      >
+      <div className="order-detail-action-bar">
         {/* BATAL BUTTON */}
         <button
           type="button"
           onClick={() => void handleCancelOrder()}
           disabled={updatingStatus || order.status === 'diambil'}
+          className="order-detail-action-btn"
           style={{
             flex: 1,
             background: '#ffffff',
             border: '1.5px solid #bf2f3b',
             color: '#bf2f3b',
-            fontWeight: 800,
-            fontSize: '0.88rem',
-            padding: '12px',
-            borderRadius: '24px',
-            cursor: 'pointer',
           }}
         >
           BATAL
@@ -885,16 +877,12 @@ export const OrderDetailPage: React.FC = () => {
           type="button"
           onClick={() => void handleAdvanceStatus()}
           disabled={updatingStatus || order.status === 'diambil'}
+          className="order-detail-action-btn"
           style={{
             flex: 2,
             background: order.status === 'diambil' ? '#94a3b8' : '#001b3a',
             border: 'none',
             color: '#ffffff',
-            fontWeight: 800,
-            fontSize: '0.88rem',
-            padding: '12px',
-            borderRadius: '24px',
-            cursor: 'pointer',
             boxShadow: '0 4px 12px rgba(0, 27, 58, 0.25)',
           }}
         >
@@ -906,7 +894,8 @@ export const OrderDetailPage: React.FC = () => {
       {/* MODAL 1: RINCIAN TAGIHAN (DETAIL BUTTON)                 */}
       {/* ======================================================== */}
       {detailModalOpen && (
-        <div className="modal-backdrop" onClick={() => setDetailModalOpen(false)} style={{ zIndex: 120 }}>
+        <ModalPortal>
+        <div className="modal-backdrop" onClick={() => setDetailModalOpen(false)} style={{ zIndex: 9000 }}>
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
@@ -970,13 +959,15 @@ export const OrderDetailPage: React.FC = () => {
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* ======================================================== */}
       {/* MODAL 2: CATAT PEMBAYARAN (BAYAR BUTTON)                 */}
       {/* ======================================================== */}
       {payModalOpen && (
-        <div className="modal-backdrop" onClick={() => setPayModalOpen(false)} style={{ zIndex: 120 }}>
+        <ModalPortal>
+        <div className="modal-backdrop" onClick={() => setPayModalOpen(false)} style={{ zIndex: 9000 }}>
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
@@ -1044,13 +1035,15 @@ export const OrderDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* ======================================================== */}
       {/* MODAL 3: PENYESUAIAN ESTIMASI                            */}
       {/* ======================================================== */}
       {adjustModalOpen && (
-        <div className="modal-backdrop" onClick={() => setAdjustModalOpen(false)} style={{ zIndex: 120 }}>
+        <ModalPortal>
+        <div className="modal-backdrop" onClick={() => setAdjustModalOpen(false)} style={{ zIndex: 9000 }}>
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
@@ -1107,6 +1100,7 @@ export const OrderDetailPage: React.FC = () => {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* ======================================================== */}

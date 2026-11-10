@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import type { Order, PublicOrderView, Settings } from '../../data/types';
 import { InvoiceReceipt, type ReceiptTheme } from './InvoiceReceipt';
+import { ModalPortal } from './ModalPortal';
 import { downloadReceiptPDF } from '../../lib/pdf';
 import { displayCode, whatsappLink } from '../../lib/format';
 
@@ -49,6 +50,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
   const waHref = customerPhone ? whatsappLink(customerPhone, waText) : null;
 
   return (
+    <ModalPortal>
     <div
       className="modal-overlay"
       onClick={(e) => {
@@ -296,5 +298,6 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };
