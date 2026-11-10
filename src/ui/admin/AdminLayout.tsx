@@ -29,17 +29,41 @@ export const AdminLayout: React.FC = () => {
       <div className="admin-mobile-bar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <img
-            src="/solecare_logo.jpg"
+            src="/logo-color.jpg"
             alt="Solecare Logo"
-            style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }}
+            style={{ width: '28px', height: '28px', borderRadius: '7px', objectFit: 'cover' }}
           />
-          <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em' }}>Soleful Soaks!</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', color: '#e2e8f0', background: 'rgba(255,255,255,0.1)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4ade80' }} />
-            {user.name}
+          <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#0284c7', letterSpacing: '-0.03em' }}>
+            solecare
           </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <button
+            type="button"
+            className="mobile-header-icon-btn"
+            title="Notifikasi"
+            onClick={() => alert('Tidak ada notifikasi baru')}
+            aria-label="Notifikasi"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="mobile-header-icon-btn"
+            title="Scan QR Transaksi"
+            onClick={() => alert('Fitur kamera scanner QR siap digunakan')}
+            aria-label="Scan QR Transaksi"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+              <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+            </svg>
+          </button>
         </div>
       </div>
 

@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../auth/AuthContext';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import { fmtDate, STATUS_LABEL, whatsappLink, rupiah } from '../../lib/format';
-import { isLate, countOrderItems, getQueueSlaStatus } from '../../lib/estimation';
+import { isLate } from '../../lib/estimation';
 import type { Order, OrderStatus } from '../../data/types';
 
 const STAGE_CONFIG: Record<
@@ -61,13 +62,16 @@ const STAGE_CONFIG: Record<
 };
 
 export const DashboardPage: React.FC = () => {
+  const { user } = useAuth();
   const { data: orders, loading, reload } = useAsync(() => repo.listOrders(), []);
-  const { data: settings } = useAsync(() => repo.getSettings(), []);
 
   const now = new Date();
 
-  const [dashboardTab, setDashboardTab] = useState<'transaksi' | 'keuangan' | 'kapasitas'>('transaksi');
-  const [activityTab, setActivityTab] = useState<'all' | 'pencucian' | 'pengeringan' | 'finishing' | 'selesai' | 'menunggu'>('all');
+  // Bilas top tabs: 'KEUANGAN' or 'TRANSAKSI' (Screenshot 1 & 2)
+  const [activeCardTab, setActiveCardTab] = useState<'TRANSAKSI' | 'KEUANGAN'>('TRANSAKSI');
+
+  // Status filter for orders list
+  const [statusFilter, setStatusFilter] = useState<'all' | 'menunggu' | 'proses' | 'selesai' | 'terlambat' | 'self_service' | 'penjemputan' | 'siap_antar'>('all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [stageModalOrder, setStageModalOrder] = useState<Order | null>(null);
 
@@ -75,33 +79,35 @@ export const DashboardPage: React.FC = () => {
   const completedOrders = (orders || []).filter((o) => o.status === 'selesai');
   const lateOrders = (orders || []).filter((o) => isLate(o, now) && o.status !== 'diambil');
 
-  const dailyCap = settings?.dailyCapacity ?? 8.5;
-  const activeItemsCount = countOrderItems(orders || []);
-  const slaInfo = getQueueSlaStatus(activeItemsCount, lateOrders.length, dailyCap);
-  const wipPercent = Math.min(100, Math.round((activeItemsCount / slaInfo.maxWipLimit) * 100));
-
   // Breakdown by activity status
   const washingOrders = (orders || []).filter((o) => o.status === 'pencucian');
   const dryingOrders = (orders || []).filter((o) => o.status === 'pengeringan');
   const finishingOrders = (orders || []).filter((o) => o.status === 'finishing');
   const waitingOrders = (orders || []).filter((o) => o.status === 'menunggu');
 
-  // Filtered activity items
-  const activityList = (orders || []).filter((o) => {
-    if (activityTab === 'all') return o.status !== 'diambil';
-    return o.status === activityTab;
-  });
+  // Filtered activity items based on Bilas status filter
+  const activityList = useMemo(() => {
+    return (orders || []).filter((o) => {
+      if (statusFilter === 'all') return o.status !== 'diambil';
+      if (statusFilter === 'menunggu') return o.status === 'menunggu';
+      if (statusFilter === 'proses') return o.status === 'pencucian' || o.status === 'pengeringan' || o.status === 'finishing';
+      if (statusFilter === 'selesai') return o.status === 'selesai';
+      if (statusFilter === 'terlambat') return isLate(o, now) && o.status !== 'diambil';
+      return false;
+    });
+  }, [orders, statusFilter, now]);
 
-  // Financial aggregates for Bilas KEUANGAN tab
-  const { totalPaid, totalUnpaid, qrisTotal, cashTotal, unpaidOrders } = useMemo(() => {
+  // Financial aggregates for Bilas KEUANGAN tab (Screenshot 1)
+  const { totalOmset, totalPaid, totalUnpaid, totalProducts, unpaidOrders } = useMemo(() => {
+    let omset = 0;
     let paid = 0;
     let unpaid = 0;
-    let qris = 0;
-    let cash = 0;
+    let products = 0;
     const unpaidList: Order[] = [];
 
     (orders || []).forEach((o) => {
       const price = o.total || 0;
+      omset += price;
       const isPaid = o.payment?.status === 'lunas';
       if (isPaid) {
         paid += price;
@@ -110,18 +116,18 @@ export const DashboardPage: React.FC = () => {
         unpaidList.push(o);
       }
 
-      if (o.payment?.method === 'qris') {
-        qris += price;
-      } else if (o.payment?.method === 'tunai') {
-        cash += price;
+      if (o.products && o.products.length > 0) {
+        o.products.forEach((p) => {
+          products += p.subtotal || 0;
+        });
       }
     });
 
     return {
+      totalOmset: omset,
       totalPaid: paid,
       totalUnpaid: unpaid,
-      qrisTotal: qris,
-      cashTotal: cash,
+      totalProducts: products,
       unpaidOrders: unpaidList,
     };
   }, [orders]);
@@ -178,398 +184,406 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="stack" style={{ gap: '16px' }}>
-      {/* Top Header Row matching Bilas: Hai, Soleful Soaks! + Subtitle + New Order Button */}
-      <div className="admin-page-header">
-        <div>
-          <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>Hai, Soleful Soaks!</h1>
-          <span className="xs muted" style={{ display: 'block', marginTop: '2px' }}>
-            {new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }).format(now)}
-          </span>
+    <div className="stack" style={{ gap: '14px' }}>
+      {/* 1. Header Sapaan Persis Screenshot Bilas: Hai, [Nama] \n Selamat datang kembali */}
+      <div style={{ marginTop: '2px', marginBottom: '4px' }}>
+        <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+          Hai, {user?.name || 'coba'}
+        </h1>
+        <span style={{ fontSize: '0.84rem', color: '#64748b' }}>Selamat datang kembali</span>
+      </div>
+
+      {/* 2. Bilas Signature Liquid Silk Blue Card (img_bg_liquid.webp) */}
+      <div className="bilas-liquid-card">
+        {/* Card Top Tabs: KEUANGAN ▾ & TRANSAKSI */}
+        <div className="bilas-liquid-tabs">
+          <button
+            type="button"
+            className={`bilas-liquid-tab ${activeCardTab === 'KEUANGAN' ? 'active' : ''}`}
+            onClick={() => setActiveCardTab('KEUANGAN')}
+          >
+            KEUANGAN ▾
+          </button>
+          <button
+            type="button"
+            className={`bilas-liquid-tab ${activeCardTab === 'TRANSAKSI' ? 'active' : ''}`}
+            onClick={() => setActiveCardTab('TRANSAKSI')}
+          >
+            TRANSAKSI
+          </button>
         </div>
-        <Link to="/admin/orders/new" className="btn sm btn-new-order-header">
-          + Pesanan
-        </Link>
+
+        {/* Card Body When KEUANGAN (Screenshot 1) */}
+        {activeCardTab === 'KEUANGAN' && (
+          <div className="bilas-liquid-finance-grid">
+            <div className="bilas-liquid-finance-col">
+              <span className="bilas-liquid-finance-label">
+                Pendapatan <span style={{ fontSize: '0.74rem', opacity: 0.85 }}>ⓘ</span>
+              </span>
+              <div className="bilas-liquid-finance-val">
+                Rp {totalPaid.toLocaleString('id-ID')}
+              </div>
+            </div>
+            <div className="bilas-liquid-finance-col">
+              <span className="bilas-liquid-finance-label">
+                Omset <span style={{ fontSize: '0.74rem', opacity: 0.85 }}>ⓘ</span>
+              </span>
+              <div className="bilas-liquid-finance-val">
+                Rp {totalOmset.toLocaleString('id-ID')}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Card Body When TRANSAKSI (Screenshot 2) */}
+        {activeCardTab === 'TRANSAKSI' && (
+          <div className="bilas-liquid-tx-carousel">
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.2rem', padding: '0 4px', userSelect: 'none' }}>‹</span>
+
+            <button
+              type="button"
+              className="bilas-liquid-tx-item"
+              onClick={() => setStatusFilter(statusFilter === 'menunggu' ? 'all' : 'menunggu')}
+              title="Filter Masuk"
+            >
+              <div className="bilas-liquid-tx-circle">↓</div>
+              <span className="bilas-liquid-tx-label">{waitingOrders.length} Masuk</span>
+            </button>
+
+            <button
+              type="button"
+              className="bilas-liquid-tx-item"
+              onClick={() => setStatusFilter('all')}
+              title="Semua Pesanan Harus Selesai"
+            >
+              <div className="bilas-liquid-tx-circle">📌</div>
+              <span className="bilas-liquid-tx-label">{activeOrders.length} Harus Selesai</span>
+            </button>
+
+            <button
+              type="button"
+              className="bilas-liquid-tx-item"
+              onClick={() => setStatusFilter(statusFilter === 'terlambat' ? 'all' : 'terlambat')}
+              title="Filter Terlambat"
+            >
+              <div className="bilas-liquid-tx-circle">↺</div>
+              <span className="bilas-liquid-tx-label">{lateOrders.length} Terlambat</span>
+            </button>
+
+            <button
+              type="button"
+              className="bilas-liquid-tx-item"
+              onClick={() => setStatusFilter(statusFilter === 'selesai' ? 'all' : 'selesai')}
+              title="Filter Siap Diambil"
+            >
+              <div className="bilas-liquid-tx-circle">✓</div>
+              <span className="bilas-liquid-tx-label">{completedOrders.length} Total</span>
+            </button>
+
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.2rem', padding: '0 4px', userSelect: 'none' }}>›</span>
+          </div>
+        )}
       </div>
 
-      {/* Bilas 3-Tab Card Switcher */}
-      <div className="bilas-dash-tabs">
-        <button
-          type="button"
-          className={`bilas-dash-tab ${dashboardTab === 'transaksi' ? 'active' : ''}`}
-          onClick={() => setDashboardTab('transaksi')}
-        >
-          TRANSAKSI
-        </button>
-        <button
-          type="button"
-          className={`bilas-dash-tab ${dashboardTab === 'keuangan' ? 'active' : ''}`}
-          onClick={() => setDashboardTab('keuangan')}
-        >
-          KEUANGAN
-        </button>
-        <button
-          type="button"
-          className={`bilas-dash-tab ${dashboardTab === 'kapasitas' ? 'active' : ''}`}
-          onClick={() => setDashboardTab('kapasitas')}
-        >
-          KAPASITAS RAK
-        </button>
-      </div>
-
-      {/* Tab 1: TRANSAKSI */}
-      {dashboardTab === 'transaksi' && (
-        <div className="stack" style={{ gap: '12px' }}>
-          {/* Bilas New Online Transaction Alert */}
-          {waitingOrders.length > 0 && (
+      {/* 3. Content Below Card When TRANSAKSI (Screenshot 2) */}
+      {activeCardTab === 'TRANSAKSI' && (
+        <div>
+          {/* 6-Item Grid Persis Bilas Screenshot 2 */}
+          <div className="bilas-grid-6">
             <div
-              style={{
-                background: '#eff6ff',
-                border: '1px solid #bfdbfe',
-                borderRadius: '12px',
-                padding: '10px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '10px',
-                fontSize: '0.82rem',
-                color: '#1e40af',
-              }}
+              className={`bilas-grid-6-item ${statusFilter === 'self_service' ? 'active' : ''}`}
+              onClick={() => setStatusFilter(statusFilter === 'self_service' ? 'all' : 'self_service')}
             >
-              <span>Ada <strong>{waitingOrders.length}</strong> transaksi baru yang belum diproses.</span>
-              <button
-                type="button"
-                className="btn xs primary"
-                onClick={() => setActivityTab('menunggu')}
-                style={{ flexShrink: 0 }}
-              >
-                Lihat
-              </button>
-            </div>
-          )}
-
-          {/* 4 Bilas Counters */}
-          <div className="dash-metrics-grid">
-            <div
-              className="dash-metric-card"
-              onClick={() => setActivityTab('menunggu')}
-              style={{ cursor: 'pointer' }}
-              title="Klik untuk filter Antrean Masuk"
-            >
-              <div className="icon-label">
-                <span>Antrean Masuk</span>
+              <div className="bilas-grid-6-icon-wrap">
+                <img src="/bilas_icons/icon_dashboard1.webp" alt="Self Service" className="bilas-grid-6-img" />
+                <span className="bilas-grid-6-badge">0</span>
               </div>
-              <div className="val" style={{ color: 'var(--navy)' }}>
-                {waitingOrders.length}
-              </div>
-              <div className="sub">Sepatu baru masuk</div>
+              <span className="bilas-grid-6-title">Self Service</span>
             </div>
 
             <div
-              className="dash-metric-card"
-              onClick={() => setActivityTab('pencucian')}
-              style={{ cursor: 'pointer' }}
-              title="Klik untuk filter Sedang Proses"
+              className={`bilas-grid-6-item ${statusFilter === 'penjemputan' ? 'active' : ''}`}
+              onClick={() => setStatusFilter(statusFilter === 'penjemputan' ? 'all' : 'penjemputan')}
             >
-              <div className="icon-label">
-                <span>Sedang Proses</span>
+              <div className="bilas-grid-6-icon-wrap">
+                <img src="/bilas_icons/icon_dashboard2.webp" alt="Penjemputan" className="bilas-grid-6-img" />
+                <span className="bilas-grid-6-badge">0</span>
               </div>
-              <div className="val" style={{ color: '#0369a1' }}>
-                {washingOrders.length + dryingOrders.length}
-              </div>
-              <div className="sub">Cuci & pengeringan</div>
+              <span className="bilas-grid-6-title">Penjemputan</span>
             </div>
 
             <div
-              className="dash-metric-card"
-              onClick={() => setActivityTab('finishing')}
-              style={{ cursor: 'pointer' }}
-              title="Klik untuk filter Finishing"
+              className={`bilas-grid-6-item ${statusFilter === 'menunggu' ? 'active' : ''}`}
+              onClick={() => setStatusFilter(statusFilter === 'menunggu' ? 'all' : 'menunggu')}
             >
-              <div className="icon-label">
-                <span>Finishing & QC</span>
+              <div className="bilas-grid-6-icon-wrap">
+                <img src="/bilas_icons/icon_dashboard3.webp" alt="Antrian" className="bilas-grid-6-img" />
+                <span className="bilas-grid-6-badge">{waitingOrders.length}</span>
               </div>
-              <div className="val" style={{ color: '#6d28d9' }}>
-                {finishingOrders.length}
-              </div>
-              <div className="sub">Pewangi & packing</div>
+              <span className="bilas-grid-6-title">Antrian</span>
             </div>
 
             <div
-              className="dash-metric-card"
-              onClick={() => setActivityTab('selesai')}
-              style={{ cursor: 'pointer' }}
-              title="Klik untuk filter Siap Diambil"
+              className={`bilas-grid-6-item ${statusFilter === 'proses' ? 'active' : ''}`}
+              onClick={() => setStatusFilter(statusFilter === 'proses' ? 'all' : 'proses')}
             >
-              <div className="icon-label">
-                <span>Siap Diambil</span>
+              <div className="bilas-grid-6-icon-wrap">
+                <img src="/bilas_icons/icon_dashboard4.webp" alt="Proses" className="bilas-grid-6-img" />
+                <span className="bilas-grid-6-badge">{washingOrders.length + dryingOrders.length}</span>
               </div>
-              <div className="val" style={{ color: '#15803d' }}>
-                {completedOrders.length}
+              <span className="bilas-grid-6-title">Proses</span>
+            </div>
+
+            <div
+              className={`bilas-grid-6-item ${statusFilter === 'selesai' ? 'active' : ''}`}
+              onClick={() => setStatusFilter(statusFilter === 'selesai' ? 'all' : 'selesai')}
+            >
+              <div className="bilas-grid-6-icon-wrap">
+                <img src="/bilas_icons/icon_dashboard5.webp" alt="Siap Ambil" className="bilas-grid-6-img" />
+                <span className="bilas-grid-6-badge">{completedOrders.length}</span>
               </div>
-              <div className="sub">Menunggu pelanggan</div>
+              <span className="bilas-grid-6-title">Siap Ambil</span>
+            </div>
+
+            <div
+              className={`bilas-grid-6-item ${statusFilter === 'siap_antar' ? 'active' : ''}`}
+              onClick={() => setStatusFilter(statusFilter === 'siap_antar' ? 'all' : 'siap_antar')}
+            >
+              <div className="bilas-grid-6-icon-wrap">
+                <img src="/bilas_icons/icon_dashboard6.webp" alt="Siap Antar" className="bilas-grid-6-img" />
+                <span className="bilas-grid-6-badge">0</span>
+              </div>
+              <span className="bilas-grid-6-title">Siap Antar</span>
             </div>
           </div>
 
-          {/* Bilas Terlambat Alert Banner if any */}
-          {lateOrders.length > 0 && (
-            <div
-              style={{
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: '12px',
-                padding: '10px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                fontSize: '0.82rem',
-                color: '#b91c1c',
-              }}
-            >
-              <span><strong>Terlambat:</strong> {lateOrders.length} pesanan melewati target estimasi.</span>
-              <Link to="/admin/orders" className="btn xs danger" style={{ flexShrink: 0 }}>
-                Periksa
+          {/* Seksi Pintasan Persis Bilas Screenshot 2 */}
+          <div style={{ marginBottom: '18px' }}>
+            <h3 style={{ margin: '0 0 10px', fontSize: '1.02rem', fontWeight: 800, color: '#0f172a' }}>
+              Pintasan
+            </h3>
+            <div className="bilas-shortcut-list">
+              <div
+                className="bilas-shortcut-item"
+                style={{ cursor: 'pointer' }}
+                onClick={() => setStatusFilter('all')}
+              >
+                <div className="bilas-shortcut-icon">
+                  <img src="/bilas_icons/icon_lap_mesin.webp" alt="Aktivitas Mesin" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+                </div>
+                <div className="bilas-shortcut-info">
+                  <strong>Aktivitas Mesin</strong>
+                  <span>Status & kapasitas rak / pengerjaan sepatu</span>
+                </div>
+                <span className="bilas-shortcut-arrow">›</span>
+              </div>
+
+              <Link to="/admin/customers" className="bilas-shortcut-item">
+                <div className="bilas-shortcut-icon">👥</div>
+                <div className="bilas-shortcut-info">
+                  <strong>Top Pelanggan</strong>
+                  <span>Pelanggan dengan transaksi terbanyak • {topCustomer}</span>
+                </div>
+                <span className="bilas-shortcut-arrow">›</span>
+              </Link>
+
+              <div className="bilas-shortcut-item" style={{ cursor: 'default' }}>
+                <div className="bilas-shortcut-icon">⭐</div>
+                <div className="bilas-shortcut-info">
+                  <strong>Top Layanan</strong>
+                  <span>Layanan paling sering dipesan • {topService}</span>
+                </div>
+              </div>
+
+              <Link to="/admin/orders" className="bilas-shortcut-item">
+                <div className="bilas-shortcut-icon">💳</div>
+                <div className="bilas-shortcut-info">
+                  <strong>Pelunasan Faktur</strong>
+                  <span>Faktur jatuh tempo atau belum lunas • {unpaidOrders.length} faktur ({rupiah(totalUnpaid)})</span>
+                </div>
+                <span className="bilas-shortcut-arrow">›</span>
               </Link>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Tab 2: KEUANGAN */}
-      {dashboardTab === 'keuangan' && (
-        <div className="stack" style={{ gap: '12px' }}>
-          <div className="dash-metrics-grid">
-            <div className="dash-metric-card">
-              <div className="icon-label">
-                <span>Pendapatan Lunas</span>
-              </div>
-              <div className="val" style={{ color: '#15803d', fontSize: '1.25rem' }}>
-                {rupiah(totalPaid)}
-              </div>
-              <div className="sub">Faktur terbayar lunas</div>
-            </div>
-
-            <div className="dash-metric-card">
-              <div className="icon-label">
-                <span>Faktur Belum Lunas</span>
-              </div>
-              <div className="val" style={{ color: totalUnpaid > 0 ? '#b91c1c' : '#64748b', fontSize: '1.25rem' }}>
-                {rupiah(totalUnpaid)}
-              </div>
-              <div className="sub">{unpaidOrders.length} faktur piutang</div>
-            </div>
-
-            <div className="dash-metric-card">
-              <div className="icon-label">
-                <span>Non Tunai / QRIS</span>
-              </div>
-              <div className="val" style={{ color: 'var(--navy)', fontSize: '1.25rem' }}>
-                {rupiah(qrisTotal)}
-              </div>
-              <div className="sub">QRIS & Transfer Bank</div>
-            </div>
-
-            <div className="dash-metric-card">
-              <div className="icon-label">
-                <span>Tunai (Cash)</span>
-              </div>
-              <div className="val" style={{ color: 'var(--navy)', fontSize: '1.25rem' }}>
-                {rupiah(cashTotal)}
-              </div>
-              <div className="sub">Kasir tunai outlet</div>
-            </div>
-          </div>
-
-          <div className="card" style={{ padding: '16px 14px' }}>
-            <h3 style={{ margin: '0 0 10px', fontSize: '0.96rem', fontWeight: 700 }}>Ringkasan Faktur & Penagihan</h3>
-            <p className="small muted" style={{ margin: '0 0 12px' }}>
-              Aturan Bilas: Pembayaran yang diterima kurang dari total tagihan akan otomatis dicatat sebagai pembayaran DP.
-            </p>
-            <div className="row between" style={{ padding: '8px 0', borderBottom: '1px solid var(--line)', fontSize: '0.84rem' }}>
-              <span>Total Pesanan Masuk</span>
-              <strong>{orders?.length || 0} transaksi</strong>
-            </div>
-            <div className="row between" style={{ padding: '8px 0', borderBottom: '1px solid var(--line)', fontSize: '0.84rem' }}>
-              <span>Faktur Sudah Lunas</span>
-              <strong style={{ color: '#15803d' }}>{(orders || []).filter((o) => o.payment?.status === 'lunas').length} faktur</strong>
-            </div>
-            <div className="row between" style={{ padding: '8px 0', fontSize: '0.84rem' }}>
-              <span>Faktur Belum Lunas / DP</span>
-              <strong style={{ color: totalUnpaid > 0 ? '#b91c1c' : '#64748b' }}>{unpaidOrders.length} faktur ({rupiah(totalUnpaid)})</strong>
-            </div>
           </div>
         </div>
       )}
 
-      {/* Tab 3: KAPASITAS RAK */}
-      {dashboardTab === 'kapasitas' && (
-        <div className="card" style={{ padding: '14px 16px', borderLeft: `4px solid ${slaInfo.color}` }}>
-          <div className="row between" style={{ alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
-            <div>
-              <strong style={{ fontSize: '0.96rem', display: 'block', color: 'var(--ink)' }}>
-                Kapasitas Rak & Janji Pelanggan
-              </strong>
-              <span className="xs muted">
-                Kapasitas: {dailyCap} sepatu/hari (~{slaInfo.weeklyCapacity}/minggu)
+      {/* 4. Content Below Card When KEUANGAN (Screenshot 1) */}
+      {activeCardTab === 'KEUANGAN' && (
+        <div style={{ marginBottom: '20px' }}>
+          {/* Ringkasan Header & Filter Dropdown */}
+          <div className="row between" style={{ alignItems: 'center', marginBottom: '12px' }}>
+            <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>Ringkasan</h3>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                padding: '4px 10px',
+                borderRadius: '8px',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                color: '#334155',
+                cursor: 'pointer',
+              }}
+            >
+              Hari Ini ▾
+            </span>
+          </div>
+
+          {/* Chart Card */}
+          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.02)' }}>
+            {/* Chart Legend Persis Screenshot 1 */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', fontSize: '0.73rem', marginBottom: '16px', color: '#64748b' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0284c7' }} /> Omset
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }} /> Pendapatan
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }} /> Pengeluaran
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#06b6d4' }} /> Self Service
               </span>
             </div>
-            <span
-              className="badge"
-              style={{
-                background: slaInfo.bg,
-                color: slaInfo.color,
-                border: `1px solid ${slaInfo.border}`,
-                fontWeight: 700,
-                fontSize: '0.78rem',
-                padding: '4px 10px',
-              }}
-            >
-              {slaInfo.zoneLabel} • Janjikan {slaInfo.recommendedPromise}
-            </span>
+
+            {/* SVG Line Chart Persis Screenshot 1 */}
+            <div style={{ width: '100%', height: '140px', position: 'relative' }}>
+              <svg width="100%" height="100%" viewBox="0 0 340 120" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+                {/* Horizontal grid line */}
+                <line x1="24" y1="15" x2="330" y2="15" stroke="#f1f5f9" strokeWidth="1" />
+                <line x1="24" y1="85" x2="330" y2="85" stroke="#cbd5e1" strokeWidth="1" />
+                
+                {/* Y-axis labels */}
+                <text x="8" y="18" fill="#94a3b8" fontSize="10" textAnchor="start">1</text>
+                <text x="8" y="88" fill="#94a3b8" fontSize="10" textAnchor="start">0</text>
+                
+                {/* Chart Baseline */}
+                <polyline
+                  fill="none"
+                  stroke="#0284c7"
+                  strokeWidth="2"
+                  points="24,85 70,85 120,85 170,85 220,85 270,85 320,85"
+                />
+              </svg>
+
+              {/* X-axis Timeline Labels Persis Screenshot 1 */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '20px', fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px' }}>
+                <span>00-01</span>
+                <span>04-05</span>
+                <span>08-09</span>
+                <span>12-13</span>
+                <span>16-17</span>
+                <span>20-21</span>
+                <span>Jam</span>
+              </div>
+            </div>
           </div>
 
-          {/* Progress Bar WIP (Maks 50 Sepatu) */}
-          <div style={{ marginBottom: '10px' }}>
-            <div className="row between xs" style={{ marginBottom: '4px', fontWeight: 600 }}>
-              <span>Antrean Aktif di Rak: {activeItemsCount} / {slaInfo.maxWipLimit} unit</span>
-              <span style={{ color: slaInfo.color }}>{wipPercent}% terisi</span>
+          {/* Rincian Finansial Tabel Persis Screenshot 1 */}
+          <div className="bilas-finance-breakdown-table">
+            <div className="bilas-finance-breakdown-row">
+              <span>Total Omset</span>
+              <strong>{totalOmset.toLocaleString('id-ID')}</strong>
             </div>
-            <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '999px', overflow: 'hidden' }}>
-              <div
-                style={{
-                  width: `${wipPercent}%`,
-                  height: '100%',
-                  background: slaInfo.color,
-                  borderRadius: '999px',
-                  transition: 'width 0.3s ease',
-                }}
-              />
+            <div className="bilas-finance-breakdown-row">
+              <span>Pendapatan Transaksi</span>
+              <strong>{totalPaid.toLocaleString('id-ID')}</strong>
             </div>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '8px',
-              flexWrap: 'wrap',
-              paddingTop: '8px',
-              borderTop: '1px dashed var(--line)',
-              fontSize: '0.8rem',
-            }}
-          >
-            <span className="muted" style={{ flex: 1, minWidth: '180px' }}>
-              {slaInfo.adviceText}
-            </span>
-            <span
-              className="badge"
-              style={{
-                background: slaInfo.expressAllowed ? '#f0fdf4' : '#fef2f2',
-                color: slaInfo.expressAllowed ? '#15803d' : '#bf2f3b',
-                border: `1px solid ${slaInfo.expressAllowed ? '#bbf7d0' : '#fecaca'}`,
-                fontWeight: 700,
-                fontSize: '0.75rem',
-              }}
-            >
-              {slaInfo.expressAllowed ? 'Express: Diterima' : 'Express: Tolak Sementara'}
-            </span>
+            <div className="bilas-finance-breakdown-row">
+              <span>Pendapatan TopUp Paket</span>
+              <strong>0</strong>
+            </div>
+            <div className="bilas-finance-breakdown-row">
+              <span>Pendapatan TopUp Deposit</span>
+              <strong>0</strong>
+            </div>
+            <div className="bilas-finance-breakdown-row">
+              <span>Pendapatan Jual Produk</span>
+              <strong>{totalProducts.toLocaleString('id-ID')}</strong>
+            </div>
+            <div className="bilas-finance-breakdown-row">
+              <span>Pendapatan Self Service</span>
+              <strong>0</strong>
+            </div>
+            <div className="bilas-finance-breakdown-row">
+              <span>Pendapatan Lain</span>
+              <strong>0</strong>
+            </div>
+            <div className="bilas-finance-breakdown-row">
+              <span>Pengeluaran</span>
+              <strong>0</strong>
+            </div>
+            <div className="bilas-finance-breakdown-row">
+              <span>Kasbon</span>
+              <strong>0</strong>
+            </div>
+            <div className="bilas-finance-breakdown-row">
+              <span>Laba Rugi</span>
+              <strong>{totalPaid.toLocaleString('id-ID')}</strong>
+            </div>
+            <div className="bilas-finance-breakdown-row">
+              <span>Piutang</span>
+              <strong style={{ color: totalUnpaid > 0 ? '#b91c1c' : 'inherit' }}>{totalUnpaid.toLocaleString('id-ID')}</strong>
+            </div>
+            <div className="bilas-finance-breakdown-row">
+              <span>Pembulatan</span>
+              <strong>0</strong>
+            </div>
+            <div className="bilas-finance-breakdown-row">
+              <span>Biaya Merchant</span>
+              <strong>0</strong>
+            </div>
+            <div className="bilas-finance-breakdown-row">
+              <span>Transaksi Masuk</span>
+              <strong>{orders?.length || 0} Transaksi</strong>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Bilas Shortcut Section (Pintasan) matching activity_menu_dashboard.xml */}
-      <div className="card" style={{ padding: '16px 14px' }}>
-        <h3 style={{ margin: '0 0 10px', fontSize: '0.98rem', fontWeight: 800 }}>Pintasan</h3>
-        <div className="bilas-shortcut-list">
-          <Link to="/admin/orders" className="bilas-shortcut-item">
-            <div className="bilas-shortcut-icon">💳</div>
-            <div className="bilas-shortcut-info">
-              <strong>Pelunasan Faktur</strong>
-              <span>Faktur jatuh tempo atau belum lunas • {unpaidOrders.length} faktur ({rupiah(totalUnpaid)})</span>
+      {/* 5. Daftar Transaksi / Aktivitas Pengerjaan Sepatu (Saat di tab TRANSAKSI) */}
+      {activeCardTab === 'TRANSAKSI' && (
+        <div className="card" style={{ padding: '16px 14px' }}>
+          <div className="row between" style={{ marginBottom: '12px', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800 }}>Daftar Transaksi Aktif</h3>
+              <span className="xs muted">Atur tahapan cuci, jemur, finishing, atau siap diambil</span>
             </div>
-            <span className="bilas-shortcut-arrow">›</span>
-          </Link>
-
-          <div className="bilas-shortcut-item" style={{ cursor: 'default' }}>
-            <div className="bilas-shortcut-icon">⭐</div>
-            <div className="bilas-shortcut-info">
-              <strong>Top Layanan</strong>
-              <span>Layanan paling sering dipesan • {topService}</span>
-            </div>
+            <span className="badge teal">{activityList.length} Barang</span>
           </div>
 
-          <Link to="/admin/customers" className="bilas-shortcut-item">
-            <div className="bilas-shortcut-icon">👥</div>
-            <div className="bilas-shortcut-info">
-              <strong>Top Pelanggan</strong>
-              <span>Pelanggan dengan transaksi terbanyak • {topCustomer}</span>
-            </div>
-            <span className="bilas-shortcut-arrow">›</span>
-          </Link>
-
-          <Link to="/admin/products" className="bilas-shortcut-item">
-            <div className="bilas-shortcut-icon">📦</div>
-            <div className="bilas-shortcut-info">
-              <strong>Stok Produk</strong>
-              <span>Kelola persediaan bahan, pembersih, & aksesoris</span>
-            </div>
-            <span className="bilas-shortcut-arrow">›</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Section: Aktivitas & Pengerjaan Hari Ini */}
-      <div className="card" style={{ padding: '16px 14px' }}>
-        <div className="row between" style={{ marginBottom: '12px', alignItems: 'center' }}>
-          <div>
-            <h3 style={{ margin: 0, fontSize: '1.05rem' }}>Aktivitas Pengerjaan Hari Ini</h3>
-            <span className="xs muted">Atur tahapan cuci, jemur, finishing, atau siap diambil</span>
-          </div>
-          <span className="badge teal">{activityList.length} Barang</span>
-        </div>
-
-        {/* Activity Filter Grid - Clean text, no emoji, uniform box size */}
+        {/* Activity Filter Grid */}
         <div className="activity-filter-grid">
           <button
             type="button"
-            className={`activity-filter-btn filter-all ${activityTab === 'all' ? 'active' : ''}`}
-            onClick={() => setActivityTab('all')}
+            className={`activity-filter-btn filter-all ${statusFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('all')}
           >
             Semua ({activeOrders.length + completedOrders.length})
           </button>
           <button
             type="button"
-            className={`activity-filter-btn filter-menunggu ${activityTab === 'menunggu' ? 'active' : ''}`}
-            onClick={() => setActivityTab('menunggu')}
+            className={`activity-filter-btn filter-menunggu ${statusFilter === 'menunggu' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('menunggu')}
           >
             Antrean ({waitingOrders.length})
           </button>
           <button
             type="button"
-            className={`activity-filter-btn filter-pencucian ${activityTab === 'pencucian' ? 'active' : ''}`}
-            onClick={() => setActivityTab('pencucian')}
+            className={`activity-filter-btn filter-pencucian ${statusFilter === 'proses' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('proses')}
           >
-            Cuci ({washingOrders.length})
+            Proses ({washingOrders.length + dryingOrders.length + finishingOrders.length})
           </button>
           <button
             type="button"
-            className={`activity-filter-btn filter-pengeringan ${activityTab === 'pengeringan' ? 'active' : ''}`}
-            onClick={() => setActivityTab('pengeringan')}
-          >
-            Kering ({dryingOrders.length})
-          </button>
-          <button
-            type="button"
-            className={`activity-filter-btn filter-finishing ${activityTab === 'finishing' ? 'active' : ''}`}
-            onClick={() => setActivityTab('finishing')}
-          >
-            Finishing ({finishingOrders.length})
-          </button>
-          <button
-            type="button"
-            className={`activity-filter-btn filter-selesai ${activityTab === 'selesai' ? 'active' : ''}`}
-            onClick={() => setActivityTab('selesai')}
+            className={`activity-filter-btn filter-selesai ${statusFilter === 'selesai' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('selesai')}
           >
             Siap ({completedOrders.length})
           </button>
@@ -687,6 +701,7 @@ export const DashboardPage: React.FC = () => {
           </div>
         )}
       </div>
+      )}
 
 
       {/* Bottom Sheet / Modal for Selecting Order Stage (Clean, No Emoji) */}
