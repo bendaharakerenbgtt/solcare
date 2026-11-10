@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { repo } from '../../data';
-import type { Order, OrderPhoto, StatusHistoryEntry, EstimateHistoryEntry, Settings, OrderStatus } from '../../data/types';
-import { fmtDateTime, rupiah, displayCode, whatsappLink } from '../../lib/format';
-import { buildCollage, validateInputFile } from '../../lib/collage';
+import type { Order, StatusHistoryEntry, EstimateHistoryEntry, Settings, OrderStatus } from '../../data/types';
+import { rupiah, displayCode, whatsappLink } from '../../lib/format';
 import { toLocalInput, fromLocalInput } from '../hooks';
 import { InvoiceModal } from '../common/InvoiceModal';
 import {
@@ -11,7 +10,6 @@ import {
   TruckIcon,
   PencilIcon,
   CheckIcon,
-  CameraIcon,
   CloseIcon,
   QrisIcon,
   CashIcon,
@@ -50,8 +48,6 @@ export const OrderDetailPage: React.FC = () => {
 
   const [order, setOrder] = useState<Order | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [photos, setPhotos] = useState<OrderPhoto[]>([]);
-  const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [statusHistory, setStatusHistory] = useState<StatusHistoryEntry[]>([]);
   const [estimateHistory, setEstimateHistory] = useState<EstimateHistoryEntry[]>([]);
 
@@ -65,7 +61,6 @@ export const OrderDetailPage: React.FC = () => {
   const [adjustModalOpen, setAdjustModalOpen] = useState(false);
   const [deliveryExpanded, setDeliveryExpanded] = useState(false);
   const [historyExpanded, setHistoryExpanded] = useState(true);
-  const [collageExpanded, setCollageExpanded] = useState(false);
 
   // Status updating
   const [updatingStatus, setUpdatingStatus] = useState(false);
@@ -75,25 +70,12 @@ export const OrderDetailPage: React.FC = () => {
   const [estimateReason, setEstimateReason] = useState('');
   const [adjustingEstimate, setAdjustingEstimate] = useState(false);
 
-  // Photo Collage Upload
-  const [uploadFiles, setUploadFiles] = useState<(File | null)[]>([null, null, null, null]);
-  const [uploadLabels, setUploadLabels] = useState<string[]>([
-    'Sebelum (Depan)',
-    'Sebelum (Samping)',
-    'Sesudah (Depan)',
-    'Sesudah (Samping)',
-  ]);
-  const [collageCaption, setCollageCaption] = useState('Dokumentasi Solecare!');
-  const [uploadingCollage, setUploadingCollage] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-
   const loadData = async () => {
     if (!id) return;
     setLoading(true);
     try {
-      const [ord, phs, sHist, eHist, sets] = await Promise.all([
+      const [ord, sHist, eHist, sets] = await Promise.all([
         repo.getOrder(id),
-        repo.listPhotos(id),
         repo.statusHistory(id),
         repo.estimateHistory(id),
         repo.getSettings().catch(() => null),
@@ -102,22 +84,11 @@ export const OrderDetailPage: React.FC = () => {
       if (!ord) throw new Error('Pesanan tidak ditemukan.');
       setOrder(ord);
       setSettings(sets);
-      setPhotos(phs);
       setStatusHistory(sHist);
       setEstimateHistory(eHist);
       if (ord.estimatedAt) {
         setNewEstimateAt(toLocalInput(ord.estimatedAt));
       }
-
-      // Load active photo URLs
-      const urls: Record<string, string> = {};
-      for (const p of phs) {
-        if (p.status === 'active') {
-          const u = await repo.photoUrl(p.id);
-          if (u) urls[p.id] = u;
-        }
-      }
-      setPhotoUrls(urls);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Gagal memuat detail pesanan.');
     } finally {
@@ -193,65 +164,6 @@ export const OrderDetailPage: React.FC = () => {
       alert(err instanceof Error ? err.message : 'Gagal memperbarui estimasi');
     } finally {
       setAdjustingEstimate(false);
-    }
-  };
-
-  // Photo handlers
-  const handleFileChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const err = validateInputFile(file);
-      if (err) {
-        alert(err);
-        return;
-      }
-      const next = [...uploadFiles];
-      next[index] = file;
-      setUploadFiles(next);
-    }
-  };
-
-  const handleUploadCollage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id || !order) return;
-    const filled = uploadFiles.filter(Boolean) as File[];
-    if (filled.length !== 4) {
-      setUploadError('Wajib memilih tepat 4 foto untuk kolase 2×2.');
-      return;
-    }
-
-    setUploadingCollage(true);
-    setUploadError(null);
-    try {
-      const { blob, width, height } = await buildCollage(filled, {
-        labels: uploadLabels,
-        caption: collageCaption,
-        footer: `Solecare Care • Pesanan TRX/${displayCode(order.code)} • ${order.brand} ${order.model}`,
-      });
-
-      await repo.uploadCollage(id, blob, {
-        labels: uploadLabels,
-        caption: collageCaption,
-        width,
-        height,
-      });
-
-      setUploadFiles([null, null, null, null]);
-      await loadData();
-    } catch (err) {
-      setUploadError(err instanceof Error ? err.message : 'Gagal membuat/mengunggah kolase');
-    } finally {
-      setUploadingCollage(false);
-    }
-  };
-
-  const handleDeletePhoto = async (photoId: string) => {
-    if (!confirm('Yakin ingin menghapus foto dokumentasi ini?')) return;
-    try {
-      await repo.deletePhoto(photoId, 'Dihapus manual dari halaman detail');
-      await loadData();
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'Gagal menghapus');
     }
   };
 
@@ -895,133 +807,6 @@ export const OrderDetailPage: React.FC = () => {
                 </div>
               ))}
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* ======================================================== */}
-      {/* 9. DOKUMENTASI FOTO & KOLASE 2x2 ACCORDION               */}
-      {/* ======================================================== */}
-      <div
-        style={{
-          margin: '8px 16px',
-          background: '#ffffff',
-          borderRadius: '16px',
-          border: '1px solid #e2e8f0',
-          padding: '16px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-        }}
-      >
-        <div
-          onClick={() => setCollageExpanded(!collageExpanded)}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CameraIcon size={20} color="#001b3a" />
-            <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Dokumentasi Foto & Kolase 2×2</strong>
-          </div>
-          <span style={{ color: '#94a3b8', transform: collageExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-            ▾
-          </span>
-        </div>
-
-        {collageExpanded && (
-          <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
-            {/* Existing photos */}
-            {photos.length > 0 ? (
-              <div className="stack" style={{ gap: '12px', marginBottom: '16px' }}>
-                {photos.map((p) => (
-                  <div key={p.id} style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', background: '#f8fafc' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>Kolase 2×2 ({fmtDateTime(p.uploadedAt)})</span>
-                      {p.status === 'active' && (
-                        <button
-                          type="button"
-                          className="btn danger sm"
-                          onClick={() => void handleDeletePhoto(p.id)}
-                          style={{ fontSize: '0.72rem', padding: '3px 8px' }}
-                        >
-                          Hapus
-                        </button>
-                      )}
-                    </div>
-                    {photoUrls[p.id] ? (
-                      <img src={photoUrls[p.id]} alt="Kolase" style={{ width: '100%', borderRadius: '8px' }} />
-                    ) : (
-                      <div className="empty" style={{ fontSize: '0.8rem' }}>Foto tidak tersedia</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p style={{ fontSize: '0.82rem', color: '#64748b', margin: '0 0 12px 0' }}>
-                Belum ada foto dokumentasi. Unggah 4 foto untuk digabungkan menjadi kolase 2×2.
-              </p>
-            )}
-
-            {/* Collage upload form */}
-            <form onSubmit={handleUploadCollage} className="stack" style={{ gap: '10px' }}>
-              {uploadError && <div className="alert error">{uploadError}</div>}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                {[0, 1, 2, 3].map((slotIdx) => (
-                  <div key={slotIdx} style={{ border: '1px dashed #cbd5e1', borderRadius: '8px', padding: '8px', textAlign: 'center', background: '#f8fafc' }}>
-                    {uploadFiles[slotIdx] ? (
-                      <img
-                        src={URL.createObjectURL(uploadFiles[slotIdx]!)}
-                        alt={`Slot ${slotIdx + 1}`}
-                        style={{ width: '100%', height: '70px', objectFit: 'cover', borderRadius: '6px' }}
-                      />
-                    ) : (
-                      <label style={{ display: 'block', cursor: 'pointer', padding: '12px 0', fontSize: '0.74rem', color: '#64748b' }}>
-                        + Foto {slotIdx + 1}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          style={{ display: 'none' }}
-                          onChange={(e) => handleFileChange(slotIdx, e)}
-                        />
-                      </label>
-                    )}
-                    <input
-                      type="text"
-                      value={uploadLabels[slotIdx]}
-                      onChange={(e) => {
-                        const next = [...uploadLabels];
-                        next[slotIdx] = e.target.value;
-                        setUploadLabels(next);
-                      }}
-                      style={{ width: '100%', fontSize: '0.72rem', padding: '3px 6px', marginTop: '4px', border: '1px solid #e2e8f0', borderRadius: '4px' }}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <input
-                type="text"
-                value={collageCaption}
-                onChange={(e) => setCollageCaption(e.target.value)}
-                placeholder="Judul Kolase"
-                style={{ width: '100%', fontSize: '0.82rem', padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-              />
-
-              <button
-                type="submit"
-                disabled={uploadingCollage || uploadFiles.filter(Boolean).length !== 4}
-                style={{
-                  background: '#001b3a',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '10px',
-                  padding: '8px',
-                  fontWeight: 700,
-                  fontSize: '0.82rem',
-                  cursor: 'pointer',
-                  opacity: uploadingCollage || uploadFiles.filter(Boolean).length !== 4 ? 0.6 : 1,
-                }}
-              >
-                {uploadingCollage ? 'Memproses Kolase...' : 'Gabungkan Jadi Kolase 2×2'}
-              </button>
-            </form>
           </div>
         )}
       </div>
