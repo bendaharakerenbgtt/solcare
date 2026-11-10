@@ -9,3 +9,8 @@ coverage
 bilas.id/
 *.apk
 *.tsbuildinfo
+Fotobilas/
+*.zip
+*.xml
+
+

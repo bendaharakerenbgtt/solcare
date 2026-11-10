@@ -27,41 +27,28 @@ export const AdminLayout: React.FC = () => {
   return (
     <div>
       <div className="admin-mobile-bar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
           <img
             src="/logo-color.jpg"
             alt="Solecare Logo"
             style={{ width: '28px', height: '28px', borderRadius: '7px', objectFit: 'cover' }}
           />
-          <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#0284c7', letterSpacing: '-0.03em' }}>
+          <span style={{ fontWeight: 800, fontSize: '1.28rem', color: '#0284c7', letterSpacing: '-0.03em' }}>
             solecare
           </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             type="button"
             className="mobile-header-icon-btn"
             title="Notifikasi"
             onClick={() => alert('Tidak ada notifikasi baru')}
             aria-label="Notifikasi"
+            style={{ background: 'transparent', border: 'none', padding: '6px', cursor: 'pointer' }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-          </button>
-          <button
-            type="button"
-            className="mobile-header-icon-btn"
-            title="Scan QR Transaksi"
-            onClick={() => alert('Fitur kamera scanner QR siap digunakan')}
-            aria-label="Scan QR Transaksi"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-              <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-              <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-              <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
             </svg>
           </button>
         </div>
@@ -243,13 +230,26 @@ export const AdminLayout: React.FC = () => {
         {/* Center Floating (+) Button */}
         <button
           type="button"
-          className="bilas-nav-fab"
-          onClick={() => setTransactionSheetOpen(true)}
+          className={`bilas-nav-fab ${transactionSheetOpen ? 'open' : ''}`}
+          onClick={() => setTransactionSheetOpen(!transactionSheetOpen)}
           aria-label="Buat Transaksi Baru"
           title="Buat Transaksi"
         >
           <div className="bilas-nav-fab-circle">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                transform: transactionSheetOpen ? 'rotate(45deg)' : 'none',
+                transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            >
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
@@ -270,11 +270,11 @@ export const AdminLayout: React.FC = () => {
           <span className="bilas-nav-label">Laporan</span>
         </Link>
 
-        {/* 4. Akun / Menu */}
-        <button
-          type="button"
+        {/* 4. Akun */}
+        <Link
+          to="/admin/settings"
           className={`bilas-nav-item ${isAkun ? 'active' : ''}`}
-          onClick={() => setSidebarOpen(!sidebarOpen)}
+          onClick={closeSidebar}
           aria-label="Buka Menu Akun & Toko"
         >
           <img
@@ -283,7 +283,7 @@ export const AdminLayout: React.FC = () => {
             className="bilas-nav-icon"
           />
           <span className="bilas-nav-label">Akun</span>
-        </button>
+        </Link>
       </nav>
 
       {/* Transaction Customer Selection Sheet (Pilih pelanggan sebelum melakukan transaksi) */}
