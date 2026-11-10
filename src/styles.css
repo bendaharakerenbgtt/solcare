@@ -41,7 +41,7 @@ html, body {
   padding: 0;
   width: 100%;
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Web Interface Guidelines: Modern Touch & Typography Enhancements */
@@ -422,7 +422,6 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
     grid-template-columns: 1fr;
     width: 100%;
     max-width: 100vw;
-    overflow-x: hidden;
   }
   .sidebar {
     position: fixed;
@@ -460,9 +459,9 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
     color: #0f172a;
     position: sticky;
     top: 0;
-    z-index: 30;
+    z-index: 45;
     border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 2px 8px rgba(0, 27, 58, 0.05);
   }
   .mobile-header-icon-btn {
     background: transparent !important;
@@ -485,7 +484,6 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
     width: 100%;
     max-width: 100vw;
     box-sizing: border-box;
-    overflow-x: hidden;
   }
 
   /* Admin Header & Actions Responsive for ALL admin pages */
