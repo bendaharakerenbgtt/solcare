@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
-import type { Order } from '../../data/types';
+import { SEED_SERVICES } from '../../data/seed';
+import type { Order, ServiceCategory } from '../../data/types';
 import { InvoiceModal } from '../common/InvoiceModal';
 import {
   TruckIcon,
@@ -27,10 +28,12 @@ import {
 interface SelectedServiceItem {
   id: string;
   serviceId: string;
-  category: string; // 'Sepatu' | 'Tas' | 'Topi' | 'Helm' | 'Perawatan Khusus'
+  category: string; // 'Main Services' | 'Express Services' | 'Additional Services' | 'Other Services'
+  rawCategory: ServiceCategory;
   name: string;
   price: number;
   durationDays: number;
+  expressHours?: number | null;
   qty: number;
   notes: string;
 }
@@ -38,44 +41,28 @@ interface SelectedServiceItem {
 interface ServiceDef {
   id: string;
   category: string;
+  rawCategory: ServiceCategory;
   name: string;
   price: number;
+  priceMax?: number | null;
   days: number;
+  daysMax?: number;
+  expressHours?: number | null;
+  description?: string;
 }
 
-const SOLECARE_SERVICES: ServiceDef[] = [
-  // 1. Sepatu
-  { id: 'sc-deep-clean', category: 'Sepatu', name: 'Deep Clean', price: 35000, days: 3 },
-  { id: 'sc-fast-clean', category: 'Sepatu', name: 'Fast Clean', price: 25000, days: 2 },
-  { id: 'sc-leather-suede', category: 'Sepatu', name: 'Leather & Suede Clean', price: 45000, days: 3 },
-  { id: 'sc-white-canvas', category: 'Sepatu', name: 'White Canvas Treatment', price: 50000, days: 3 },
-  { id: 'sc-heavy-clean', category: 'Sepatu', name: 'Heavy Clean (Lumpur/Noda)', price: 65000, days: 4 },
-
-  // 2. Tas
-  { id: 'sc-tas-kecil', category: 'Tas', name: 'Tas Kecil / Slingbag', price: 35000, days: 3 },
-  { id: 'sc-tas-sedang', category: 'Tas', name: 'Tas Sedang / Backpack', price: 50000, days: 3 },
-  { id: 'sc-tas-kulit', category: 'Tas', name: 'Tas Kulit / Leather Bag', price: 75000, days: 4 },
-
-  // 3. Topi
-  { id: 'sc-topi-snapback', category: 'Topi', name: 'Topi Baseball / Snapback', price: 25000, days: 2 },
-  { id: 'sc-topi-bucket', category: 'Topi', name: 'Bucket Hat / Fedora', price: 25000, days: 2 },
-
-  // 4. Helm
-  { id: 'sc-helm-half', category: 'Helm', name: 'Helm Half Face', price: 30000, days: 2 },
-  { id: 'sc-helm-full', category: 'Helm', name: 'Helm Full Face', price: 45000, days: 3 },
-
-  // 5. Perawatan Khusus
-  { id: 'sc-unyellowing', category: 'Perawatan Khusus', name: 'Unyellowing Midsole', price: 70000, days: 3 },
-  { id: 'sc-reglue', category: 'Perawatan Khusus', name: 'Reglue Sole', price: 30000, days: 2 },
-  { id: 'sc-repaint', category: 'Perawatan Khusus', name: 'Repaint Upper / Midsole', price: 135000, days: 7 },
-];
+const CAT_MAP: Record<ServiceCategory, string> = {
+  main: 'Main Services',
+  express: 'Express Services',
+  additional: 'Additional Services',
+  other: 'Other Services',
+};
 
 const CATEGORIES = [
-  { name: 'Sepatu', sub: 'Cuci • Kering' },
-  { name: 'Tas', sub: 'Cuci • Kering' },
-  { name: 'Topi', sub: 'Cuci • Kering' },
-  { name: 'Helm', sub: 'Cuci • Kering' },
-  { name: 'Perawatan Khusus', sub: 'Restorasi & Repaint' },
+  { name: 'Main Services', sub: 'Basic Clean • Deep Clean • Heavy Clean • Premium' },
+  { name: 'Express Services', sub: 'Express 24 Hours (+20K) • Express 48 Hours (+10K)' },
+  { name: 'Additional Services', sub: 'Unyellowing • Reglue • Water Repellent • Anti Stain • Repaint' },
+  { name: 'Other Services', sub: 'Kids Shoes • Sandals/Wedges • Hat • Helmet • Bag' },
 ];
 
 export const OrderFormPage: React.FC = () => {
@@ -95,11 +82,10 @@ export const OrderFormPage: React.FC = () => {
   // Search & expanded category state
   const [search, setSearch] = useState('');
   const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({
-    Sepatu: true,
-    Tas: false,
-    Topi: false,
-    Helm: false,
-    'Perawatan Khusus': false,
+    'Main Services': true,
+    'Express Services': false,
+    'Additional Services': false,
+    'Other Services': false,
   });
 
   // Selected services in basket
@@ -150,9 +136,11 @@ export const OrderFormPage: React.FC = () => {
           id: activeModalSvc.id,
           serviceId: activeModalSvc.id,
           category: activeModalSvc.category,
+          rawCategory: activeModalSvc.rawCategory,
           name: activeModalSvc.name,
           price: activeModalSvc.price,
           durationDays: activeModalSvc.days,
+          expressHours: activeModalSvc.expressHours,
           qty: modalQty,
           notes: modalNotes,
         };
@@ -214,18 +202,18 @@ export const OrderFormPage: React.FC = () => {
 
       // Map selected items to OrderServiceLine
       const serviceLines = selectedItems.map((s) => {
-        const matched = dbServices?.find((db) => db.name.toLowerCase().includes(s.name.toLowerCase()));
+        const matched = dbServices?.find((db) => db.id === s.serviceId || db.name.toLowerCase() === s.name.toLowerCase());
         return {
           serviceId: matched?.id || s.serviceId,
-          name: `${s.category} ${s.name}`,
+          name: s.name,
           price: s.price * s.qty,
           priceMin: s.price,
-          priceMax: null,
-          category: s.category === 'Perawatan Khusus' ? ('additional' as const) : ('main' as const),
-          workloadWeight: 1,
+          priceMax: matched?.priceMax ?? null,
+          category: s.rawCategory,
+          workloadWeight: matched?.workloadWeight ?? 1,
           durationMinDays: s.durationDays,
-          durationMaxDays: s.durationDays,
-          expressHours: null,
+          durationMaxDays: matched?.durationMaxDays ?? s.durationDays,
+          expressHours: s.expressHours ?? null,
         };
       });
 
@@ -250,11 +238,11 @@ export const OrderFormPage: React.FC = () => {
               price: s.price * s.qty,
               priceMin: s.price,
               priceMax: null,
-              category: 'main' as const,
+              category: s.rawCategory,
               workloadWeight: 1,
               durationMinDays: s.durationDays,
               durationMaxDays: s.durationDays,
-              expressHours: null,
+              expressHours: s.expressHours ?? null,
             },
           ],
         })),
@@ -292,28 +280,68 @@ export const OrderFormPage: React.FC = () => {
     }
   };
 
+  // Dynamic catalog synchronized with ServicesAdminPage (dbServices) & SEED_SERVICES fallback
+  const catalogServices = useMemo<ServiceDef[]>(() => {
+    const source = dbServices && dbServices.length > 0 ? dbServices : SEED_SERVICES;
+    return source.map((s, idx) => ({
+      id: 'id' in s && typeof s.id === 'string' ? s.id : `seed-${idx}`,
+      category: CAT_MAP[s.category] || 'Main Services',
+      rawCategory: s.category,
+      name: s.name,
+      price: s.priceMin,
+      priceMax: s.priceMax,
+      days: s.durationMinDays || 2,
+      daysMax: s.durationMaxDays || s.durationMinDays || 2,
+      expressHours: s.expressHours,
+      description: s.description,
+    }));
+  }, [dbServices]);
+
   // Filtered catalog services
   const filteredCatalog = useMemo(() => {
-    if (!search.trim()) return SOLECARE_SERVICES;
+    if (!search.trim()) return catalogServices;
     const q = search.toLowerCase();
-    return SOLECARE_SERVICES.filter(
-      (s) => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q)
+    return catalogServices.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.category.toLowerCase().includes(q) ||
+        (s.description && s.description.toLowerCase().includes(q))
     );
-  }, [search]);
+  }, [search, catalogServices]);
 
-  const renderCategoryIcon = (catName: string) => {
-    switch (catName) {
-      case 'Sepatu':
-        return <SneakerIllustration width={38} height={24} />;
-      case 'Tas':
-        return <BagIllustration size={22} color="#001b3a" />;
-      case 'Topi':
-        return <CapIllustration size={22} color="#001b3a" />;
-      case 'Helm':
-        return <HelmetIllustration size={22} color="#001b3a" />;
-      default:
-        return <SparklesIllustration size={22} color="#bf2f3b" />;
+  const renderCategoryIcon = (catName: string, svcName?: string) => {
+    const lower = (svcName || '').toLowerCase();
+    if (lower.includes('bag') || lower.includes('tas')) {
+      return <BagIllustration size={22} color="#001b3a" />;
     }
+    if (lower.includes('hat') || lower.includes('topi')) {
+      return <CapIllustration size={22} color="#001b3a" />;
+    }
+    if (lower.includes('helmet') || lower.includes('helm')) {
+      return <HelmetIllustration size={22} color="#001b3a" />;
+    }
+    if (catName === 'Express Services' || catName === 'Additional Services') {
+      return <SparklesIllustration size={22} color="#bf2f3b" />;
+    }
+    return <SneakerIllustration width={38} height={24} />;
+  };
+
+  const formatSvcPrice = (svc: ServiceDef) => {
+    const prefix = svc.rawCategory === 'express' ? '+' : '';
+    if (svc.priceMax && svc.priceMax > svc.price) {
+      return `${prefix}${svc.price.toLocaleString('id-ID')} - ${svc.priceMax.toLocaleString('id-ID')}`;
+    }
+    return `${prefix}${svc.price.toLocaleString('id-ID')}`;
+  };
+
+  const formatSvcDuration = (svc: ServiceDef) => {
+    if (svc.expressHours) {
+      return `${svc.expressHours} Jam • Express`;
+    }
+    if (svc.daysMax && svc.daysMax > svc.days) {
+      return `${svc.days}–${svc.daysMax} Hari • Satuan`;
+    }
+    return `${svc.days} Hari • Satuan`;
   };
 
   return (
@@ -441,17 +469,17 @@ export const OrderFormPage: React.FC = () => {
                                   flexShrink: 0,
                                 }}
                               >
-                                {renderCategoryIcon(svc.category)}
+                                {renderCategoryIcon(svc.category, svc.name)}
                               </div>
                               <div>
                                 <strong style={{ display: 'block', fontSize: '0.94rem', color: '#0f172a' }}>
                                   {svc.name}
                                 </strong>
                                 <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#001b3a', margin: '2px 0' }}>
-                                  {svc.price.toLocaleString('id-ID')}
+                                  {formatSvcPrice(svc)}
                                 </div>
                                 <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                                  {svc.days} Hari • Satuan
+                                  {formatSvcDuration(svc)}
                                 </span>
                               </div>
                             </div>
@@ -599,10 +627,10 @@ export const OrderFormPage: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
               <div>
                 <strong style={{ display: 'block', fontSize: '0.92rem', textTransform: 'uppercase', color: '#0f172a' }}>
-                  {activeModalSvc.category} {activeModalSvc.name}
+                  {activeModalSvc.name}
                 </strong>
                 <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                  {activeModalSvc.price.toLocaleString('id-ID')}
+                  {formatSvcPrice(activeModalSvc)}
                 </span>
               </div>
 
@@ -900,14 +928,14 @@ export const OrderFormPage: React.FC = () => {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {renderCategoryIcon(it.category)}
+                      {renderCategoryIcon(it.category, it.name)}
                     </div>
                     <div>
                       <strong style={{ display: 'block', fontSize: '0.9rem', color: '#0f172a' }}>
-                        {it.category} {it.name}
+                        {it.name}
                       </strong>
                       <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                        {it.price.toLocaleString('id-ID')} • {it.durationDays} Hari
+                        {it.price.toLocaleString('id-ID')} • {it.expressHours ? `${it.expressHours} Jam` : `${it.durationDays} Hari`}
                       </span>
                     </div>
                   </div>
