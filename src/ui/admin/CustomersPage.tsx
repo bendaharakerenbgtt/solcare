@@ -542,38 +542,6 @@ export const CustomersPage: React.FC = () => {
                 >
                   Paket
                 </button>
-                <button
-                  type="button"
-                  onClick={() => alert('Fitur TopUp Saldo siap')}
-                  style={{
-                    background: '#f1f5f9',
-                    color: '#334155',
-                    border: 'none',
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  TopUp
-                </button>
-                <button
-                  type="button"
-                  onClick={() => alert('Fitur Faktur Tagihan siap')}
-                  style={{
-                    background: '#f1f5f9',
-                    color: '#334155',
-                    border: 'none',
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Faktur
-                </button>
               </div>
             )}
 

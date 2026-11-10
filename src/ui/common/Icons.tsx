@@ -250,6 +250,61 @@ export const SettingsIcon: React.FC<IconProps> = ({ size = 18, color = 'currentC
   </svg>
 );
 
+/* Solecare Custom Siluet Icons (Pengganti icon bilas untuk Grid Status & Layanan) */
+export const SiluetSelfServiceIcon: React.FC<{ size?: number; color?: string }> = ({ size = 28, color = '#bf2f3b' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="3" width="20" height="18" rx="3" />
+    <circle cx="12" cy="13" r="5" />
+    <path d="M12 11a2 2 0 1 0 2 2" />
+    <circle cx="6" cy="6.5" r="1" fill={color} />
+    <circle cx="9" cy="6.5" r="1" fill={color} />
+  </svg>
+);
+
+export const SiluetPickupIcon: React.FC<{ size?: number; color?: string }> = ({ size = 28, color = '#bf2f3b' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="1" y="4" width="15" height="13" rx="2" />
+    <polygon points="16 8 20 8 23 11 23 17 16 17 16 8" />
+    <circle cx="5.5" cy="18.5" r="2.5" />
+    <circle cx="18.5" cy="18.5" r="2.5" />
+  </svg>
+);
+
+export const SiluetQueueIcon: React.FC<{ size?: number; color?: string }> = ({ size = 28, color = '#bf2f3b' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+    <path d="M9 12l2 2 4-4" />
+    <path d="M9 16l2 2 4-4" />
+  </svg>
+);
+
+export const SiluetProcessIcon: React.FC<{ size?: number; color?: string }> = ({ size = 28, color = '#bf2f3b' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 3" />
+    <path d="M7.5 4.5l1.5 2M16.5 4.5l-1.5 2" />
+  </svg>
+);
+
+export const SiluetReadyPickupIcon: React.FC<{ size?: number; color?: string }> = ({ size = 28, color = '#bf2f3b' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+    <path d="M9 12l2 2 4-4" />
+    <path d="M16 10a4 4 0 0 1-8 0" />
+  </svg>
+);
+
+export const SiluetDeliveryIcon: React.FC<{ size?: number; color?: string }> = ({ size = 28, color = '#bf2f3b' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 18H3c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v2" />
+    <rect x="11" y="9" width="10" height="9" rx="2" />
+    <circle cx="7" cy="19" r="2" />
+    <circle cx="17" cy="19" r="2" />
+    <path d="M15 13h2" />
+  </svg>
+);
+
 export const LogoutIcon: React.FC<IconProps> = ({ size = 18, color = 'currentColor', ...props }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

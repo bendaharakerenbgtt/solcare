@@ -83,99 +83,11 @@ export const SettingsPage: React.FC = () => {
             <strong style={{ display: 'block', fontSize: '1.05rem', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {currentSettings?.businessName || user?.name || 'Soleful Soaks! Shoes Care'}
             </strong>
-            <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', margin: '2px 0 6px' }}>
-              Masa Aktif : 17/11/2026
+            <span style={{ fontSize: '0.82rem', color: '#64748b', display: 'block', marginTop: '2px' }}>
+              {user?.email || 'admin@solefulsoaks.id'}
             </span>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              <span
-                style={{
-                  background: '#f1f5f9',
-                  color: '#475569',
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  padding: '2px 8px',
-                  borderRadius: '999px',
-                }}
-              >
-                Trial
-              </span>
-              <span
-                style={{
-                  background: '#fef2f2',
-                  color: '#bf2f3b',
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  padding: '2px 8px',
-                  borderRadius: '999px',
-                }}
-              >
-                Paket Ekonomis
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => alert('Paket aktif hingga 17/11/2026')}
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              border: '1.5px solid #001b3a',
-              background: '#ffffff',
-              color: '#001b3a',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
-            title="Perpanjang Paket"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Coin / Saldo Banner Persis Bilas Screenshot */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-          borderRadius: '16px',
-          padding: '12px 16px',
-          color: '#ffffff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          boxShadow: '0 4px 12px rgba(245, 158, 11, 0.25)',
-          cursor: 'pointer',
-        }}
-        onClick={() => alert('Saldo SolePoints: 0 Poin')}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div
-            style={{
-              width: '34px',
-              height: '34px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.1rem',
-            }}
-          >
-            🪙
-          </div>
-          <div>
-            <div style={{ fontSize: '0.94rem', fontWeight: 800 }}>SolePoints</div>
-            <span style={{ fontSize: '0.74rem', opacity: 0.9 }}>Lihat Saldo • Tambah Penghasilan</span>
           </div>
         </div>
-        <span style={{ fontSize: '1.2rem', opacity: 0.9 }}>›</span>
       </div>
 
       {/* 3. 10 Menu List Items Persis Bilas Screenshot */}

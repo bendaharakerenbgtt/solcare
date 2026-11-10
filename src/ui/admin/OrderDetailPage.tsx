@@ -597,42 +597,74 @@ export const OrderDetailPage: React.FC = () => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <img
-                    src="/bilas_icons/proses_diterima.webp"
-                    alt="Terima"
-                    style={{ width: '26px', height: '26px', opacity: order.status === 'menunggu' ? 1 : 0.6 }}
-                    title="Diterima"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
+                  <span
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '50%',
+                      background: order.status === 'menunggu' ? '#001b3a' : '#e2e8f0',
+                      color: order.status === 'menunggu' ? '#ffffff' : '#64748b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
                     }}
-                  />
-                  <img
-                    src="/bilas_icons/proses_cuci.webp"
-                    alt="Cuci"
-                    style={{ width: '26px', height: '26px', opacity: order.status === 'pencucian' ? 1 : 0.6 }}
-                    title="Pencucian"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
+                    title="Antrian Masuk"
+                  >
+                    1
+                  </span>
+                  <span
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '50%',
+                      background: order.status === 'pencucian' ? '#bf2f3b' : '#e2e8f0',
+                      color: order.status === 'pencucian' ? '#ffffff' : '#64748b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
                     }}
-                  />
-                  <img
-                    src="/bilas_icons/proses_kering.webp"
-                    alt="Kering"
-                    style={{ width: '26px', height: '26px', opacity: order.status === 'pengeringan' ? 1 : 0.6 }}
-                    title="Pengeringan"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
+                    title="Cuci"
+                  >
+                    2
+                  </span>
+                  <span
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '50%',
+                      background: order.status === 'pengeringan' ? '#bf2f3b' : '#e2e8f0',
+                      color: order.status === 'pengeringan' ? '#ffffff' : '#64748b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
                     }}
-                  />
-                  <img
-                    src="/bilas_icons/proses_packing.webp"
-                    alt="Packing"
-                    style={{ width: '26px', height: '26px', opacity: order.status === 'finishing' || order.status === 'selesai' ? 1 : 0.6 }}
-                    title="Finishing"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
+                    title="Kering"
+                  >
+                    3
+                  </span>
+                  <span
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '50%',
+                      background: order.status === 'finishing' || order.status === 'selesai' ? '#16a34a' : '#e2e8f0',
+                      color: order.status === 'finishing' || order.status === 'selesai' ? '#ffffff' : '#64748b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
                     }}
-                  />
+                    title="Finishing / Selesai"
+                  >
+                    ✓
+                  </span>
                 </div>
 
                 <button

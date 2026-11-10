@@ -11,6 +11,12 @@ import {
   ArrowDownIcon,
   UsersIcon,
   StarIcon,
+  SiluetSelfServiceIcon,
+  SiluetPickupIcon,
+  SiluetQueueIcon,
+  SiluetProcessIcon,
+  SiluetReadyPickupIcon,
+  SiluetDeliveryIcon,
 } from '../common/Icons';
 
 export const DashboardPage: React.FC = () => {
@@ -198,15 +204,15 @@ export const DashboardPage: React.FC = () => {
       {/* 3. Content Below Card When TRANSAKSI (Screenshot 2) */}
       {activeCardTab === 'TRANSAKSI' && (
         <div>
-          {/* 6-Item Grid Persis Bilas Screenshot 2 */}
+          {/* 6-Item Grid Solecare Siluet Icons */}
           <div className="bilas-grid-6">
             <Link
               to="/admin/orders?tab=self_service"
               className="bilas-grid-6-item"
               style={{ textDecoration: 'none' }}
             >
-              <div className="bilas-grid-6-icon-wrap">
-                <img src="/bilas_icons/icon_dashboard1.webp" alt="Self Service" className="bilas-grid-6-img" />
+              <div className="bilas-grid-6-icon-wrap" style={{ background: '#fdf2f2', borderRadius: '14px' }}>
+                <SiluetSelfServiceIcon size={26} color="#bf2f3b" />
                 <span className="bilas-grid-6-badge">0</span>
               </div>
               <span className="bilas-grid-6-title">Self Service</span>
@@ -217,8 +223,8 @@ export const DashboardPage: React.FC = () => {
               className="bilas-grid-6-item"
               style={{ textDecoration: 'none' }}
             >
-              <div className="bilas-grid-6-icon-wrap">
-                <img src="/bilas_icons/icon_dashboard2.webp" alt="Penjemputan" className="bilas-grid-6-img" />
+              <div className="bilas-grid-6-icon-wrap" style={{ background: '#f0f4f9', borderRadius: '14px' }}>
+                <SiluetPickupIcon size={26} color="#001b3a" />
                 <span className="bilas-grid-6-badge">0</span>
               </div>
               <span className="bilas-grid-6-title">Penjemputan</span>
@@ -229,8 +235,8 @@ export const DashboardPage: React.FC = () => {
               className="bilas-grid-6-item"
               style={{ textDecoration: 'none' }}
             >
-              <div className="bilas-grid-6-icon-wrap">
-                <img src="/bilas_icons/icon_dashboard3.webp" alt="Antrian" className="bilas-grid-6-img" />
+              <div className="bilas-grid-6-icon-wrap" style={{ background: '#fdf2f2', borderRadius: '14px' }}>
+                <SiluetQueueIcon size={26} color="#bf2f3b" />
                 <span className="bilas-grid-6-badge">{waitingOrders.length}</span>
               </div>
               <span className="bilas-grid-6-title">Antrian</span>
@@ -241,8 +247,8 @@ export const DashboardPage: React.FC = () => {
               className="bilas-grid-6-item"
               style={{ textDecoration: 'none' }}
             >
-              <div className="bilas-grid-6-icon-wrap">
-                <img src="/bilas_icons/icon_dashboard4.webp" alt="Proses" className="bilas-grid-6-img" />
+              <div className="bilas-grid-6-icon-wrap" style={{ background: '#f0f4f9', borderRadius: '14px' }}>
+                <SiluetProcessIcon size={26} color="#001b3a" />
                 <span className="bilas-grid-6-badge">{washingOrders.length + dryingOrders.length + finishingOrders.length}</span>
               </div>
               <span className="bilas-grid-6-title">Proses</span>
@@ -253,8 +259,8 @@ export const DashboardPage: React.FC = () => {
               className="bilas-grid-6-item"
               style={{ textDecoration: 'none' }}
             >
-              <div className="bilas-grid-6-icon-wrap">
-                <img src="/bilas_icons/icon_dashboard5.webp" alt="Siap Ambil" className="bilas-grid-6-img" />
+              <div className="bilas-grid-6-icon-wrap" style={{ background: '#fdf2f2', borderRadius: '14px' }}>
+                <SiluetReadyPickupIcon size={26} color="#bf2f3b" />
                 <span className="bilas-grid-6-badge">{completedOrders.length}</span>
               </div>
               <span className="bilas-grid-6-title">Siap Ambil</span>
@@ -265,8 +271,8 @@ export const DashboardPage: React.FC = () => {
               className="bilas-grid-6-item"
               style={{ textDecoration: 'none' }}
             >
-              <div className="bilas-grid-6-icon-wrap">
-                <img src="/bilas_icons/icon_dashboard6.webp" alt="Siap Antar" className="bilas-grid-6-img" />
+              <div className="bilas-grid-6-icon-wrap" style={{ background: '#f0f4f9', borderRadius: '14px' }}>
+                <SiluetDeliveryIcon size={26} color="#001b3a" />
                 <span className="bilas-grid-6-badge">0</span>
               </div>
               <span className="bilas-grid-6-title">Siap Antar</span>
@@ -403,14 +409,6 @@ export const DashboardPage: React.FC = () => {
               <strong>{totalPaid.toLocaleString('id-ID')}</strong>
             </div>
             <div className="bilas-finance-breakdown-row">
-              <span>Pendapatan TopUp Paket</span>
-              <strong>0</strong>
-            </div>
-            <div className="bilas-finance-breakdown-row">
-              <span>Pendapatan TopUp Deposit</span>
-              <strong>0</strong>
-            </div>
-            <div className="bilas-finance-breakdown-row">
               <span>Pendapatan Jual Produk</span>
               <strong>{totalProducts.toLocaleString('id-ID')}</strong>
             </div>
@@ -449,10 +447,6 @@ export const DashboardPage: React.FC = () => {
             <div className="bilas-finance-breakdown-row">
               <span>Transaksi Masuk</span>
               <strong>{orders?.length || 0} Transaksi</strong>
-            </div>
-            <div className="bilas-finance-breakdown-row">
-              <span>Transaksi TopUp Paket</span>
-              <strong>0 Transaksi</strong>
             </div>
           </div>
         </div>
