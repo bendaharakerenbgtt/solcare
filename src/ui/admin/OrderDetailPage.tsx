@@ -233,16 +233,13 @@ export const OrderDetailPage: React.FC = () => {
         </button>
 
         {/* Center Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <img
-            src="/bilas_icons/img_logo.webp"
-            alt="Logo"
-            style={{ height: '24px', objectFit: 'contain' }}
-            onError={(e) => {
-              (e.target as HTMLElement).style.display = 'none';
-            }}
+            src="/logo-color.jpg"
+            alt="Solecare Logo"
+            style={{ width: '24px', height: '24px', borderRadius: '6px', objectFit: 'cover' }}
           />
-          <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#001b3a', letterSpacing: '-0.3px' }}>
+          <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#001b3a', letterSpacing: '-0.3px' }}>
             solecare
           </span>
         </div>
