@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { repo } from '../../data';
 import type { Customer } from '../../data/types';
 import { useAsync } from '../hooks';
+import { MapsPickerModal } from '../common/MapsPickerModal';
 
 interface BilasTransactionSheetProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
   const [subMode, setSubMode] = useState<'menu' | 'search' | 'new' | 'contacts'>('menu');
   const [searchQuery, setSearchQuery] = useState('');
   const [contactSearch, setContactSearch] = useState('');
+  const [mapsModalOpen, setMapsModalOpen] = useState(false);
 
   // Form state for Tambah Pelanggan persis foto WhatsApp Image 2026-11-10 at 2.42.14 PM.jpeg
   const [newCustName, setNewCustName] = useState('');
@@ -429,7 +431,7 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
                 </span>
                 <button
                   type="button"
-                  onClick={() => alert('Pilih pin lokasi Google Maps')}
+                  onClick={() => setMapsModalOpen(true)}
                   style={{
                     background: 'transparent',
                     border: 'none',
@@ -541,6 +543,14 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
           </div>
         )}
       </div>
+
+      {/* Interactive Maps Picker Modal */}
+      <MapsPickerModal
+        isOpen={mapsModalOpen}
+        onClose={() => setMapsModalOpen(false)}
+        initialAddress={newCustAddress}
+        onSelectAddress={(addr) => setNewCustAddress(addr)}
+      />
     </div>
   );
 };

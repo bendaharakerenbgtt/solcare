@@ -4,6 +4,7 @@ import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import type { Customer, Order } from '../../data/types';
 import { fmtDateTime, rupiah, whatsappLink } from '../../lib/format';
+import { MapsPickerModal } from '../common/MapsPickerModal';
 
 export const CustomersPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,8 +18,9 @@ export const CustomersPage: React.FC = () => {
     searchParams.get('selectedId') || null
   );
 
-  // Form state for Tambah Pelanggan
+  // Form state for Tambah / Edit Pelanggan
   const [modalOpen, setModalOpen] = useState(false);
+  const [mapsModalOpen, setMapsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -43,6 +45,35 @@ export const CustomersPage: React.FC = () => {
     setBirthDate('');
     setGender('laki');
     setAddress('');
+    setModalOpen(true);
+  };
+
+  const openEdit = (c: Customer) => {
+    setEditingCustomer(c);
+    setName(c.name);
+    setPhone(c.phone === '-' ? '' : c.phone);
+    setNoPhone(c.phone === '-');
+
+    let parsedAddr = '';
+    let parsedEmail = '';
+    let parsedDOB = '';
+    let parsedGender: 'laki' | 'perempuan' = 'laki';
+
+    if (c.notes) {
+      const parts = c.notes.split(' | ');
+      parts.forEach((p) => {
+        if (p.startsWith('Alamat: ')) parsedAddr = p.replace('Alamat: ', '');
+        else if (p.startsWith('Email: ')) parsedEmail = p.replace('Email: ', '');
+        else if (p.startsWith('Lahir: ')) parsedDOB = p.replace('Lahir: ', '');
+        else if (p.startsWith('Gender: ')) parsedGender = (p.replace('Gender: ', '') as any) || 'laki';
+        else if (!parsedAddr) parsedAddr = p;
+      });
+    }
+
+    setAddress(parsedAddr);
+    setEmail(parsedEmail);
+    setBirthDate(parsedDOB);
+    setGender(parsedGender || 'laki');
     setModalOpen(true);
   };
 
@@ -186,8 +217,8 @@ export const CustomersPage: React.FC = () => {
                   {selectedCustomer.phone || 'Tanpa nomor telepon'}
                 </span>
 
-                {/* Action Buttons: Chat WA & Panggil */}
-                <div style={{ display: 'flex', gap: '8px' }}>
+                {/* Action Buttons: Chat WA, Panggil, & Edit Profil */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {selectedCustomer.phone && selectedCustomer.phone !== '-' ? (
                     <a
                       href={whatsappLink(selectedCustomer.phone, `Halo Kak ${selectedCustomer.name}, dari Soleful Soaks!`) || undefined}
@@ -229,6 +260,26 @@ export const CustomersPage: React.FC = () => {
                       📞 Panggil
                     </a>
                   ) : null}
+
+                  <button
+                    type="button"
+                    onClick={() => openEdit(selectedCustomer)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: '#001b3a',
+                      color: '#ffffff',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ✏️ Edit Profil
+                  </button>
                 </div>
               </div>
             </div>
@@ -907,7 +958,7 @@ export const CustomersPage: React.FC = () => {
                   <span>Alamat</span>
                   <button
                     type="button"
-                    onClick={() => alert('Pilih pin lokasi Google Maps')}
+                    onClick={() => setMapsModalOpen(true)}
                     style={{
                       background: 'transparent',
                       border: 'none',
@@ -951,6 +1002,14 @@ export const CustomersPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Interactive Maps Picker Modal */}
+      <MapsPickerModal
+        isOpen={mapsModalOpen}
+        onClose={() => setMapsModalOpen(false)}
+        initialAddress={address}
+        onSelectAddress={(addr) => setAddress(addr)}
+      />
     </div>
   );
 };

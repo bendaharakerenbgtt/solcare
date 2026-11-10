@@ -1,16 +1,48 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { repo } from '../../data';
-import type { Order, OrderPhoto, StatusHistoryEntry, EstimateHistoryEntry, Settings } from '../../data/types';
-import { ORDER_STATUSES, type OrderStatus } from '../../data/types';
-import { fmtDateTime, rupiah, STATUS_LABEL, displayCode, whatsappLink } from '../../lib/format';
+import type { Order, OrderPhoto, StatusHistoryEntry, EstimateHistoryEntry, Settings, OrderStatus } from '../../data/types';
+import { fmtDateTime, rupiah, displayCode, whatsappLink } from '../../lib/format';
 import { buildCollage, validateInputFile } from '../../lib/collage';
 import { toLocalInput, fromLocalInput } from '../hooks';
 import { InvoiceModal } from '../common/InvoiceModal';
 
+function formatBilasDateTime(iso: string | null | undefined): string {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const day = pad(d.getDate());
+  const month = pad(d.getMonth() + 1);
+  const year = d.getFullYear();
+  const hours = pad(d.getHours());
+  const minutes = pad(d.getMinutes());
+  const seconds = pad(d.getSeconds());
+  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+}
+
+const BILAS_STAGE_LABEL: Record<OrderStatus, string> = {
+  menunggu: 'Antrian',
+  pencucian: 'Proses Cuci',
+  pengeringan: 'Proses Kering',
+  finishing: 'Finishing & QC',
+  selesai: 'Siap Ambil',
+  diambil: 'Selesai (Diambil)',
+};
+
+const SneakerThumb: React.FC = () => (
+  <svg width="34" height="22" viewBox="0 0 100 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 52C25 52 75 52 90 52C93 52 95 49 93 46L86 32C84 28 80 25 75 25H55L45 10C42 5 35 5 30 8L15 18C10 22 8 28 8 34V48C8 50.2 8.9 52 10 52Z" fill="#0284c7" />
+    <path d="M5 52H95C96.5 52 98 54 98 56C98 58 96.5 60 95 60H5C3.5 60 2 58 2 56C2 54 3.5 52 5 52Z" fill="#e2e8f0" />
+    <path d="M8 58H92V61C92 62.5 90.5 64 89 64H11C9.5 64 8 62.5 8 61V58Z" fill="#cbd5e1" />
+    <path d="M15 52C12 45 15 35 22 30L32 23C36 20 42 22 44 26L48 35C45 42 35 48 25 52H15Z" fill="#fed7aa" />
+    <path d="M40 32L65 42M48 28L73 38" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
+  </svg>
+);
+
 export const OrderDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -23,9 +55,15 @@ export const OrderDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
 
-  // Status update modal / form
-  const [targetStatus, setTargetStatus] = useState<OrderStatus>('menunggu');
-  const [statusNote, setStatusNote] = useState('');
+  // Modals & accordions
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [payModalOpen, setPayModalOpen] = useState(false);
+  const [adjustModalOpen, setAdjustModalOpen] = useState(false);
+  const [deliveryExpanded, setDeliveryExpanded] = useState(false);
+  const [historyExpanded, setHistoryExpanded] = useState(true);
+  const [collageExpanded, setCollageExpanded] = useState(false);
+
+  // Status updating
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   // Estimate adjust form
@@ -41,7 +79,7 @@ export const OrderDetailPage: React.FC = () => {
     'Sesudah (Depan)',
     'Sesudah (Samping)',
   ]);
-  const [collageCaption, setCollageCaption] = useState('Dokumentasi Soleful Soaks!');
+  const [collageCaption, setCollageCaption] = useState('Dokumentasi Solecare!');
   const [uploadingCollage, setUploadingCollage] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -60,7 +98,6 @@ export const OrderDetailPage: React.FC = () => {
       if (!ord) throw new Error('Pesanan tidak ditemukan.');
       setOrder(ord);
       setSettings(sets);
-      setTargetStatus(ord.status);
       setPhotos(phs);
       setStatusHistory(sHist);
       setEstimateHistory(eHist);
@@ -91,21 +128,51 @@ export const OrderDetailPage: React.FC = () => {
     }
   }, [id, searchParams]);
 
-  const handleUpdateStatus = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Advance to next process stage
+  const handleAdvanceStatus = async () => {
     if (!id || !order) return;
+    const nextMap: Record<OrderStatus, OrderStatus | null> = {
+      menunggu: 'pencucian',
+      pencucian: 'pengeringan',
+      pengeringan: 'finishing',
+      finishing: 'selesai',
+      selesai: 'diambil',
+      diambil: null,
+    };
+    const next = nextMap[order.status];
+    if (!next) {
+      alert('Pesanan sudah selesai sepenuhnya.');
+      return;
+    }
+
     setUpdatingStatus(true);
     try {
-      await repo.updateStatus(id, targetStatus, statusNote);
-      setStatusNote('');
+      await repo.updateStatus(id, next, `Diperbarui via Selesaikan Proses`);
       await loadData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Gagal mengubah status');
+      alert(err instanceof Error ? err.message : 'Gagal memperbarui status');
     } finally {
       setUpdatingStatus(false);
     }
   };
 
+  // Cancel order
+  const handleCancelOrder = async () => {
+    if (!id || !order) return;
+    if (!confirm(`Batalkan transaksi ${displayCode(order.code)}?`)) return;
+    setUpdatingStatus(true);
+    try {
+      await repo.updateStatus(id, 'diambil', 'Dibatalkan oleh pelanggan/admin');
+      alert('Transaksi berhasil dibatalkan.');
+      await loadData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Gagal membatalkan transaksi');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  // Adjust estimate
   const handleAdjustEstimate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id || !newEstimateAt) return;
@@ -113,8 +180,9 @@ export const OrderDetailPage: React.FC = () => {
     try {
       await repo.adjustEstimate(id, {
         estimatedAt: fromLocalInput(newEstimateAt) || new Date().toISOString(),
-        reason: estimateReason,
+        reason: estimateReason || 'Penyesuaian jadwal',
       });
+      setAdjustModalOpen(false);
       setEstimateReason('');
       await loadData();
     } catch (err) {
@@ -124,6 +192,7 @@ export const OrderDetailPage: React.FC = () => {
     }
   };
 
+  // Photo handlers
   const handleFileChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -153,7 +222,7 @@ export const OrderDetailPage: React.FC = () => {
       const { blob, width, height } = await buildCollage(filled, {
         labels: uploadLabels,
         caption: collageCaption,
-        footer: `Soleful Soaks! Shoes Care • Pesanan ${displayCode(order.code)} • ${order.brand} ${order.model}`,
+        footer: `Solecare Care • Pesanan TRX/${displayCode(order.code)} • ${order.brand} ${order.model}`,
       });
 
       await repo.uploadCollage(id, blob, {
@@ -175,18 +244,16 @@ export const OrderDetailPage: React.FC = () => {
   const handleDeletePhoto = async (photoId: string) => {
     if (!confirm('Yakin ingin menghapus foto dokumentasi ini?')) return;
     try {
-      await repo.deletePhoto(photoId, 'Dihapus manual oleh staf dari halaman detail');
+      await repo.deletePhoto(photoId, 'Dihapus manual dari halaman detail');
       await loadData();
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Gagal menghapus');
     }
   };
 
-  const handleQuickPayment = async (method: 'qris' | 'tunai') => {
+  // Quick payment
+  const handleRecordPayment = async (method: 'qris' | 'tunai') => {
     if (!id || !order) return;
-    if (!confirm(`Konfirmasi bahwa pesanan ${displayCode(order.code)} telah dibayar LUNAS sebesar ${rupiah(order.total)} via ${method.toUpperCase()}?`)) {
-      return;
-    }
     try {
       await repo.recordPayment(id, {
         method,
@@ -194,6 +261,8 @@ export const OrderDetailPage: React.FC = () => {
         paidAt: new Date().toISOString(),
         confirmed: true,
       });
+      setPayModalOpen(false);
+      alert(`Pembayaran LUNAS via ${method.toUpperCase()} berhasil dicatat!`);
       await loadData();
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Gagal mencatat pembayaran');
@@ -206,485 +275,1038 @@ export const OrderDetailPage: React.FC = () => {
   const trackUrl = `${window.location.origin}/cek-pesanan?code=${order.code}`;
   const waMessage =
     order.status === 'selesai'
-      ? `Halo Kak ${order.customerName}, pesanan ${order.itemType} (${order.brand} ${order.model}) dengan kode ${displayCode(order.code)} di Soleful Soaks! SUDAH SELESAI dan siap diambil. Total tagihan: ${rupiah(order.total)} (${order.payment.status === 'lunas' ? 'LUNAS' : 'Belum Lunas'}). Cek detail & dokumentasi foto di: ${trackUrl}`
-      : `Halo Kak ${order.customerName}, terima kasih telah mempercayakan perawatan ${order.itemType} (${order.brand} ${order.model}) di Soleful Soaks! Kode pesanan Anda: ${displayCode(order.code)} (Status saat ini: ${STATUS_LABEL[order.status]}). Pantau progres & nota digital di: ${trackUrl}`;
+      ? `Halo Kak ${order.customerName}, pesanan ${order.itemType} (${order.brand} ${order.model}) dengan kode TRX/${displayCode(order.code)} di Solecare SUDAH SELESAI dan siap diambil. Total tagihan: ${rupiah(order.total)} (${order.payment.status === 'lunas' ? 'LUNAS' : 'Belum Lunas'}). Cek nota & detail di: ${trackUrl}`
+      : `Halo Kak ${order.customerName}, terima kasih telah mempercayakan perawatan di Solecare! Kode pesanan Anda: TRX/${displayCode(order.code)} (Status: ${BILAS_STAGE_LABEL[order.status]}). Pantau progres di: ${trackUrl}`;
 
-  const waCustomer = order.customerPhone
-    ? whatsappLink(order.customerPhone, waMessage)
-    : null;
+  const waCustomer = order.customerPhone ? whatsappLink(order.customerPhone, waMessage) : null;
+  const isLunas = order.payment.status === 'lunas';
 
   return (
-    <div className="stack" style={{ gap: '16px', maxWidth: '1000px', margin: '0 auto' }}>
-      {/* Standardized Admin Header */}
-      <div className="admin-page-header">
-        <h1>Detail Pesanan</h1>
-        <Link to="/admin/orders" className="admin-back-btn">
-          ← Kembali
-        </Link>
-      </div>
+    <div style={{ maxWidth: '480px', margin: '0 auto', background: '#f8fafc', minHeight: '100vh', paddingBottom: '90px' }}>
+      {/* ======================================================== */}
+      {/* 1. TOP HEADER (Persis Foto Bilas Image 4)                */}
+      {/* ======================================================== */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 16px',
+          background: '#ffffff',
+          borderBottom: '1px solid #f1f5f9',
+          position: 'sticky',
+          top: 0,
+          zIndex: 30,
+        }}
+      >
+        {/* Back button */}
+        <button
+          type="button"
+          onClick={() => navigate('/admin/orders')}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            fontSize: '1.3rem',
+            fontWeight: 800,
+            color: '#0f172a',
+            cursor: 'pointer',
+            padding: '2px 6px',
+          }}
+        >
+          ←
+        </button>
 
-      {/* Header Card */}
-      <div className="order-detail-header-card">
-        <div className="order-badge-row">
-          <span className="badge teal">{displayCode(order.code)}</span>
-          <span className={`badge ${order.status === 'selesai' ? 'ok' : 'blue'}`}>
-            {STATUS_LABEL[order.status]}
-          </span>
-          <span className={`badge ${order.payment.status === 'lunas' ? 'ok' : 'warn'}`}>
-            {order.payment.status === 'lunas' ? 'Lunas' : 'Belum Lunas'}
+        {/* Center Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <img
+            src="/bilas_icons/img_logo.webp"
+            alt="Logo"
+            style={{ height: '24px', objectFit: 'contain' }}
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
+          <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#0052cc', letterSpacing: '-0.3px' }}>
+            solecare
           </span>
         </div>
 
-        <h1 className="order-detail-title">
-          {order.itemType}: {order.brand} {order.model}
-        </h1>
-
-        <div className="order-detail-sub">
-          <span>Pelanggan: <strong>{order.customerName}</strong> ({order.customerPhone})</span>
-          <span>• Masuk: {fmtDateTime(order.receivedAt)}</span>
-        </div>
-
-        <div className="order-detail-action-grid">
+        {/* Right Action Icons: Nota & Print */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {/* Nota View Icon */}
           <button
             type="button"
-            className="btn sm"
             onClick={() => setInvoiceOpen(true)}
+            title="Lihat Nota"
             style={{
-              background: '#001b3a',
-              color: '#ffffff',
+              background: 'transparent',
+              border: 'none',
+              padding: '2px',
+              cursor: 'pointer',
+              color: '#0284c7',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              fontWeight: 700,
             }}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 6 2 18 2 18 9"/>
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-              <rect width="12" height="8" x="6" y="14"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
             </svg>
-            Cetak / Unduh Nota
           </button>
+
+          {/* Print Icon */}
+          <button
+            type="button"
+            onClick={() => {
+              setInvoiceOpen(true);
+              setTimeout(() => window.print(), 350);
+            }}
+            title="Cetak Nota"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              padding: '2px',
+              cursor: 'pointer',
+              color: '#0284c7',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 2. STATUS HEADLINE & CODE (Persis Foto Bilas Image 4)   */}
+      {/* ======================================================== */}
+      <div style={{ padding: '16px 18px 8px' }}>
+        <h1 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 800, color: '#0f172a' }}>
+          {BILAS_STAGE_LABEL[order.status] || 'Antrian'}
+        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px' }}>
+          <strong style={{ fontSize: '0.92rem', color: '#0f172a', letterSpacing: '-0.2px' }}>
+            TRX/{displayCode(order.code)}
+          </strong>
+          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0284c7' }}>
+            {formatBilasDateTime(order.receivedAt)}
+          </span>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 3. CUSTOMER CARD (Persis Foto Bilas Image 4)             */}
+      {/* ======================================================== */}
+      <div
+        style={{
+          margin: '8px 16px',
+          background: '#ffffff',
+          borderRadius: '16px',
+          border: '1px solid #e2e8f0',
+          padding: '12px 14px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <img
+            src="/bilas_icons/img_avatar.webp"
+            alt="Avatar"
+            style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }}
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
+          <div>
+            <strong style={{ fontSize: '0.94rem', color: '#0f172a', display: 'block' }}>
+              {order.customerName}
+            </strong>
+            <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
+              {order.customerPhone || '-'}
+            </span>
+          </div>
+        </div>
+
+        {/* WhatsApp & Call Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {waCustomer && (
-            <a href={waCustomer} target="_blank" rel="noreferrer" className="btn wa sm">
-              WhatsApp
+            <a
+              href={waCustomer}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: '#f1f5f9',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textDecoration: 'none',
+              }}
+              title="Chat WhatsApp"
+            >
+              <img
+                src="/bilas_icons/img_whatsapp.webp"
+                alt="WA"
+                style={{ width: '20px', height: '20px' }}
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
             </a>
           )}
-          <Link to={`/admin/orders/${order.id}/edit`} className="btn secondary sm">
+          {order.customerPhone && (
+            <a
+              href={`tel:${order.customerPhone}`}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: '#f1f5f9',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textDecoration: 'none',
+                color: '#64748b',
+                fontSize: '0.9rem',
+              }}
+              title="Panggil Telepon"
+            >
+              📞
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 4. INFORMASI ANTAR/JEMPUT ACCORDION (Persis Foto Image 4)*/}
+      {/* ======================================================== */}
+      <div
+        style={{
+          margin: '8px 16px',
+          background: '#ffffff',
+          borderRadius: '16px',
+          border: '1px solid #e2e8f0',
+          padding: '14px 16px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+        }}
+      >
+        <div
+          onClick={() => setDeliveryExpanded(!deliveryExpanded)}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '1.1rem' }}>🚚</span>
+            <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>Informasi Antar/Jemput</strong>
+          </div>
+          <span style={{ color: '#94a3b8', transform: deliveryExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+            ▾
+          </span>
+        </div>
+
+        {deliveryExpanded && (
+          <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f1f5f9', fontSize: '0.84rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <span style={{ color: '#64748b' }}>Metode</span>
+              <strong>{order.internalNotes?.includes('Antar-Jemput') ? 'Layanan Antar-Jemput' : 'Drop-off di Outlet'}</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: '#64748b' }}>Catatan</span>
+              <strong>{order.internalNotes || 'Standar'}</strong>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ======================================================== */}
+      {/* 5. BLUE BANNER CARD: TAGIHAN & EST. SELESAI              */}
+      {/* ======================================================== */}
+      <div
+        style={{
+          margin: '12px 16px 6px',
+          background: 'linear-gradient(135deg, #0284c7 0%, #0052cc 100%)',
+          borderRadius: '18px',
+          padding: '16px 20px',
+          color: '#ffffff',
+          boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: '0.82rem', opacity: 0.9, fontWeight: 600 }}>Tagihan</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '2px' }}>
+              {order.total.toLocaleString('id-ID')}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* DETAIL button */}
+            <button
+              type="button"
+              onClick={() => setDetailModalOpen(true)}
+              style={{
+                background: 'rgba(255,255,255,0.18)',
+                border: '1.5px solid rgba(255,255,255,0.45)',
+                color: '#ffffff',
+                fontSize: '0.76rem',
+                fontWeight: 800,
+                padding: '6px 14px',
+                borderRadius: '20px',
+                cursor: 'pointer',
+              }}
+            >
+              DETAIL
+            </button>
+
+            {/* BAYAR button */}
+            <button
+              type="button"
+              onClick={() => {
+                if (isLunas) {
+                  alert('Tagihan ini sudah tercatat LUNAS.');
+                } else {
+                  setPayModalOpen(true);
+                }
+              }}
+              style={{
+                background: isLunas ? '#16a34a' : '#f59e0b',
+                border: 'none',
+                color: '#ffffff',
+                fontSize: '0.76rem',
+                fontWeight: 800,
+                padding: '6px 16px',
+                borderRadius: '20px',
+                cursor: 'pointer',
+              }}
+            >
+              {isLunas ? 'LUNAS' : 'BAYAR'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Sub-info: Est. Selesai */}
+      <div style={{ textAlign: 'center', margin: '10px 16px 14px' }}>
+        <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Est. Selesai</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '2px' }}>
+          <strong style={{ fontSize: '0.98rem', color: '#0f172a' }}>
+            {formatBilasDateTime(order.estimatedAt || order.receivedAt)}
+          </strong>
+          <button
+            type="button"
+            onClick={() => setAdjustModalOpen(true)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '0.78rem',
+              color: '#0284c7',
+              padding: 0,
+            }}
+            title="Ubah Estimasi"
+          >
+            ✏️
+          </button>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 6. DETAIL PESANAN CARD (Persis Foto Bilas Image 4)       */}
+      {/* ======================================================== */}
+      <div
+        style={{
+          margin: '8px 16px',
+          background: '#ffffff',
+          borderRadius: '16px',
+          border: '1px solid #e2e8f0',
+          padding: '16px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>Detail Pesanan</strong>
+          <Link
+            to={`/admin/orders/${order.id}/edit`}
+            style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0284c7', textDecoration: 'none' }}
+          >
             Edit
           </Link>
-          <Link to={`/cek-pesanan?code=${order.code}`} target="_blank" className="btn secondary sm">
-            Lacak Web ↗
-          </Link>
-        </div>
-      </div>
-
-      {/* Main Grid Detail */}
-      <div className="grid grid-2">
-        {/* Customer & Item Info */}
-        <div className="card">
-          <h3>Informasi Pelanggan & Barang</h3>
-          <div className="order-spec-grid">
-            <div className="order-spec-row">
-              <span className="order-spec-label">Nama Pelanggan</span>
-              <span className="order-spec-val">{order.customerName}</span>
-            </div>
-            <div className="order-spec-row">
-              <span className="order-spec-label">No. WhatsApp</span>
-              <span className="order-spec-val">{order.customerPhone}</span>
-            </div>
-            <div className="order-spec-row">
-              <span className="order-spec-label">Jenis Barang</span>
-              <span className="order-spec-val">{order.itemType}</span>
-            </div>
-            <div className="order-spec-row">
-              <span className="order-spec-label">Merek & Model</span>
-              <span className="order-spec-val">{order.brand} {order.model}</span>
-            </div>
-            <div className="order-spec-row">
-              <span className="order-spec-label">Warna</span>
-              <span className="order-spec-val">{order.color || '-'}</span>
-            </div>
-            <div className="order-spec-row">
-              <span className="order-spec-label">Pewangi Finishing</span>
-              <span className="order-spec-val">{order.fragranceName || 'Standar'}</span>
-            </div>
-            <div className="order-spec-row">
-              <span className="order-spec-label">Catatan Kondisi</span>
-              <span className="order-spec-val">{order.conditionNotes || '-'}</span>
-            </div>
-            {order.internalNotes && (
-              <div className="order-spec-row">
-                <span className="order-spec-label">Catatan Internal</span>
-                <span className="order-spec-val" style={{ color: 'var(--warn)' }}>{order.internalNotes}</span>
-              </div>
-            )}
-          </div>
         </div>
 
-        {/* Status & Estimate Controls */}
-        <div className="card">
-          <h3>Ubah Status Pengerjaan</h3>
-          <form onSubmit={handleUpdateStatus} className="stack" style={{ marginTop: '12px', gap: '12px' }}>
-            <div>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '8px' }}>
-                Pilih Tahapan Status:
-              </span>
-              <div className="status-pill-grid">
-                {ORDER_STATUSES.map((st) => {
-                  const isSelected = targetStatus === st;
-                  const isCurrent = order.status === st;
-                  return (
-                    <button
-                      type="button"
-                      key={st}
-                      className={`status-pill-btn ${isSelected ? 'active' : ''}`}
-                      onClick={() => setTargetStatus(st)}
-                    >
-                      {STATUS_LABEL[st]} {isCurrent ? '•' : ''}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <label className="field">
-              <span>Catatan Pembaruan (Opsional)</span>
-              <input
-                type="text"
-                placeholder="Misal: Sudah direndam / pengerjaan ulang"
-                value={statusNote}
-                onChange={(e) => setStatusNote(e.target.value)}
-              />
-            </label>
-            <button type="submit" className="btn sm" disabled={updatingStatus || targetStatus === order.status}>
-              {updatingStatus ? 'Menyimpan...' : 'Perbarui Status'}
-            </button>
-          </form>
-
-          <hr style={{ border: 0, borderTop: '1px solid var(--line)', margin: '16px 0' }} />
-
-          <h3>Penyesuaian Estimasi Selesai</h3>
-          <form onSubmit={handleAdjustEstimate} className="stack" style={{ marginTop: '12px', gap: '10px' }}>
-            <label className="field">
-              <span>Target Selesai Baru</span>
-              <input
-                type="datetime-local"
-                value={newEstimateAt}
-                onChange={(e) => setNewEstimateAt(e.target.value)}
-                required
-              />
-            </label>
-            <label className="field">
-              <span>Alasan Perubahan Estimasi *</span>
-              <input
-                type="text"
-                placeholder="Contoh: Antrean cuci membludak / butuh pengeringan ekstra"
-                value={estimateReason}
-                onChange={(e) => setEstimateReason(e.target.value)}
-                required
-              />
-            </label>
-            <button type="submit" className="btn secondary sm" disabled={adjustingEstimate}>
-              {adjustingEstimate ? 'Menyimpan...' : 'Simpan Penyesuaian Estimasi'}
-            </button>
-          </form>
+        <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '14px' }}>
+          Pilih Parfum <span style={{ color: '#0284c7', fontWeight: 600 }}>{order.fragranceName || 'Tanpa Parfum'}</span>
         </div>
-      </div>
 
-      {/* Services and Bill Detail */}
-      <div className="card">
-        <h3>Rincian Layanan & Pembayaran</h3>
-
-        {order.items && order.items.length > 1 && (
-          <div style={{ marginTop: '12px', marginBottom: '16px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'block', marginBottom: '8px', color: '#334155' }}>
-              Daftar Rincian {order.items.length} Barang:
-            </span>
-            <div className="grid grid-2" style={{ gap: '10px' }}>
-              {order.items.map((it, idx) => (
-                <div key={it.id || idx} style={{ border: '1px solid var(--line)', borderRadius: '8px', padding: '10px 12px', background: '#f8fafc' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong style={{ fontSize: '0.88rem' }}>Barang {idx + 1}: {it.itemType}</strong>
-                    {it.color && <span className="badge sm">{it.color}</span>}
+        {/* Item Rows */}
+        <div className="stack" style={{ gap: '14px' }}>
+          {order.services.map((svc, idx) => (
+            <div key={idx} style={{ paddingBottom: '12px', borderBottom: idx < order.services.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div
+                    style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '12px',
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <SneakerThumb />
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--ink)', marginTop: '2px' }}>
-                    {it.brand} {it.model}
-                  </div>
-                  {it.conditionNotes && (
-                    <div className="xs muted" style={{ marginTop: '4px' }}>
-                      Catatan: {it.conditionNotes}
-                    </div>
-                  )}
-                  <div style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px dashed var(--line)' }}>
-                    {it.services.map((s, sIdx) => (
-                      <div key={sIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', padding: '1px 0' }}>
-                        <span>• {s.name}</span>
-                        <strong style={{ color: 'var(--primary)' }}>{rupiah(s.price)}</strong>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div style={{ marginTop: '12px' }}>
-          <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'block', marginBottom: '8px', color: '#334155' }}>
-            Daftar Layanan & Produk Tambahan:
-          </span>
-          <div className="order-service-list">
-            {order.services.map((s, idx) => (
-              <div key={idx} className="order-service-card">
-                <div className="order-service-card-info">
-                  <span className="order-service-card-name">{s.name}</span>
-                  <div className="order-service-card-meta">
-                    <span className="badge sm">{s.category}</span>
-                    <span>• Beban: {s.workloadWeight} unit</span>
-                  </div>
-                </div>
-                <span className="order-service-card-price">{rupiah(s.price)}</span>
-              </div>
-            ))}
-
-            {order.products.map((p, idx) => (
-              <div key={idx} className="order-service-card">
-                <div className="order-service-card-info">
-                  <span className="order-service-card-name">{p.name} (x{p.qty})</span>
-                  <div className="order-service-card-meta">
-                    <span className="badge sm" style={{ background: '#f1f5f9', color: '#475569' }}>Produk Tambahan</span>
-                    <span>• {rupiah(p.unitPrice)}/item</span>
-                  </div>
-                </div>
-                <span className="order-service-card-price">{rupiah(p.subtotal)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="totals" style={{ padding: '16px 8px 0', borderTop: '2px solid var(--line)', marginTop: '14px' }}>
-          <span>Total Pembayaran</span>
-          <span style={{ color: 'var(--primary)', fontSize: '1.25rem', fontWeight: 800 }}>{rupiah(order.total)}</span>
-        </div>
-        <div className="row between small muted" style={{ padding: '6px 8px 0', flexWrap: 'wrap', gap: '8px' }}>
-          <div>
-            Metode: <strong style={{ textTransform: 'uppercase' }}>{order.payment.method}</strong> • Dicatat oleh: {order.payment.recordedByName || 'Staff'}
-          </div>
-          <div>
-            {order.payment.paidAt ? `Dibayar pada: ${fmtDateTime(order.payment.paidAt)}` : 'Belum ada bukti bayar'}
-          </div>
-        </div>
-
-        {order.payment.status === 'belum_lunas' && (
-          <div
-            style={{
-              marginTop: '14px',
-              padding: '12px 14px',
-              background: '#fffbeb',
-              border: '1px solid #fde68a',
-              borderRadius: '10px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '10px',
-            }}
-          >
-            <div>
-              <strong style={{ fontSize: '0.88rem', color: '#92400e', display: 'block' }}>
-                Pesanan Ini Belum Lunas ({rupiah(order.total)})
-              </strong>
-              <span className="xs" style={{ color: '#b45309' }}>
-                Klik tombol di samping saat pelanggan melunasi tagihan:
-              </span>
-            </div>
-            <div className="row" style={{ gap: '8px', width: '100%' }}>
-              <button
-                type="button"
-                className="btn sm"
-                style={{ flex: 1, background: '#16a34a', borderColor: '#16a34a', color: '#ffffff' }}
-                onClick={() => void handleQuickPayment('qris')}
-              >
-                Lunas (QRIS)
-              </button>
-              <button
-                type="button"
-                className="btn secondary sm"
-                style={{ flex: 1, color: '#15803d', borderColor: '#86efac' }}
-                onClick={() => void handleQuickPayment('tunai')}
-              >
-                Lunas (Tunai)
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Photo Documentation & 2x2 Collage */}
-      <div className="card">
-        <div style={{ marginBottom: '12px' }}>
-          <div className="row between" style={{ alignItems: 'center', marginBottom: '4px' }}>
-            <h3 style={{ margin: 0 }}>Dokumentasi Foto & Kolase 2×2</h3>
-            <span className="badge teal">{repo.photoIntegration().label}</span>
-          </div>
-          <p className="xs muted" style={{ margin: 0 }}>
-            Unggah 4 foto (sebelum & sesudah). Sistem otomatis menggabungkannya menjadi 1 file kolase 2×2.
-          </p>
-        </div>
-
-        {/* Existing uploaded photos */}
-        {photos.length > 0 && (
-          <div className="stack" style={{ gap: '16px', marginBottom: '24px' }}>
-            {photos.map((p) => (
-              <div key={p.id} className="card flat" style={{ border: '1px solid var(--line)', padding: '16px' }}>
-                <div className="row between" style={{ marginBottom: '12px' }}>
                   <div>
-                    <strong>Kolase Dokumentasi ({p.status === 'active' ? 'Aktif' : 'Kedaluwarsa/Dihapus'})</strong>
-                    <div className="xs muted">
-                      Diupload: {fmtDateTime(p.uploadedAt)} oleh {p.uploadedByName} • Ukuran: {Math.round(p.sizeBytes / 1024)} KB
-                    </div>
+                    <strong style={{ fontSize: '0.9rem', color: '#0f172a', display: 'block' }}>
+                      {svc.name}
+                    </strong>
+                    <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                      1.0 Satuan
+                    </span>
                   </div>
-                  {p.status === 'active' && (
-                    <button
-                      type="button"
-                      className="btn danger sm"
-                      onClick={() => void handleDeletePhoto(p.id)}
-                    >
-                      Hapus Foto
-                    </button>
-                  )}
                 </div>
 
-                {photoUrls[p.id] ? (
-                  <div style={{ textAlign: 'center', background: '#000', borderRadius: '8px', overflow: 'hidden' }}>
-                    <img
-                      src={photoUrls[p.id]}
-                      alt="Kolase"
-                      style={{ maxHeight: '480px', margin: '0 auto' }}
-                    />
-                  </div>
-                ) : (
-                  <div className="empty">Foto tidak lagi tersedia di penyimpanan lokal atau telah kedaluwarsa.</div>
-                )}
+                <div style={{ color: '#94a3b8', fontSize: '1.2rem', padding: '0 4px', cursor: 'pointer' }}>
+                  •••
+                </div>
               </div>
-            ))}
-          </div>
-        )}
 
-        {/* Upload Form */}
-        <form onSubmit={handleUploadCollage} className="stack" style={{ gap: '16px', background: '#f8fafc', padding: '16px', borderRadius: '12px' }}>
-          <h4>+ Buat Kolase 4 Foto Baru</h4>
-          {uploadError && <div className="alert error">{uploadError}</div>}
-
-          <div className="photo-slots">
-            {[0, 1, 2, 3].map((slotIdx) => (
-              <div key={slotIdx} className="stack" style={{ gap: '4px' }}>
-                <div className="photo-slot">
-                  {uploadFiles[slotIdx] ? (
-                    <img
-                      src={URL.createObjectURL(uploadFiles[slotIdx]!)}
-                      alt={`Slot ${slotIdx + 1}`}
-                    />
-                  ) : (
-                    <div className="small muted center">
-                      Klik untuk pilih
-                      <br />
-                      <strong>Foto {slotIdx + 1}</strong>
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(slotIdx, e)}
+              {/* Workflow Station Icons & Riwayat Pill */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginTop: '12px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <img
+                    src="/bilas_icons/proses_diterima.webp"
+                    alt="Terima"
+                    style={{ width: '26px', height: '26px', opacity: order.status === 'menunggu' ? 1 : 0.6 }}
+                    title="Diterima"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                  <img
+                    src="/bilas_icons/proses_cuci.webp"
+                    alt="Cuci"
+                    style={{ width: '26px', height: '26px', opacity: order.status === 'pencucian' ? 1 : 0.6 }}
+                    title="Pencucian"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                  <img
+                    src="/bilas_icons/proses_kering.webp"
+                    alt="Kering"
+                    style={{ width: '26px', height: '26px', opacity: order.status === 'pengeringan' ? 1 : 0.6 }}
+                    title="Pengeringan"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                  <img
+                    src="/bilas_icons/proses_packing.webp"
+                    alt="Packing"
+                    style={{ width: '26px', height: '26px', opacity: order.status === 'finishing' || order.status === 'selesai' ? 1 : 0.6 }}
+                    title="Finishing"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
                   />
                 </div>
-                <input
-                  type="text"
-                  placeholder={`Label Foto ${slotIdx + 1}`}
-                  value={uploadLabels[slotIdx]}
-                  onChange={(e) => {
-                    const next = [...uploadLabels];
-                    next[slotIdx] = e.target.value;
-                    setUploadLabels(next);
+
+                <button
+                  type="button"
+                  onClick={() => setHistoryExpanded(true)}
+                  style={{
+                    background: '#cbd5e1',
+                    border: 'none',
+                    color: '#ffffff',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    borderRadius: '14px',
+                    padding: '4px 14px',
+                    cursor: 'pointer',
                   }}
-                  className="xs"
-                />
+                >
+                  Riwayat
+                </button>
               </div>
-            ))}
-          </div>
-
-          <label className="field">
-            <span>Keterangan / Judul Kolase</span>
-            <input
-              type="text"
-              value={collageCaption}
-              onChange={(e) => setCollageCaption(e.target.value)}
-            />
-          </label>
-
-          <button
-            type="submit"
-            className="btn"
-            disabled={uploadingCollage || uploadFiles.filter(Boolean).length !== 4}
-          >
-            {uploadingCollage ? 'Mengompres & Menggabungkan...' : 'Gabungkan Menjadi Kolase 2×2 & Simpan'}
-          </button>
-        </form>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* History Timelines */}
-      <div className="grid grid-2">
-        <div className="card">
-          <h3>Riwayat Perubahan Status</h3>
-          <div style={{ marginTop: '12px' }}>
-            <ul className="timeline">
-              {statusHistory.map((sh) => (
-                <li key={sh.id} className="done">
-                  <div className="dot">✓</div>
+      {/* ======================================================== */}
+      {/* 7. INFORMASI TAMBAHAN CARD (Persis Foto Bilas Image 4)   */}
+      {/* ======================================================== */}
+      <div
+        style={{
+          margin: '8px 16px',
+          background: '#ffffff',
+          borderRadius: '16px',
+          border: '1px solid #e2e8f0',
+          padding: '16px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+        }}
+      >
+        <strong style={{ fontSize: '0.92rem', color: '#0f172a', display: 'block', marginBottom: '6px' }}>
+          Informasi Tambahan
+        </strong>
+        <span style={{ fontSize: '0.84rem', color: '#64748b' }}>
+          {order.conditionNotes || order.internalNotes || 'Tidak Ada'}
+        </span>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 8. HISTORI PESANAN ACCORDION (Persis Foto Bilas Image 4) */}
+      {/* ======================================================== */}
+      <div
+        style={{
+          margin: '8px 16px',
+          background: '#ffffff',
+          borderRadius: '16px',
+          border: '1px solid #e2e8f0',
+          padding: '16px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+        }}
+      >
+        <div
+          onClick={() => setHistoryExpanded(!historyExpanded)}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+        >
+          <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Histori Pesanan</strong>
+          <span style={{ color: '#94a3b8', transform: historyExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+            ▾
+          </span>
+        </div>
+
+        {historyExpanded && (
+          <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+            <div className="stack" style={{ gap: '12px' }}>
+              {/* Event 1: Pesanan Dibuat */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <div
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      background: '#0284c7',
+                      color: '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      marginTop: '2px',
+                    }}
+                  >
+                    ✓
+                  </div>
                   <div>
-                    <strong>{STATUS_LABEL[sh.to]}</strong>
-                    {sh.note && <div className="small">{sh.note}</div>}
-                    <div className="xs muted">
-                      {fmtDateTime(sh.at)} oleh {sh.byName}
+                    <strong style={{ fontSize: '0.88rem', color: '#0f172a', display: 'block' }}>
+                      Pesanan Dibuat
+                    </strong>
+                    <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                      Oleh : Admin
+                    </span>
+                  </div>
+                </div>
+                <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
+                  {formatBilasDateTime(order.receivedAt)}
+                </span>
+              </div>
+
+              {/* Status history log items */}
+              {statusHistory.map((sh) => (
+                <div key={sh.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <div
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        background: '#0284c7',
+                        color: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        marginTop: '2px',
+                      }}
+                    >
+                      ✓
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: '0.88rem', color: '#0f172a', display: 'block' }}>
+                        {BILAS_STAGE_LABEL[sh.to]}
+                      </strong>
+                      <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                        Oleh : {sh.byName}
+                      </span>
                     </div>
                   </div>
-                </li>
+                  <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
+                    {formatBilasDateTime(sh.at)}
+                  </span>
+                </div>
               ))}
-            </ul>
-          </div>
-        </div>
 
-        <div className="card">
-          <h3>Riwayat Penyesuaian Estimasi</h3>
-          <div style={{ marginTop: '12px' }}>
-            {estimateHistory.length === 0 ? (
-              <div className="empty">Belum ada perubahan estimasi.</div>
-            ) : (
-              <ul className="timeline">
-                {estimateHistory.map((eh) => (
-                  <li key={eh.id} className="done">
-                    <div className="dot">✓</div>
-                    <div>
-                      <strong>
-                        {eh.newAt ? fmtDateTime(eh.newAt) : 'Belum diatur'}
-                      </strong>
-                      <div className="xs muted">
-                        Sumber: {eh.source === 'auto' ? 'Otomatis' : 'Manual'} • Sebelumnya: {eh.previousAt ? fmtDateTime(eh.previousAt) : '-'}
-                      </div>
-                      {eh.reason && <div className="small">{eh.reason}</div>}
-                      <div className="xs muted">
-                        {fmtDateTime(eh.at)} oleh {eh.byName}
-                      </div>
+              {/* Estimate adjustments log items */}
+              {estimateHistory.map((eh) => (
+                <div key={eh.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <div
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        background: '#6366f1',
+                        color: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        marginTop: '2px',
+                      }}
+                    >
+                      ⏱
                     </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+                    <div>
+                      <strong style={{ fontSize: '0.88rem', color: '#0f172a', display: 'block' }}>
+                        Estimasi Diubah: {eh.newAt ? formatBilasDateTime(eh.newAt) : '-'}
+                      </strong>
+                      <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                        {eh.reason || 'Penyesuaian'} • Oleh : {eh.byName}
+                      </span>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
+                    {formatBilasDateTime(eh.at)}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
+      {/* ======================================================== */}
+      {/* 9. DOKUMENTASI FOTO & KOLASE 2x2 ACCORDION               */}
+      {/* ======================================================== */}
+      <div
+        style={{
+          margin: '8px 16px',
+          background: '#ffffff',
+          borderRadius: '16px',
+          border: '1px solid #e2e8f0',
+          padding: '16px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+        }}
+      >
+        <div
+          onClick={() => setCollageExpanded(!collageExpanded)}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>📸</span>
+            <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Dokumentasi Foto & Kolase 2×2</strong>
+          </div>
+          <span style={{ color: '#94a3b8', transform: collageExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+            ▾
+          </span>
+        </div>
+
+        {collageExpanded && (
+          <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+            {/* Existing photos */}
+            {photos.length > 0 ? (
+              <div className="stack" style={{ gap: '12px', marginBottom: '16px' }}>
+                {photos.map((p) => (
+                  <div key={p.id} style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', background: '#f8fafc' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>Kolase 2×2 ({fmtDateTime(p.uploadedAt)})</span>
+                      {p.status === 'active' && (
+                        <button
+                          type="button"
+                          className="btn danger sm"
+                          onClick={() => void handleDeletePhoto(p.id)}
+                          style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                        >
+                          Hapus
+                        </button>
+                      )}
+                    </div>
+                    {photoUrls[p.id] ? (
+                      <img src={photoUrls[p.id]} alt="Kolase" style={{ width: '100%', borderRadius: '8px' }} />
+                    ) : (
+                      <div className="empty" style={{ fontSize: '0.8rem' }}>Foto tidak tersedia</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ fontSize: '0.82rem', color: '#64748b', margin: '0 0 12px 0' }}>
+                Belum ada foto dokumentasi. Unggah 4 foto untuk digabungkan menjadi kolase 2×2.
+              </p>
+            )}
+
+            {/* Collage upload form */}
+            <form onSubmit={handleUploadCollage} className="stack" style={{ gap: '10px' }}>
+              {uploadError && <div className="alert error">{uploadError}</div>}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                {[0, 1, 2, 3].map((slotIdx) => (
+                  <div key={slotIdx} style={{ border: '1px dashed #cbd5e1', borderRadius: '8px', padding: '8px', textAlign: 'center', background: '#f8fafc' }}>
+                    {uploadFiles[slotIdx] ? (
+                      <img
+                        src={URL.createObjectURL(uploadFiles[slotIdx]!)}
+                        alt={`Slot ${slotIdx + 1}`}
+                        style={{ width: '100%', height: '70px', objectFit: 'cover', borderRadius: '6px' }}
+                      />
+                    ) : (
+                      <label style={{ display: 'block', cursor: 'pointer', padding: '12px 0', fontSize: '0.74rem', color: '#64748b' }}>
+                        + Foto {slotIdx + 1}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleFileChange(slotIdx, e)}
+                        />
+                      </label>
+                    )}
+                    <input
+                      type="text"
+                      value={uploadLabels[slotIdx]}
+                      onChange={(e) => {
+                        const next = [...uploadLabels];
+                        next[slotIdx] = e.target.value;
+                        setUploadLabels(next);
+                      }}
+                      style={{ width: '100%', fontSize: '0.72rem', padding: '3px 6px', marginTop: '4px', border: '1px solid #e2e8f0', borderRadius: '4px' }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <input
+                type="text"
+                value={collageCaption}
+                onChange={(e) => setCollageCaption(e.target.value)}
+                placeholder="Judul Kolase"
+                style={{ width: '100%', fontSize: '0.82rem', padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+              />
+
+              <button
+                type="submit"
+                disabled={uploadingCollage || uploadFiles.filter(Boolean).length !== 4}
+                style={{
+                  background: '#001b3a',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  opacity: uploadingCollage || uploadFiles.filter(Boolean).length !== 4 ? 0.6 : 1,
+                }}
+              >
+                {uploadingCollage ? 'Memproses Kolase...' : 'Gabungkan Jadi Kolase 2×2'}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* ======================================================== */}
+      {/* 10. STICKY BOTTOM ACTIONS (Persis Foto Bilas Image 4)    */}
+      {/* ======================================================== */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: '#ffffff',
+          borderTop: '1px solid #e2e8f0',
+          padding: '12px 16px calc(12px + env(safe-area-inset-bottom, 0px))',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          zIndex: 40,
+          maxWidth: '480px',
+          margin: '0 auto',
+        }}
+      >
+        {/* BATAL BUTTON */}
+        <button
+          type="button"
+          onClick={() => void handleCancelOrder()}
+          disabled={updatingStatus || order.status === 'diambil'}
+          style={{
+            flex: 1,
+            background: '#ffffff',
+            border: '1.5px solid #991b1b',
+            color: '#991b1b',
+            fontWeight: 800,
+            fontSize: '0.88rem',
+            padding: '12px',
+            borderRadius: '24px',
+            cursor: 'pointer',
+          }}
+        >
+          BATAL
+        </button>
+
+        {/* SELESAIKAN PROSES BUTTON */}
+        <button
+          type="button"
+          onClick={() => void handleAdvanceStatus()}
+          disabled={updatingStatus || order.status === 'diambil'}
+          style={{
+            flex: 2,
+            background: order.status === 'diambil' ? '#94a3b8' : '#0052cc',
+            border: 'none',
+            color: '#ffffff',
+            fontWeight: 800,
+            fontSize: '0.88rem',
+            padding: '12px',
+            borderRadius: '24px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(0, 82, 204, 0.25)',
+          }}
+        >
+          {updatingStatus ? 'Menyimpan...' : order.status === 'diambil' ? 'PESANAN SELESAI ✓' : 'SELESAIKAN PROSES'}
+        </button>
+      </div>
+
+      {/* ======================================================== */}
+      {/* MODAL 1: RINCIAN TAGIHAN (DETAIL BUTTON)                 */}
+      {/* ======================================================== */}
+      {detailModalOpen && (
+        <div className="modal-backdrop" onClick={() => setDetailModalOpen(false)} style={{ zIndex: 120 }}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '400px', width: '92%', borderRadius: '20px', padding: '20px' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <strong style={{ fontSize: '1.05rem', color: '#0f172a' }}>Rincian Tagihan</strong>
+              <button
+                type="button"
+                onClick={() => setDetailModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#94a3b8' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="stack" style={{ gap: '10px', fontSize: '0.88rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b' }}>
+                <span>Kode Transaksi</span>
+                <strong>TRX/{displayCode(order.code)}</strong>
+              </div>
+
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                {order.services.map((s, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <span>{s.name}</span>
+                    <strong>{rupiah(s.price)}</strong>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ borderTop: '1.5px dashed #e2e8f0', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontSize: '1.05rem' }}>
+                <strong>Total Tagihan</strong>
+                <strong style={{ color: '#0052cc' }}>{rupiah(order.total)}</strong>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                <span style={{ color: '#64748b' }}>Status Pembayaran</span>
+                <span style={{ padding: '3px 10px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, background: isLunas ? '#dcfce7' : '#fee2e2', color: isLunas ? '#15803d' : '#b91c1c' }}>
+                  {isLunas ? 'LUNAS' : 'BELUM LUNAS'}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setDetailModalOpen(false)}
+              style={{
+                width: '100%',
+                background: '#001b3a',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '10px',
+                fontWeight: 700,
+                marginTop: '18px',
+                cursor: 'pointer',
+              }}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL 2: CATAT PEMBAYARAN (BAYAR BUTTON)                 */}
+      {/* ======================================================== */}
+      {payModalOpen && (
+        <div className="modal-backdrop" onClick={() => setPayModalOpen(false)} style={{ zIndex: 120 }}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '380px', width: '92%', borderRadius: '20px', padding: '20px' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <strong style={{ fontSize: '1.05rem', color: '#0f172a' }}>Catat Pembayaran</strong>
+              <button
+                type="button"
+                onClick={() => setPayModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#94a3b8' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '0 0 16px 0' }}>
+              Pilih metode pembayaran untuk melunasi tagihan sebesar <strong>{rupiah(order.total)}</strong>:
+            </p>
+
+            <div className="stack" style={{ gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => void handleRecordPayment('qris')}
+                style={{
+                  background: '#0052cc',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  fontWeight: 800,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span>📱</span> QRIS (Lunas Langsung)
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void handleRecordPayment('tunai')}
+                style={{
+                  background: '#16a34a',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  fontWeight: 800,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span>💵</span> Tunai / Cash (Lunas Langsung)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL 3: PENYESUAIAN ESTIMASI                            */}
+      {/* ======================================================== */}
+      {adjustModalOpen && (
+        <div className="modal-backdrop" onClick={() => setAdjustModalOpen(false)} style={{ zIndex: 120 }}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '400px', width: '92%', borderRadius: '20px', padding: '20px' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <strong style={{ fontSize: '1.05rem', color: '#0f172a' }}>Ubah Estimasi Selesai</strong>
+              <button
+                type="button"
+                onClick={() => setAdjustModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#94a3b8' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAdjustEstimate} className="stack" style={{ gap: '12px' }}>
+              <label className="field">
+                <span>Tanggal & Jam Selesai Baru</span>
+                <input
+                  type="datetime-local"
+                  value={newEstimateAt}
+                  onChange={(e) => setNewEstimateAt(e.target.value)}
+                  required
+                />
+              </label>
+
+              <label className="field">
+                <span>Alasan Penyesuaian</span>
+                <input
+                  type="text"
+                  placeholder="Misal: Butuh pengeringan ekstra"
+                  value={estimateReason}
+                  onChange={(e) => setEstimateReason(e.target.value)}
+                />
+              </label>
+
+              <button
+                type="submit"
+                disabled={adjustingEstimate}
+                style={{
+                  background: '#0052cc',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '10px',
+                  fontWeight: 800,
+                  fontSize: '0.88rem',
+                  cursor: 'pointer',
+                }}
+              >
+                {adjustingEstimate ? 'Menyimpan...' : 'Simpan Estimasi'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* NOTA PRINT MODAL                                         */}
+      {/* ======================================================== */}
       {invoiceOpen && order && (
         <InvoiceModal
           order={order}

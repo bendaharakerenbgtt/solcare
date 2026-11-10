@@ -1,1369 +1,1232 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import { useAsync, toLocalInput, fromLocalInput } from '../hooks';
+import React, { useState, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAsync } from '../hooks';
 import { repo } from '../../data';
-import type { OrderServiceLine, OrderProductLine, OrderItem } from '../../data/types';
-import type { OrderInput } from '../../data/repo';
-import { estimateCompletion, isLate, countOrderItems, getQueueSlaStatus, type WorkLine } from '../../lib/estimation';
-import { lineFromService, computeTotal, validateServiceLines } from '../../lib/pricing';
-import { rupiah, fmtDateTime } from '../../lib/format';
-import { dateKey, isOpenDay, atTime } from '../../lib/dates';
-import { getNationalHolidayName } from '../../lib/holidays';
+import type { Order } from '../../data/types';
+import { InvoiceModal } from '../common/InvoiceModal';
 
-const STANDARD_ITEM_TYPES = ['Sepatu', 'Tas', 'Topi', 'Helm', 'Sandal / Wedges'];
-
-const parseProductDisplay = (p: { name: string; description?: string }) => {
-  const name = p.name || '';
-
-  if (name.includes(' - ')) {
-    const parts = name.split(' - ');
-    const first = parts[0].trim();
-    const second = parts.slice(1).join(' - ').trim();
-
-    if (/ml|parfum|botol/i.test(first) && !/ml/i.test(second)) {
-      return {
-        title: second,
-        subtitle: first,
-      };
-    }
-    if (/ml|botol/i.test(second) && !/ml/i.test(first)) {
-      return {
-        title: first,
-        subtitle: second,
-      };
-    }
-    return {
-      title: second,
-      subtitle: first,
-    };
-  }
-
-  const mlMatch = name.match(/^(.*?)\s*(\(?\d+\s*ml\)?)(.*)$/i);
-  if (mlMatch) {
-    const cleanTitle = `${mlMatch[1]} ${mlMatch[3]}`.trim();
-    const ml = mlMatch[2].replace(/[()]/g, '').trim();
-    return {
-      title: cleanTitle || name,
-      subtitle: ml,
-    };
-  }
-
-  return {
-    title: name,
-    subtitle: p.description || null,
-  };
-};
-
-export interface FormOrderItem {
+interface SelectedServiceItem {
   id: string;
-  itemTypeSelect: string;
-  customItemType: string;
-  brand: string;
-  model: string;
-  color: string;
-  conditionNotes: string;
-  selectedServices: OrderServiceLine[];
+  serviceId: string;
+  category: string; // 'Sepatu' | 'Tas' | 'Topi' | 'Helm' | 'Perawatan Khusus'
+  name: string;
+  price: number;
+  durationDays: number;
+  qty: number;
+  notes: string;
 }
 
-const createDefaultItem = (id?: string): FormOrderItem => ({
-  id: id || 'item-' + Math.random().toString(36).slice(2, 9),
-  itemTypeSelect: 'Sepatu',
-  customItemType: '',
-  brand: '',
-  model: '',
-  color: '',
-  conditionNotes: '',
-  selectedServices: [],
-});
+interface ServiceDef {
+  id: string;
+  category: string;
+  name: string;
+  price: number;
+  days: number;
+  icon: string;
+}
+
+const SneakerThumb: React.FC = () => (
+  <svg width="34" height="22" viewBox="0 0 100 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 52C25 52 75 52 90 52C93 52 95 49 93 46L86 32C84 28 80 25 75 25H55L45 10C42 5 35 5 30 8L15 18C10 22 8 28 8 34V48C8 50.2 8.9 52 10 52Z" fill="#0284c7" />
+    <path d="M5 52H95C96.5 52 98 54 98 56C98 58 96.5 60 95 60H5C3.5 60 2 58 2 56C2 54 3.5 52 5 52Z" fill="#e2e8f0" />
+    <path d="M8 58H92V61C92 62.5 90.5 64 89 64H11C9.5 64 8 62.5 8 61V58Z" fill="#cbd5e1" />
+    <path d="M15 52C12 45 15 35 22 30L32 23C36 20 42 22 44 26L48 35C45 42 35 48 25 52H15Z" fill="#fed7aa" />
+    <path d="M40 32L65 42M48 28L73 38" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
+  </svg>
+);
+
+const SOLECARE_SERVICES: ServiceDef[] = [
+  // 1. Sepatu
+  { id: 'sc-deep-clean', category: 'Sepatu', name: 'Deep Clean', price: 35000, days: 3, icon: '👟' },
+  { id: 'sc-fast-clean', category: 'Sepatu', name: 'Fast Clean', price: 25000, days: 2, icon: '👟' },
+  { id: 'sc-leather-suede', category: 'Sepatu', name: 'Leather & Suede Clean', price: 45000, days: 3, icon: '👟' },
+  { id: 'sc-white-canvas', category: 'Sepatu', name: 'White Canvas Treatment', price: 50000, days: 3, icon: '👟' },
+  { id: 'sc-heavy-clean', category: 'Sepatu', name: 'Heavy Clean (Lumpur/Noda)', price: 65000, days: 4, icon: '👟' },
+
+  // 2. Tas
+  { id: 'sc-tas-kecil', category: 'Tas', name: 'Tas Kecil / Slingbag', price: 35000, days: 3, icon: '👜' },
+  { id: 'sc-tas-sedang', category: 'Tas', name: 'Tas Sedang / Backpack', price: 50000, days: 3, icon: '🎒' },
+  { id: 'sc-tas-kulit', category: 'Tas', name: 'Tas Kulit / Leather Bag', price: 75000, days: 4, icon: '💼' },
+
+  // 3. Topi
+  { id: 'sc-topi-snapback', category: 'Topi', name: 'Topi Baseball / Snapback', price: 25000, days: 2, icon: '🧢' },
+  { id: 'sc-topi-bucket', category: 'Topi', name: 'Bucket Hat / Fedora', price: 25000, days: 2, icon: '👒' },
+
+  // 4. Helm
+  { id: 'sc-helm-half', category: 'Helm', name: 'Helm Half Face', price: 30000, days: 2, icon: '🪖' },
+  { id: 'sc-helm-full', category: 'Helm', name: 'Helm Full Face', price: 45000, days: 3, icon: '🪖' },
+
+  // 5. Perawatan Khusus
+  { id: 'sc-unyellowing', category: 'Perawatan Khusus', name: 'Unyellowing Midsole', price: 70000, days: 3, icon: '✨' },
+  { id: 'sc-reglue', category: 'Perawatan Khusus', name: 'Reglue Sole', price: 30000, days: 2, icon: '🔧' },
+  { id: 'sc-repaint', category: 'Perawatan Khusus', name: 'Repaint Upper / Midsole', price: 135000, days: 7, icon: '🎨' },
+];
+
+const CATEGORIES = [
+  { name: 'Sepatu', sub: 'Cuci • Kering' },
+  { name: 'Tas', sub: 'Cuci • Kering' },
+  { name: 'Topi', sub: 'Cuci • Kering' },
+  { name: 'Helm', sub: 'Cuci • Kering' },
+  { name: 'Perawatan Khusus', sub: 'Restorasi & Repaint' },
+];
 
 export const OrderFormPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const isEdit = !!id;
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const { data: services } = useAsync(() => repo.listServices(false), []);
-  const { data: productsCatalog } = useAsync(() => repo.listProducts(false), []);
-  const { data: fragrances } = useAsync(() => repo.listFragrances(false), []);
+  const customerId = searchParams.get('customerId') || null;
+  const initialCustName = searchParams.get('name') || 'ojan';
+  const initialCustPhone = searchParams.get('phone') || '+6285972535329';
+
+  const { data: dbServices } = useAsync(() => repo.listServices(false), []);
   const { data: settings } = useAsync(() => repo.getSettings(), []);
-  const { data: existingOrders } = useAsync(() => repo.listOrders(), []);
 
-  // Form states
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [items, setItems] = useState<FormOrderItem[]>([createDefaultItem('item-1')]);
-  const [selectedProducts, setSelectedProducts] = useState<OrderProductLine[]>([]);
-  const [fragranceId, setFragranceId] = useState<string>('');
-  const [receivedAt, setReceivedAt] = useState<string>(toLocalInput(new Date().toISOString()));
+  // Screen mode: 'catalog' (Image 1, 3) vs 'confirm' (Image 7)
+  const [screenMode, setScreenMode] = useState<'catalog' | 'confirm'>('catalog');
 
-  // Estimate state
-  const [estimateMode, setEstimateMode] = useState<'auto' | 'manual'>('auto');
-  const [autoEstimatedAt, setAutoEstimatedAt] = useState<string | null>(null);
-  const [autoEarliestAt, setAutoEarliestAt] = useState<string | null>(null);
-  const [manualEstimatedAt, setManualEstimatedAt] = useState<string>('');
-  const [manualReason, setManualReason] = useState<string>('');
-  const [estimateWarnings, setEstimateWarnings] = useState<string[]>([]);
-  const [estimateError, setEstimateError] = useState<string | null>(null);
-  const [formCalMonth, setFormCalMonth] = useState(() => new Date());
+  // Search & expanded category state
+  const [search, setSearch] = useState('');
+  const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({
+    Sepatu: true,
+    Tas: false,
+    Topi: false,
+    Helm: false,
+    'Perawatan Khusus': false,
+  });
 
-  // Payment state
-  const [paymentMethod, setPaymentMethod] = useState<'tunai' | 'qris'>('qris');
-  const [paymentStatus, setPaymentStatus] = useState<'lunas' | 'belum_lunas'>('lunas');
-  const [paymentConfirmed, setPaymentConfirmed] = useState<boolean>(true);
-  const [internalNotes, setInternalNotes] = useState('');
+  // Selected services in basket
+  const [selectedItems, setSelectedItems] = useState<SelectedServiceItem[]>([]);
 
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [svcCatFilter, setSvcCatFilter] = useState<'all' | 'main' | 'express' | 'additional' | 'other'>('all');
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  // Modal 1: Tambah Layanan Satuan (Image 2)
+  const [activeModalSvc, setActiveModalSvc] = useState<ServiceDef | null>(null);
+  const [modalQty, setModalQty] = useState(1);
+  const [modalNotes, setModalNotes] = useState('');
 
-  const allServices = items.flatMap((it) => it.selectedServices);
-  const hasExpressSelected = allServices.some((s) => s.category === 'express');
+  // Confirmation screen options (Image 7)
+  const [pickupOption, setPickupOption] = useState<'dropoff' | 'pickup'>('dropoff');
+  const [isPriority, setIsPriority] = useState(false);
+  const [priorityModalOpen, setPriorityModalOpen] = useState(false);
+  const [selectedParfum, setSelectedParfum] = useState<string>('Tanpa Parfum');
+  const [extraNotes, setExtraNotes] = useState('');
 
-  const nowDate = new Date();
-  const otherOrders = (existingOrders || []).filter((o) => o.id !== id);
-  const lateOrdersCount = otherOrders.filter((o) => isLate(o, nowDate) && o.status !== 'diambil').length;
-  const activeItemsCount = countOrderItems(otherOrders);
-  const slaInfo = getQueueSlaStatus(activeItemsCount, lateOrdersCount, settings?.dailyCapacity ?? 8.5);
+  // Post-submit success modal (Image 5)
+  const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const updateItem = (index: number, patch: Partial<FormOrderItem>) => {
-    setItems((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], ...patch };
-      return next;
+  // Toggle category accordion
+  const toggleCat = (catName: string) => {
+    setExpandedCats((prev) => ({ ...prev, [catName]: !prev[catName] }));
+  };
+
+  // Open modal Tambah Layanan Satuan (Image 2)
+  const handleOpenAddModal = (svc: ServiceDef) => {
+    const existing = selectedItems.find((x) => x.serviceId === svc.id);
+    setActiveModalSvc(svc);
+    setModalQty(existing ? existing.qty : 1);
+    setModalNotes(existing ? existing.notes : '');
+  };
+
+  // Save from Tambah Layanan Satuan modal into basket
+  const handleSaveModalItem = () => {
+    if (!activeModalSvc) return;
+
+    if (modalQty <= 0) {
+      // Remove if qty is 0
+      setSelectedItems((prev) => prev.filter((x) => x.serviceId !== activeModalSvc.id));
+    } else {
+      setSelectedItems((prev) => {
+        const idx = prev.findIndex((x) => x.serviceId === activeModalSvc.id);
+        const item: SelectedServiceItem = {
+          id: activeModalSvc.id,
+          serviceId: activeModalSvc.id,
+          category: activeModalSvc.category,
+          name: activeModalSvc.name,
+          price: activeModalSvc.price,
+          durationDays: activeModalSvc.days,
+          qty: modalQty,
+          notes: modalNotes,
+        };
+        if (idx >= 0) {
+          const next = [...prev];
+          next[idx] = item;
+          return next;
+        }
+        return [...prev, item];
+      });
+    }
+
+    setActiveModalSvc(null);
+  };
+
+  // Delete from modal
+  const handleDeleteModalItem = () => {
+    if (!activeModalSvc) return;
+    setSelectedItems((prev) => prev.filter((x) => x.serviceId !== activeModalSvc.id));
+    setActiveModalSvc(null);
+  };
+
+  // Adjust qty directly from confirmation screen
+  const handleUpdateItemQty = (serviceId: string, delta: number) => {
+    setSelectedItems((prev) => {
+      return prev
+        .map((it) => {
+          if (it.serviceId === serviceId) {
+            const nextQty = it.qty + delta;
+            return nextQty > 0 ? { ...it, qty: nextQty } : null;
+          }
+          return it;
+        })
+        .filter(Boolean) as SelectedServiceItem[];
     });
   };
 
-  const addItem = () => {
-    setItems((prev) => [...prev, createDefaultItem()]);
-  };
+  // Total quantity and total amount
+  const totalQty = selectedItems.reduce((acc, it) => acc + it.qty, 0);
+  const totalAmount = useMemo(() => {
+    let sum = selectedItems.reduce((acc, it) => acc + it.price * it.qty, 0);
+    if (pickupOption === 'pickup') sum += 15000;
+    return sum;
+  }, [selectedItems, pickupOption]);
 
-  const removeItem = (index: number) => {
-    if (items.length <= 1) return;
-    setItems((prev) => prev.filter((_, idx) => idx !== index));
-  };
-
-  const toggleItemService = (itemIndex: number, svcId: string) => {
-    const s = services?.find((x) => x.id === svcId);
-    if (!s) return;
-    const currentItem = items[itemIndex];
-    const exists = currentItem.selectedServices.find((x) => x.serviceId === svcId);
-    let nextServices: OrderServiceLine[];
-    if (exists) {
-      nextServices = currentItem.selectedServices.filter((x) => x.serviceId !== svcId);
-    } else {
-      nextServices = [...currentItem.selectedServices, lineFromService(s)];
-    }
-    updateItem(itemIndex, { selectedServices: nextServices });
-  };
-
-  const updateItemServicePrice = (itemIndex: number, svcIndex: number, newPrice: number) => {
-    const currentItem = items[itemIndex];
-    const nextServices = [...currentItem.selectedServices];
-    nextServices[svcIndex] = { ...nextServices[svcIndex], price: newPrice };
-    updateItem(itemIndex, { selectedServices: nextServices });
-  };
-
-  // Load existing order if edit mode
-  useEffect(() => {
-    if (isEdit && id) {
-      void repo.getOrder(id).then((ord) => {
-        if (!ord) return;
-        setCustomerName(ord.customerName);
-        setCustomerPhone(ord.customerPhone);
-        if (ord.items && ord.items.length > 0) {
-          setItems(
-            ord.items.map((it) => ({
-              id: it.id,
-              itemTypeSelect: STANDARD_ITEM_TYPES.includes(it.itemType) ? it.itemType : 'Lainnya',
-              customItemType: STANDARD_ITEM_TYPES.includes(it.itemType) ? '' : it.itemType,
-              brand: it.brand,
-              model: it.model,
-              color: it.color,
-              conditionNotes: it.conditionNotes,
-              selectedServices: it.services,
-            }))
-          );
-        } else {
-          setItems([
-            {
-              id: 'item-1',
-              itemTypeSelect: STANDARD_ITEM_TYPES.includes(ord.itemType) ? ord.itemType : 'Lainnya',
-              customItemType: STANDARD_ITEM_TYPES.includes(ord.itemType) ? '' : ord.itemType,
-              brand: ord.brand,
-              model: ord.model,
-              color: ord.color,
-              conditionNotes: ord.conditionNotes,
-              selectedServices: ord.services,
-            },
-          ]);
-        }
-        setSelectedProducts(ord.products);
-        setFragranceId(ord.fragranceId || '');
-        setReceivedAt(toLocalInput(ord.receivedAt));
-        setEstimateMode(ord.estimateSource);
-        if (ord.estimatedAt) {
-          setManualEstimatedAt(toLocalInput(ord.estimatedAt));
-        }
-        setPaymentMethod(ord.payment.method);
-        setPaymentStatus(ord.payment.status);
-        setPaymentConfirmed(ord.payment.status === 'lunas');
-        setInternalNotes(ord.internalNotes);
-      });
-    }
-  }, [isEdit, id]);
-
-  // Recalculate automatic completion estimate
-  useEffect(() => {
-    if (!settings || !allServices.length) {
-      setAutoEstimatedAt(null);
-      setAutoEarliestAt(null);
-      setEstimateWarnings([]);
-      setEstimateError(null);
+  // Handle final order creation (Image 5)
+  const handleCreateTransaction = async () => {
+    if (selectedItems.length === 0) {
+      alert('Pilih minimal 1 layanan sebelum membuat transaksi');
       return;
     }
 
-    const recDate = receivedAt ? new Date(fromLocalInput(receivedAt) || new Date()) : new Date();
-    const workLines: WorkLine[] = allServices.map((s) => ({
-      category: s.category,
-      workloadWeight: s.workloadWeight,
-      durationMinDays: s.durationMinDays,
-      durationMaxDays: s.durationMaxDays,
-      expressHours: s.expressHours,
-    }));
-
-    const queueOrders = (existingOrders || []).map((o) => ({
-      id: o.id,
-      receivedAt: o.receivedAt,
-      status: o.status,
-      services: o.services,
-    }));
-
-    const est = estimateCompletion(workLines, queueOrders, settings, recDate, id);
-    if (est.ok) {
-      setAutoEstimatedAt(est.estimatedAt);
-      setAutoEarliestAt(est.earliestAt);
-      setEstimateWarnings(est.warnings);
-      setEstimateError(null);
-    } else {
-      setAutoEstimatedAt(null);
-      setAutoEarliestAt(null);
-      setEstimateError(est.reason);
-      setEstimateWarnings(est.warnings);
-    }
-  }, [allServices, settings, receivedAt, existingOrders, id]);
-
-  // Handle product addition & quantity modification
-  const getProductQty = (prodId: string) => {
-    const item = selectedProducts.find((x) => x.productId === prodId);
-    return item ? item.qty : 0;
-  };
-
-  const setProductQty = (prodId: string, newQty: number) => {
-    const p = productsCatalog?.find((x) => x.id === prodId);
-    if (!p) return;
-
-    if (newQty <= 0) {
-      setSelectedProducts(selectedProducts.filter((x) => x.productId !== prodId));
-    } else {
-      const existing = selectedProducts.find((x) => x.productId === prodId);
-      if (existing) {
-        setSelectedProducts(
-          selectedProducts.map((x) =>
-            x.productId === prodId ? { ...x, qty: newQty, subtotal: newQty * x.unitPrice } : x
-          )
-        );
-      } else {
-        setSelectedProducts([
-          ...selectedProducts,
-          { productId: p.id, name: p.name, unitPrice: p.price, qty: newQty, subtotal: newQty * p.price },
-        ]);
-      }
-    }
-  };
-
-  const currentTotal = computeTotal(allServices, selectedProducts);
-
-  const validateStep = (step: number): boolean => {
-    if (step === 1) {
-      if (!customerName.trim()) {
-        setFormError('Silakan isi nama pelanggan.');
-        return false;
-      }
-      if (!customerPhone.trim()) {
-        setFormError('Silakan isi nomor WhatsApp pelanggan.');
-        return false;
-      }
-      setFormError(null);
-      return true;
-    }
-    if (step === 2) {
-      if (!items.length) {
-        setFormError('Minimal harus ada 1 barang.');
-        return false;
-      }
-      for (let i = 0; i < items.length; i++) {
-        const it = items[i];
-        if (it.itemTypeSelect === 'Lainnya' && !it.customItemType.trim()) {
-          setFormError(`Silakan masukkan nama jenis barang custom untuk Barang ${i + 1}.`);
-          return false;
-        }
-        if (it.selectedServices.length === 0) {
-          setFormError(`Barang ${i + 1} (${it.brand || it.itemTypeSelect}) belum memiliki layanan treatment yang dipilih.`);
-          return false;
-        }
-        const lineVal = validateServiceLines(it.selectedServices, services || []);
-        if (lineVal.errors.length) {
-          setFormError(`Barang ${i + 1}: ` + lineVal.errors.join(' '));
-          return false;
-        }
-      }
-      setFormError(null);
-      return true;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
-
-    if (!validateStep(1)) {
-      setCurrentStep(1);
-      return;
-    }
-    if (!validateStep(2)) {
-      setCurrentStep(2);
-      return;
-    }
-
-    if (estimateMode === 'manual' && !manualEstimatedAt) {
-      setCurrentStep(3);
-      setFormError('Tanggal estimasi manual wajib diisi.');
-      return;
-    }
-
-    if (estimateMode === 'auto' && !autoEstimatedAt) {
-      setCurrentStep(3);
-      setFormError('Estimasi otomatis tidak dapat dihitung karena antrean penuh atau kalender tutup. Harap gunakan penyesuaian manual.');
-      return;
-    }
-
-    setSaving(true);
+    setSubmitting(true);
     try {
-      const targetEstimate =
-        estimateMode === 'manual'
-          ? fromLocalInput(manualEstimatedAt)
-          : autoEstimatedAt;
+      const now = new Date();
+      // Calculate completion date based on maximum duration
+      const maxDays = Math.max(...selectedItems.map((s) => s.durationDays), 2);
+      const estDate = new Date(now.getTime() + maxDays * 24 * 3600 * 1000);
 
-      const resolvedItems: OrderItem[] = items.map((it) => ({
-        id: it.id,
-        itemType: it.itemTypeSelect === 'Lainnya' ? it.customItemType.trim() : it.itemTypeSelect,
-        brand: it.brand.trim(),
-        model: it.model.trim(),
-        color: it.color.trim(),
-        conditionNotes: it.conditionNotes.trim(),
-        services: it.selectedServices,
-      }));
+      // Map selected items to OrderServiceLine
+      const serviceLines = selectedItems.map((s) => {
+        const matched = dbServices?.find((db) => db.name.toLowerCase().includes(s.name.toLowerCase()));
+        return {
+          serviceId: matched?.id || s.serviceId,
+          name: `${s.category} ${s.name}`,
+          price: s.price * s.qty,
+          priceMin: s.price,
+          priceMax: null,
+          category: s.category === 'Perawatan Khusus' ? ('additional' as const) : ('main' as const),
+          workloadWeight: 1,
+          durationMinDays: s.durationDays,
+          durationMaxDays: s.durationDays,
+          expressHours: null,
+        };
+      });
 
-      const first = resolvedItems[0];
-      const summaryType = resolvedItems.length === 1 ? first.itemType : `${resolvedItems.length} Barang`;
-      const summaryBrand = resolvedItems.length === 1 ? first.brand : resolvedItems.map((i) => i.brand).filter(Boolean).join(', ');
-      const summaryModel = resolvedItems.length === 1 ? first.model : resolvedItems.map((i) => i.model).filter(Boolean).join(', ');
-      const summaryColor = resolvedItems.length === 1 ? first.color : resolvedItems.map((i) => i.color).filter(Boolean).join(', ');
-      const summaryNotes = resolvedItems.length === 1
-        ? first.conditionNotes
-        : resolvedItems.map((it, idx) => `[Barang ${idx + 1} - ${it.itemType} ${it.brand} ${it.model}]: ${it.conditionNotes || '-'}`).join('\n');
-
-      const orderInput: OrderInput = {
-        customer: { name: customerName, phone: customerPhone },
-        items: resolvedItems,
-        itemType: summaryType,
-        brand: summaryBrand,
-        model: summaryModel,
-        color: summaryColor,
-        conditionNotes: summaryNotes,
-        services: allServices,
-        products: selectedProducts,
-        fragranceId: fragranceId || null,
-        receivedAt: fromLocalInput(receivedAt) || new Date().toISOString(),
+      const firstItem = selectedItems[0];
+      const created = await repo.createOrder({
+        customer: {
+          id: customerId,
+          name: initialCustName,
+          phone: initialCustPhone,
+        },
+        items: selectedItems.map((s, idx) => ({
+          id: `item-${idx + 1}`,
+          itemType: s.category,
+          brand: 'Solecare Customer Item',
+          model: s.name,
+          color: '',
+          conditionNotes: s.notes || extraNotes,
+          services: [
+            {
+              serviceId: s.serviceId,
+              name: s.name,
+              price: s.price * s.qty,
+              priceMin: s.price,
+              priceMax: null,
+              category: 'main' as const,
+              workloadWeight: 1,
+              durationMinDays: s.durationDays,
+              durationMaxDays: s.durationDays,
+              expressHours: null,
+            },
+          ],
+        })),
+        itemType: firstItem.category,
+        brand: 'Solecare Item',
+        model: selectedItems.map((s) => s.name).join(', '),
+        color: '',
+        conditionNotes: extraNotes || 'Kondisi standar',
+        services: serviceLines,
+        products: [],
+        fragranceId: null,
+        receivedAt: now.toISOString(),
         estimate: {
-          earliestAt: estimateMode === 'manual' ? null : autoEarliestAt,
-          estimatedAt: targetEstimate,
-          source: estimateMode,
-          autoAt: autoEstimatedAt,
-          reason: manualReason,
+          earliestAt: estDate.toISOString(),
+          estimatedAt: estDate.toISOString(),
+          source: isPriority ? 'manual' : 'auto',
+          autoAt: estDate.toISOString(),
+          reason: isPriority ? 'Pesanan Prioritas Pelanggan' : 'Standar pengerjaan',
         },
         payment: {
-          method: paymentMethod,
-          status: paymentStatus,
-          paidAt: paymentStatus === 'lunas' ? new Date().toISOString() : null,
-          confirmed: paymentConfirmed,
+          method: 'qris',
+          status: 'belum_lunas',
+          paidAt: null,
+          confirmed: false,
         },
-        internalNotes,
-      };
+        internalNotes: `Parfum: ${selectedParfum} | Layanan: ${pickupOption === 'pickup' ? 'Antar-Jemput' : 'Drop-off'}`,
+      });
 
-      if (isEdit && id) {
-        await repo.updateOrder(id, orderInput);
-        navigate(`/admin/orders/${id}`);
-      } else {
-        const created = await repo.createOrder(orderInput);
-        navigate(`/admin/orders/${created.id}?invoice=1`);
-      }
+      setCreatedOrder(created);
+      setSuccessModalOpen(true);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Gagal menyimpan pesanan.');
+      alert(err instanceof Error ? err.message : 'Gagal membuat transaksi');
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   };
 
-  const currentTargetEstimate =
-    estimateMode === 'manual'
-      ? fromLocalInput(manualEstimatedAt)
-      : autoEstimatedAt;
-
-  const fYear = formCalMonth.getFullYear();
-  const fMonth = formCalMonth.getMonth();
-  const fFirstDayIdx = new Date(fYear, fMonth, 1).getDay();
-  const fTotalDays = new Date(fYear, fMonth + 1, 0).getDate();
-
-  const formCalDays: { key: string; dayNum: number; inMonth: boolean }[] = [];
-  const fPrevMonthTotal = new Date(fYear, fMonth, 0).getDate();
-  for (let i = fFirstDayIdx - 1; i >= 0; i--) {
-    const dNum = fPrevMonthTotal - i;
-    const prevD = new Date(fYear, fMonth - 1, dNum);
-    formCalDays.push({ key: dateKey(prevD), dayNum: dNum, inMonth: false });
-  }
-  for (let i = 1; i <= fTotalDays; i++) {
-    const curD = new Date(fYear, fMonth, i);
-    formCalDays.push({ key: dateKey(curD), dayNum: i, inMonth: true });
-  }
-  let fNextPad = 1;
-  while (formCalDays.length % 7 !== 0) {
-    const nextD = new Date(fYear, fMonth + 1, fNextPad);
-    formCalDays.push({ key: dateKey(nextD), dayNum: fNextPad, inMonth: false });
-    fNextPad++;
-  }
-
-  const recDateKey = receivedAt ? dateKey(new Date(fromLocalInput(receivedAt) || new Date())) : '';
-  const targetDateKey = currentTargetEstimate ? dateKey(new Date(currentTargetEstimate)) : '';
-
-  const handleSelectCalDate = (k: string) => {
-    const targetDt = atTime(k, settings?.closeTime || '18:00');
-    setManualEstimatedAt(toLocalInput(targetDt.toISOString()));
-    setEstimateMode('manual');
-    if (!manualReason) {
-      setManualReason('Dipilih dari kalender visual estimasi');
-    }
-  };
+  // Filtered catalog services
+  const filteredCatalog = useMemo(() => {
+    if (!search.trim()) return SOLECARE_SERVICES;
+    const q = search.toLowerCase();
+    return SOLECARE_SERVICES.filter(
+      (s) => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q)
+    );
+  }, [search]);
 
   return (
-    <div className="order-form-page-wrap" style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <div className="admin-page-header">
-        <h1>{isEdit ? 'Edit Data Pesanan' : 'Input Pesanan Baru'}</h1>
-        <Link to="/admin/orders" className="admin-back-btn">
-          ← Kembali
-        </Link>
-      </div>
+    <div style={{ maxWidth: '600px', margin: '0 auto', paddingBottom: '90px' }}>
+      {/* ======================================================== */}
+      {/* SCREEN 1: PILIH LAYANAN (Persis Foto Bilas 1, 2, 3)      */}
+      {/* ======================================================== */}
+      {screenMode === 'catalog' && (
+        <div className="stack" style={{ gap: '14px' }}>
+          {/* Top Bar: Back & Title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '2px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                if (customerId) {
+                  navigate(`/admin/customers?selectedId=${customerId}`);
+                } else {
+                  navigate('/admin/orders');
+                }
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: '1.4rem',
+                color: '#0f172a',
+                cursor: 'pointer',
+                padding: '0 4px',
+                fontWeight: 800,
+              }}
+            >
+              ←
+            </button>
+            <h1 style={{ margin: 0, fontSize: '1.22rem', fontWeight: 800, color: '#0f172a' }}>
+              Pilih Layanan
+            </h1>
+          </div>
 
-      {/* 3-Step Wizard Indicator */}
-      <div className="order-stepper-header">
-        <button
-          type="button"
-          className={`order-step-pill ${currentStep === 1 ? 'active' : ''} ${customerName.trim() && customerPhone.trim() ? 'complete' : ''}`}
-          onClick={() => {
-            setFormError(null);
-            setCurrentStep(1);
-          }}
-        >
-          <span className="order-step-num">1</span>
-          <span className="order-step-label">Pelanggan & Masuk</span>
-        </button>
-        <div className="order-step-connector" />
-        <button
-          type="button"
-          className={`order-step-pill ${currentStep === 2 ? 'active' : ''} ${allServices.length > 0 ? 'complete' : ''}`}
-          onClick={() => {
-            if (validateStep(1)) {
-              setFormError(null);
-              setCurrentStep(2);
-            }
-          }}
-        >
-          <span className="order-step-num">2</span>
-          <span className="order-step-label">Barang & Layanan</span>
-        </button>
-        <div className="order-step-connector" />
-        <button
-          type="button"
-          className={`order-step-pill ${currentStep === 3 ? 'active' : ''}`}
-          onClick={() => {
-            if (validateStep(1) && validateStep(2)) {
-              setFormError(null);
-              setCurrentStep(3);
-            }
-          }}
-        >
-          <span className="order-step-num">3</span>
-          <span className="order-step-label">Estimasi & Bayar</span>
-        </button>
-      </div>
+          {/* Search Bar Persis Foto 1 */}
+          <div className="order-search-wrap" style={{ margin: 0, borderRadius: '999px', border: '1px solid #cbd5e1' }}>
+            <svg className="order-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              className="order-search-field"
+              placeholder="Pencarian"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ border: 'none', background: 'transparent' }}
+            />
+            {search && (
+              <button
+                type="button"
+                className="order-search-clear"
+                onClick={() => setSearch('')}
+              >
+                ×
+              </button>
+            )}
+          </div>
 
-      {formError && (
-        <div className="alert error" style={{ marginBottom: '16px' }}>
-          {formError}
+          {/* Category Accordion List Persis Foto 1 */}
+          <div className="stack" style={{ gap: '4px' }}>
+            {CATEGORIES.map((cat) => {
+              const isExpanded = expandedCats[cat.name] || search.trim().length > 0;
+              const catServices = filteredCatalog.filter((s) => s.category === cat.name);
+
+              if (search.trim() && catServices.length === 0) return null;
+
+              return (
+                <div key={cat.name} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                  {/* Category Header Row */}
+                  <div
+                    onClick={() => toggleCat(cat.name)}
+                    style={{
+                      padding: '12px 4px 6px',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                    }}
+                  >
+                    <div style={{ fontSize: '1.02rem', fontWeight: 800, color: '#0f172a' }}>
+                      {cat.name}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{cat.sub}</div>
+                  </div>
+
+                  {/* Expanded Service Items */}
+                  {isExpanded && (
+                    <div className="stack" style={{ gap: '10px', padding: '10px 0 16px' }}>
+                      {catServices.map((svc) => {
+                        const existing = selectedItems.find((x) => x.serviceId === svc.id);
+                        return (
+                          <div
+                            key={svc.id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '12px 14px',
+                              background: '#ffffff',
+                              border: '1px solid #e2e8f0',
+                              borderRadius: '16px',
+                              boxShadow: '0 1px 4px rgba(0,0,0,0.02)',
+                            }}
+                          >
+                            {/* Left: Thumbnail & Details */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <div
+                                style={{
+                                  width: '46px',
+                                  height: '46px',
+                                  borderRadius: '12px',
+                                  background: '#f8fafc',
+                                  border: '1px solid #e2e8f0',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '1.4rem',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {svc.category === 'Sepatu' ? <SneakerThumb /> : svc.icon}
+                              </div>
+                              <div>
+                                <strong style={{ display: 'block', fontSize: '0.94rem', color: '#0f172a' }}>
+                                  {svc.name}
+                                </strong>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#001b3a', margin: '2px 0' }}>
+                                  {svc.price.toLocaleString('id-ID')}
+                                </div>
+                                <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                                  {svc.days} Hari • Satuan
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Right: Tambah Button or Item Count Pill (Persis Foto 1 & 3) */}
+                            <div>
+                              {existing ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAddModal(svc)}
+                                    style={{
+                                      width: '28px',
+                                      height: '28px',
+                                      borderRadius: '50%',
+                                      background: '#0284c7',
+                                      color: '#ffffff',
+                                      border: 'none',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      fontSize: '1.1rem',
+                                      fontWeight: 800,
+                                      cursor: 'pointer',
+                                    }}
+                                  >
+                                    +
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAddModal(svc)}
+                                    style={{
+                                      background: '#f97316',
+                                      color: '#ffffff',
+                                      border: 'none',
+                                      borderRadius: '999px',
+                                      padding: '6px 14px',
+                                      fontSize: '0.8rem',
+                                      fontWeight: 700,
+                                      cursor: 'pointer',
+                                    }}
+                                  >
+                                    {existing.qty} items
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenAddModal(svc)}
+                                  style={{
+                                    background: '#0284c7',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    borderRadius: '999px',
+                                    padding: '7px 18px',
+                                    fontSize: '0.82rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  Tambah
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Sticky Bottom Bar: Lanjutkan X Layanan (Persis Foto 3) */}
+          {totalQty > 0 && (
+            <div
+              style={{
+                position: 'fixed',
+                bottom: 'calc(65px + env(safe-area-inset-bottom, 0px))',
+                left: 0,
+                right: 0,
+                padding: '0 16px',
+                zIndex: 35,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setScreenMode('confirm')}
+                style={{
+                  width: '100%',
+                  background: '#0284c7',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '999px',
+                  padding: '13px',
+                  fontSize: '0.95rem',
+                  fontWeight: 800,
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)',
+                  cursor: 'pointer',
+                }}
+              >
+                Lanjutkan {totalQty} Layanan
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      <form id="order-main-form" onSubmit={handleSubmit} className="stack" style={{ gap: '16px' }}>
-        {/* STEP 1: Pelanggan & Waktu Masuk */}
-        {currentStep === 1 && (
-          <>
-            {/* Panduan Kapasitas Antrean & Janji Pelanggan Saat Kasir Menerima Sepatu */}
-            <div className="card" style={{ padding: '14px 16px', borderLeft: `4px solid ${slaInfo.color}` }}>
-              <div className="row between" style={{ alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <div>
-                  <strong style={{ fontSize: '0.92rem', display: 'block', color: 'var(--ink)' }}>
-                    Panduan Kasir: Antrean Rak Saat Ini ({slaInfo.activeItemsCount} / {slaInfo.maxWipLimit} sepatu)
-                  </strong>
-                  <span className="xs muted">{slaInfo.adviceText}</span>
-                </div>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  <span
-                    className="badge"
-                    style={{
-                      background: slaInfo.bg,
-                      color: slaInfo.color,
-                      border: `1px solid ${slaInfo.border}`,
-                      fontWeight: 700,
-                    }}
-                  >
-                    Janjikan: {slaInfo.recommendedPromise}
-                  </span>
-                  <span
-                    className="badge"
-                    style={{
-                      background: slaInfo.expressAllowed ? '#f0fdf4' : '#fef2f2',
-                      color: slaInfo.expressAllowed ? '#15803d' : '#bf2f3b',
-                      border: `1px solid ${slaInfo.expressAllowed ? '#bbf7d0' : '#fecaca'}`,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {slaInfo.expressAllowed ? 'Express: Aman' : 'Express: Tolak'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Customer Data */}
-            <div className="card">
-              <h3>1. Data Pelanggan</h3>
-              <div className="grid grid-2" style={{ marginTop: '12px' }}>
-                <label className="field">
-                  <span>Nama Pelanggan *</span>
-                  <input
-                    type="text"
-                    name="customerName"
-                    autoComplete="name"
-                    placeholder="Contoh: Budi Pratama"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    required
-                  />
-                </label>
-                <label className="field">
-                  <span>No. WhatsApp *</span>
-                  <input
-                    type="tel"
-                    name="customerPhone"
-                    autoComplete="tel"
-                    inputMode="tel"
-                    placeholder="081234567890"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    required
-                  />
-                </label>
-              </div>
-
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid var(--line)' }}>
-                <label className="field">
-                  <span>Tanggal & Waktu Masuk Pesanan</span>
-                  <input
-                    type="datetime-local"
-                    value={receivedAt}
-                    onChange={(e) => setReceivedAt(e.target.value)}
-                  />
-                  <span className="hint">Waktu pesanan diterima secara fisik di toko Soleful Soaks</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="form-step-actions">
+      {/* ======================================================== */}
+      {/* MODAL: TAMBAH LAYANAN SATUAN (Persis Foto Bilas 2)       */}
+      {/* ======================================================== */}
+      {activeModalSvc && (
+        <div className="modal-backdrop" onClick={() => setActiveModalSvc(null)}>
+          <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '400px', borderRadius: '18px', padding: '18px' }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: '#0f172a' }}>
+                Tambah Layanan Satuan
+              </h3>
               <button
                 type="button"
-                className="btn secondary"
-                onClick={() => navigate('/admin/orders')}
+                onClick={() => setActiveModalSvc(null)}
+                style={{ background: 'transparent', border: 'none', fontSize: '1.2rem', color: '#f97316', cursor: 'pointer' }}
               >
-                Batal
+                ✕
               </button>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  if (validateStep(1)) {
-                    setCurrentStep(2);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }
+            </div>
+
+            {/* Service Title & Counter Row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div>
+                <strong style={{ display: 'block', fontSize: '0.92rem', textTransform: 'uppercase', color: '#0f172a' }}>
+                  {activeModalSvc.category} {activeModalSvc.name}
+                </strong>
+                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                  {activeModalSvc.price.toLocaleString('id-ID')}
+                </span>
+              </div>
+
+              {/* Counter Pill */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  border: '1.5px solid #0284c7',
+                  borderRadius: '999px',
+                  padding: '2px 10px',
+                  gap: '12px',
                 }}
               >
-                Lanjut ke Barang & Layanan →
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* STEP 2: Barang & Layanan */}
-        {currentStep === 2 && (
-          <>
-            {/* Items and Services */}
-            {items.map((item, itemIdx) => (
-              <div key={item.id} className="card" style={{ border: items.length > 1 ? '1.5px solid #cbd5e1' : undefined }}>
-                <div className="row between" style={{ alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid var(--line)', paddingBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <h3 style={{ margin: 0 }}>
-                      {items.length > 1
-                        ? `Barang ${itemIdx + 1}${item.brand || item.model ? `: ${item.brand} ${item.model}` : ` (${item.itemTypeSelect})`}`
-                        : 'Barang & Layanan Treatment'}
-                    </h3>
-                    {item.selectedServices.length > 0 && (
-                      <span className="badge ok" style={{ fontSize: '0.75rem' }}>
-                        {item.selectedServices.length} layanan ({rupiah(item.selectedServices.reduce((sum, s) => sum + s.price, 0))})
-                      </span>
-                    )}
-                  </div>
-
-                  {items.length > 1 && (
-                    <button
-                      type="button"
-                      className="btn danger sm"
-                      onClick={() => removeItem(itemIdx)}
-                      style={{ fontSize: '0.75rem', padding: '4px 10px' }}
-                    >
-                      Hapus Barang {itemIdx + 1}
-                    </button>
-                  )}
-                </div>
-
-                {/* Detail Barang */}
-                <div style={{ marginBottom: '14px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '8px' }}>
-                    Jenis Barang *
-                  </span>
-                  <div className="item-type-grid">
-                    {['Sepatu', 'Tas', 'Topi', 'Helm', 'Sandal / Wedges', 'Lainnya'].map((type) => {
-                      const isSelected = item.itemTypeSelect === type;
-                      return (
-                        <button
-                          key={type}
-                          type="button"
-                          className={`item-type-chip ${isSelected ? 'active' : ''}`}
-                          onClick={() => {
-                            updateItem(itemIdx, {
-                              itemTypeSelect: type,
-                              customItemType: type === 'Lainnya' ? item.customItemType : '',
-                            });
-                          }}
-                        >
-                          {isSelected ? '✓ ' : ''}{type === 'Lainnya' ? 'Lainnya (Custom)' : type}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {item.itemTypeSelect === 'Lainnya' && (
-                  <div style={{ marginBottom: '14px' }}>
-                    <label className="field">
-                      <span>Nama Jenis Barang (Custom) *</span>
-                      <input
-                        type="text"
-                        placeholder="Contoh: Jaket Kulit, Koper, Stroller, dll."
-                        value={item.customItemType}
-                        onChange={(e) => updateItem(itemIdx, { customItemType: e.target.value })}
-                        required
-                      />
-                    </label>
-                  </div>
-                )}
-
-                <div className="grid grid-3" style={{ marginTop: '12px' }}>
-                  <label className="field">
-                    <span>Merek (Brand)</span>
-                    <input
-                      type="text"
-                      placeholder="Nike, Adidas, Converse, dll."
-                      value={item.brand}
-                      onChange={(e) => updateItem(itemIdx, { brand: e.target.value })}
-                    />
-                  </label>
-                  <label className="field">
-                    <span>Model / Seri</span>
-                    <input
-                      type="text"
-                      placeholder="Air Jordan 1, Chuck 70, dll."
-                      value={item.model}
-                      onChange={(e) => updateItem(itemIdx, { model: e.target.value })}
-                    />
-                  </label>
-                  <label className="field">
-                    <span>Warna Dominan</span>
-                    <input
-                      type="text"
-                      placeholder="Putih / Hitam / Navy"
-                      value={item.color}
-                      onChange={(e) => updateItem(itemIdx, { color: e.target.value })}
-                    />
-                  </label>
-                </div>
-
-                <div style={{ marginTop: '12px', marginBottom: '16px' }}>
-                  <label className="field">
-                    <span>Catatan Kondisi Barang (Noda / Kerusakan)</span>
-                    <textarea
-                      placeholder="Contoh: Ada noda oli di tumit, midsole menguning, sol kanan terbuka sedikit."
-                      value={item.conditionNotes}
-                      onChange={(e) => updateItem(itemIdx, { conditionNotes: e.target.value })}
-                    />
-                  </label>
-                </div>
-
-                {/* Service Selection for this item */}
-                <div style={{ borderTop: '1px solid var(--line)', paddingTop: '14px' }}>
-                  <div className="row between" style={{ marginBottom: '8px' }}>
-                    <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--ink)' }}>
-                      Pilih Layanan untuk {items.length > 1 ? `Barang ${itemIdx + 1}` : 'Barang Ini'} *
-                    </span>
-                    <span className="xs muted">Pilih minimal 1 layanan</span>
-                  </div>
-
-                  {/* Filter Kategori Layanan agar mudah dipilih di HP */}
-                  <div className="services-filter-pills" style={{ marginBottom: '10px' }}>
-                    <button
-                      type="button"
-                      className={`activity-filter-btn filter-all ${svcCatFilter === 'all' ? 'active' : ''}`}
-                      onClick={() => setSvcCatFilter('all')}
-                    >
-                      Semua ({services?.length || 0})
-                    </button>
-                    <button
-                      type="button"
-                      className={`activity-filter-btn filter-main ${svcCatFilter === 'main' ? 'active' : ''}`}
-                      onClick={() => setSvcCatFilter('main')}
-                    >
-                      Main ({services?.filter((s) => s.category === 'main').length || 0})
-                    </button>
-                    <button
-                      type="button"
-                      className={`activity-filter-btn filter-express ${svcCatFilter === 'express' ? 'active' : ''}`}
-                      onClick={() => setSvcCatFilter('express')}
-                    >
-                      Express ({services?.filter((s) => s.category === 'express').length || 0})
-                    </button>
-                    <button
-                      type="button"
-                      className={`activity-filter-btn filter-additional ${svcCatFilter === 'additional' ? 'active' : ''}`}
-                      onClick={() => setSvcCatFilter('additional')}
-                    >
-                      Additional ({services?.filter((s) => s.category === 'additional').length || 0})
-                    </button>
-                    <button
-                      type="button"
-                      className={`activity-filter-btn filter-other ${svcCatFilter === 'other' ? 'active' : ''}`}
-                      onClick={() => setSvcCatFilter('other')}
-                    >
-                      Other ({services?.filter((s) => s.category === 'other').length || 0})
-                    </button>
-                  </div>
-
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
-                    {services
-                      ?.filter((svc) => svcCatFilter === 'all' || svc.category === svcCatFilter)
-                      .map((svc) => {
-                        const active = item.selectedServices.some((x) => x.serviceId === svc.id);
-                        return (
-                          <button
-                            type="button"
-                            key={svc.id}
-                            onClick={() => toggleItemService(itemIdx, svc.id)}
-                            className={`btn sm ${active ? '' : 'secondary'}`}
-                            style={{ padding: '7px 11px', fontSize: '0.8rem' }}
-                          >
-                            {active ? '✓ ' : '+ '} {svc.name}
-                          </button>
-                        );
-                      })}
-                  </div>
-
-                  {item.selectedServices.length === 0 ? (
-                    <div className="empty" style={{ border: '1px dashed var(--line)', borderRadius: '8px', padding: '12px' }}>
-                      Belum ada layanan dipilih untuk barang ini. Silakan klik tombol layanan di atas.
-                    </div>
-                  ) : (
-                    <div className="stack" style={{ gap: '8px' }}>
-                      <div className="xs muted">
-                        Atur harga final yang disepakati jika terdapat tingkat kotoran khusus:
-                      </div>
-                      {item.selectedServices.map((l, sIdx) => (
-                        <div key={sIdx} className="service-line-card">
-                          <div className="service-line-info">
-                            <strong>{l.name}</strong>
-                            <div className="xs muted">
-                              Kategori: {l.category} • Beban: {l.workloadWeight} unit
-                              {l.priceMax ? ` (Rentang: ${rupiah(l.priceMin)} - ${rupiah(l.priceMax)})` : ''}
-                            </div>
-                          </div>
-                          <div className="service-line-controls">
-                            <input
-                              type="number"
-                              value={l.price}
-                              onChange={(e) => updateItemServicePrice(itemIdx, sIdx, Number(e.target.value))}
-                              className="service-line-price-input"
-                            />
-                            <button
-                              type="button"
-                              className="btn danger sm"
-                              onClick={() => {
-                                const next = item.selectedServices.filter((_, i) => i !== sIdx);
-                                updateItem(itemIdx, { selectedServices: next });
-                              }}
-                              title="Hapus layanan"
-                              style={{ padding: '7px 10px' }}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setModalQty(Math.max(1, modalQty - 1))}
+                  style={{ background: 'transparent', border: 'none', color: '#0284c7', fontSize: '1.2rem', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  —
+                </button>
+                <span style={{ fontWeight: 800, fontSize: '0.92rem', minWidth: '16px', textAlign: 'center' }}>
+                  {modalQty}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setModalQty(modalQty + 1)}
+                  style={{ background: 'transparent', border: 'none', color: '#0284c7', fontSize: '1.2rem', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  +
+                </button>
               </div>
-            ))}
+            </div>
 
-            {/* Add Another Item Button */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-8px', marginBottom: '8px' }}>
-              <button
-                type="button"
-                className="btn"
-                onClick={addItem}
+            {/* Field: Keterangan */}
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                Keterangan
+              </label>
+              <input
+                type="text"
+                placeholder="Misalnya : Upper kotor pekat, insole kuning"
+                value={modalNotes}
+                onChange={(e) => setModalNotes(e.target.value)}
                 style={{
                   width: '100%',
-                  maxWidth: '420px',
-                  padding: '12px 20px',
-                  fontWeight: 700,
-                  fontSize: '0.88rem',
                   background: '#f8fafc',
-                  border: '2px dashed var(--primary)',
-                  color: 'var(--primary)',
+                  border: '1px solid #e2e8f0',
                   borderRadius: '10px',
+                  padding: '10px 12px',
+                  fontSize: '0.86rem',
+                }}
+              />
+            </div>
+
+            {/* Total Harga */}
+            <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#0f172a', marginBottom: '18px' }}>
+              Total Harga : {(activeModalSvc.price * modalQty).toLocaleString('id-ID')}
+            </div>
+
+            {/* Bottom Actions: Trash & Simpan */}
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={handleDeleteModalItem}
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
+                  background: '#fee2e2',
+                  border: 'none',
+                  color: '#dc2626',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
+                  fontSize: '1.2rem',
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease',
+                  flexShrink: 0,
                 }}
+                title="Hapus Layanan"
               >
-                + Tambah Barang Lagi (Sepatu / Tas Kedua)
-              </button>
-            </div>
-
-            {/* Fragrance & Products */}
-            <div className="card">
-              <div className="row between" style={{ alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
-                <h3 style={{ margin: 0 }}>Aroma Parfum Finishing & Produk Tambahan</h3>
-                <span className="badge ok">Gratis Termasuk Cuci</span>
-              </div>
-
-              {/* Modern Fragrance Picker Grid */}
-              <div style={{ marginBottom: '20px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'block', marginBottom: '8px', color: '#334155' }}>
-                  Pilihan Aroma Parfum Finishing:
-                </span>
-                <div className="fragrance-picker-grid">
-                  <button
-                    type="button"
-                    className={`fragrance-card-btn ${!fragranceId ? 'active' : ''}`}
-                    onClick={() => setFragranceId('')}
-                  >
-                    <div className="fragrance-card-header">
-                      <span className="fragrance-card-name">Tanpa Parfum</span>
-                      {!fragranceId && <span className="fragrance-card-check">Dipilih</span>}
-                    </div>
-                    <div className="fragrance-card-desc">Khusus pelanggan sensitif aroma wangi</div>
-                  </button>
-
-                  {fragrances?.map((f) => {
-                    const isSelected = fragranceId === f.id;
-                    return (
-                      <button
-                        key={f.id}
-                        type="button"
-                        className={`fragrance-card-btn ${isSelected ? 'active' : ''}`}
-                        onClick={() => setFragranceId(f.id)}
-                      >
-                        <div className="fragrance-card-header">
-                          <span className="fragrance-card-name">{f.name}</span>
-                          {isSelected && <span className="fragrance-card-check">Dipilih</span>}
-                        </div>
-                        <div className="fragrance-card-desc">{f.description || 'Aroma parfum pilihan untuk sepatu'}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Retail Products to Buy */}
-              <div style={{ borderTop: '1px solid var(--line)', paddingTop: '16px' }}>
-                <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                  <div>
-                    <span style={{ fontSize: '0.88rem', fontWeight: 700, display: 'block', color: '#1e293b' }}>
-                      Beli Produk Tambahan (Opsional)
-                    </span>
-                  </div>
-                  {selectedProducts.length > 0 && (
-                    <span className="badge ok" style={{ fontSize: '0.75rem' }}>
-                      {selectedProducts.reduce((sum, p) => sum + p.qty, 0)} item dipilih (
-                      {rupiah(selectedProducts.reduce((sum, p) => sum + p.subtotal, 0))})
-                    </span>
-                  )}
-                </div>
-
-                <div className="product-compact-list">
-                  {productsCatalog?.map((p) => {
-                    const qty = getProductQty(p.id);
-                    const display = parseProductDisplay(p);
-                    return (
-                      <div key={p.id} className={`product-compact-row ${qty > 0 ? 'selected' : ''}`}>
-                        <div className="product-compact-info">
-                          <div className="product-compact-title-row">
-                            <span className="product-compact-name">{display.title}</span>
-                            <span className="product-compact-price">{rupiah(p.price)}</span>
-                          </div>
-                          {display.subtitle && (
-                            <div className="product-compact-sub">
-                              <span>{display.subtitle}</span>
-                              {p.description && p.description !== display.subtitle && !display.subtitle.includes(p.description) && (
-                                <span className="product-compact-desc">• {p.description}</span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="product-card-action">
-                          {qty === 0 ? (
-                            <button
-                              type="button"
-                              className="product-btn-add"
-                              onClick={() => setProductQty(p.id, 1)}
-                            >
-                              + Beli
-                            </button>
-                          ) : (
-                            <div className="product-stepper">
-                              <button
-                                type="button"
-                                className="stepper-btn"
-                                onClick={() => setProductQty(p.id, qty - 1)}
-                                title="Kurangi"
-                              >
-                                −
-                              </button>
-                              <span className="stepper-val">{qty}</span>
-                              <button
-                                type="button"
-                                className="stepper-btn"
-                                onClick={() => setProductQty(p.id, qty + 1)}
-                                title="Tambah"
-                              >
-                                +
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            <div className="form-step-actions">
-              <button
-                type="button"
-                className="btn secondary"
-                onClick={() => {
-                  setFormError(null);
-                  setCurrentStep(1);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              >
-                ← Kembali ke Pelanggan
+                🗑️
               </button>
               <button
                 type="button"
-                className="btn"
-                onClick={() => {
-                  if (validateStep(2)) {
-                    setCurrentStep(3);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }
+                onClick={handleSaveModalItem}
+                style={{
+                  flex: 1,
+                  background: '#0284c7',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  fontSize: '0.92rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
                 }}
               >
-                Lanjut ke Estimasi & Bayar →
+                Simpan
               </button>
             </div>
-          </>
-        )}
-
-        {/* STEP 3: Estimasi Selesai & Pembayaran */}
-        {currentStep === 3 && (
-          <>
-            {/* Capacity-based Estimation */}
-            <div className="card">
-              <h3>3. Estimasi Selesai</h3>
-              <div className="field" style={{ marginTop: '12px' }}>
-                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '6px' }}>
-                  Metode Penentuan Estimasi
-                </span>
-                <div className="segmented-control">
-                  <button
-                    type="button"
-                    className={`segmented-btn ${estimateMode === 'auto' ? 'active' : ''}`}
-                    onClick={() => setEstimateMode('auto')}
-                  >
-                    Kalkulasi Otomatis
-                  </button>
-                  <button
-                    type="button"
-                    className={`segmented-btn ${estimateMode === 'manual' ? 'active' : ''}`}
-                    onClick={() => setEstimateMode('manual')}
-                  >
-                    Penyesuaian Manual
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ marginTop: '16px' }}>
-                {hasExpressSelected && !slaInfo.expressAllowed && (
-                  <div className="alert error" style={{ marginBottom: '12px' }}>
-                    <strong>Peringatan Kebijakan Express:</strong> {slaInfo.expressStatusText}. Disarankan menolak layanan Express saat ini agar pesanan reguler tidak terbengkalai.
-                  </div>
-                )}
-
-                {estimateError && (
-                  <div className="alert error" style={{ marginBottom: '12px' }}>
-                    {estimateError}
-                  </div>
-                )}
-
-                {estimateWarnings.map((w, idx) => (
-                  <div key={idx} className="alert warn small" style={{ marginBottom: '8px' }}>
-                    {w}
-                  </div>
-                ))}
-
-                {estimateMode === 'auto' ? (
-                  <div className="alert info">
-                    <div>Estimasi Otomatis Berdasarkan Antrean:</div>
-                    <strong style={{ fontSize: '1.1rem' }}>
-                      {autoEstimatedAt ? fmtDateTime(autoEstimatedAt) : 'Belum dapat dihitung'}
-                    </strong>
-                    {autoEarliestAt && autoEarliestAt !== autoEstimatedAt && (
-                      <div className="xs muted">Rentang pengerjaan paling awal: {fmtDateTime(autoEarliestAt)}</div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="stack" style={{ gap: '12px' }}>
-                    <label className="field">
-                      <span>Target Tanggal & Jam Selesai Manual *</span>
-                      <input
-                        type="datetime-local"
-                        value={manualEstimatedAt}
-                        onChange={(e) => setManualEstimatedAt(e.target.value)}
-                        required
-                      />
-                    </label>
-                    <label className="field">
-                      <span>Alasan Penyesuaian Manual</span>
-                      <input
-                        type="text"
-                        placeholder="Contoh: Sepatu sangat kotor butuh double wash / permintaan khusus pelanggan"
-                        value={manualReason}
-                        onChange={(e) => setManualReason(e.target.value)}
-                      />
-                    </label>
-                  </div>
-                )}
-
-                {/* Visual Mini Calendar for Delivery Estimation */}
-                <div className="mini-cal-card" style={{ marginTop: '16px', border: '1px solid var(--line)' }}>
-                  <div className="mini-cal-header">
-                    <div>
-                      <strong style={{ fontSize: '0.92rem' }}>
-                        Visual Kalender: Target Selesai
-                      </strong>
-                      <div className="xs muted">
-                        Klik tanggal pada kalender untuk menetapkan target selesai secara manual
-                      </div>
-                    </div>
-                    <div className="mini-cal-nav row" style={{ gap: '6px' }}>
-                      <button
-                        type="button"
-                        className="btn secondary sm"
-                        style={{ padding: '3px 8px' }}
-                        onClick={() => setFormCalMonth(new Date(formCalMonth.getFullYear(), formCalMonth.getMonth() - 1, 1))}
-                      >
-                        ←
-                      </button>
-                      <span style={{ fontWeight: 700, fontSize: '0.85rem', minWidth: '90px', textAlign: 'center' }}>
-                        {formCalMonth.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
-                      </span>
-                      <button
-                        type="button"
-                        className="btn secondary sm"
-                        style={{ padding: '3px 8px' }}
-                        onClick={() => setFormCalMonth(new Date(formCalMonth.getFullYear(), formCalMonth.getMonth() + 1, 1))}
-                      >
-                        →
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mini-cal-grid">
-                    <div className="mini-cal-dow" style={{ color: '#bf2f3b' }}>Min</div>
-                    <div className="mini-cal-dow">Sen</div>
-                    <div className="mini-cal-dow">Sel</div>
-                    <div className="mini-cal-dow">Rab</div>
-                    <div className="mini-cal-dow">Kam</div>
-                    <div className="mini-cal-dow">Jum</div>
-                    <div className="mini-cal-dow">Sab</div>
-
-                    {formCalDays.map((d, dIdx) => {
-                      const isRec = d.key === recDateKey;
-                      const isTarget = d.key === targetDateKey;
-                      const isToday = d.key === dateKey(new Date());
-                      const open = settings ? isOpenDay(d.key, settings) : true;
-                      const isSunday = dIdx % 7 === 0;
-                      const holidayName = getNationalHolidayName(d.key);
-                      const isRedDate = isSunday || !!holidayName;
-
-                      return (
-                        <div
-                          key={d.key}
-                          onClick={() => handleSelectCalDate(d.key)}
-                          className={`mini-cal-day ${!d.inMonth ? 'out' : ''} ${!open ? 'closed' : ''} ${isToday ? 'today' : ''} ${isRec ? 'received-day' : ''} ${isTarget ? 'estimated-day' : ''}`}
-                          title={`${d.key}${holidayName ? ` (${holidayName})` : ''} ${isRec ? '(Tanggal Masuk)' : isTarget ? '(Target Selesai)' : ''}`}
-                        >
-                          <span style={{ color: isRedDate && d.inMonth ? '#bf2f3b' : undefined, fontWeight: isRedDate ? 800 : undefined }}>
-                            {d.dayNum}
-                          </span>
-                          {isRec && <span className="mini-cal-badge" style={{ background: '#dbeafe', color: '#1e40af' }}>Masuk</span>}
-                          {isTarget && <span className="mini-cal-badge" style={{ background: '#fee2e2', color: '#bf2f3b' }}>Selesai</span>}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="row between small" style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px dashed var(--line)', gap: '8px', flexWrap: 'wrap' }}>
-                    <div className="row" style={{ gap: '10px' }}>
-                      <span className="row" style={{ gap: '4px' }}>
-                        <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: '#dbeafe', border: '1px solid #93c5fd' }} />
-                        <span className="xs">Masuk: {recDateKey || '-'}</span>
-                      </span>
-                      <span className="row" style={{ gap: '4px' }}>
-                        <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: '#fee2e2', border: '1px solid #bf2f3b' }} />
-                        <span className="xs">Target Selesai: {targetDateKey || '-'}</span>
-                      </span>
-                    </div>
-                    <span className="xs muted">
-                      Kapasitas: {settings?.dailyCapacity ?? 8.5} unit/hari
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment & Confirmation */}
-            <div className="card">
-              <h3>4. Pembayaran di Tempat & Catatan Internal</h3>
-              <div className="totals" style={{ marginBottom: '16px', color: 'var(--primary)' }}>
-                <span>Total Tagihan Final:</span>
-                <span>{rupiah(currentTotal)}</span>
-              </div>
-
-              <div className="grid grid-2">
-                <div className="field">
-                  <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '6px' }}>
-                    Metode Pembayaran
-                  </span>
-                  <div className="segmented-control">
-                    <button
-                      type="button"
-                      className={`segmented-btn ${paymentMethod === 'qris' ? 'active' : ''}`}
-                      onClick={() => setPaymentMethod('qris')}
-                    >
-                      QRIS (Kasir)
-                    </button>
-                    <button
-                      type="button"
-                      className={`segmented-btn ${paymentMethod === 'tunai' ? 'active' : ''}`}
-                      onClick={() => setPaymentMethod('tunai')}
-                    >
-                      Tunai (Cash)
-                    </button>
-                  </div>
-                </div>
-
-                <div className="field">
-                  <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '6px' }}>
-                    Status Pembayaran
-                  </span>
-                  <div className="segmented-control">
-                    <button
-                      type="button"
-                      className={`segmented-btn lunas ${paymentStatus === 'lunas' ? 'active' : ''}`}
-                      onClick={() => {
-                        setPaymentStatus('lunas');
-                        setPaymentConfirmed(true);
-                      }}
-                    >
-                      Lunas
-                    </button>
-                    <button
-                      type="button"
-                      className={`segmented-btn belum-lunas ${paymentStatus === 'belum_lunas' ? 'active' : ''}`}
-                      onClick={() => {
-                        setPaymentStatus('belum_lunas');
-                        setPaymentConfirmed(false);
-                      }}
-                    >
-                      Belum Lunas
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {paymentStatus === 'lunas' && (
-                <div style={{ marginTop: '14px' }}>
-                  <label className="check">
-                    <input
-                      type="checkbox"
-                      checked={paymentConfirmed}
-                      onChange={(e) => setPaymentConfirmed(e.target.checked)}
-                      required
-                    />
-                    <span>
-                      <strong>Konfirmasi Pegawai:</strong> Saya mengonfirmasi bahwa pelanggan telah membayar penuh sebesar {rupiah(currentTotal)} via {paymentMethod.toUpperCase()}.
-                    </span>
-                  </label>
-                </div>
-              )}
-
-              <div style={{ marginTop: '16px' }}>
-                <label className="field">
-                  <span>Catatan Khusus Internal (Hanya dilihat oleh pegawai)</span>
-                  <textarea
-                    placeholder="Catatan pengerjaan tim teknis, nomor rak penyimpanan, dll."
-                    value={internalNotes}
-                    onChange={(e) => setInternalNotes(e.target.value)}
-                  />
-                </label>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="form-step-actions">
-              <button
-                type="button"
-                className="btn secondary"
-                onClick={() => {
-                  setFormError(null);
-                  setCurrentStep(2);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              >
-                ← Kembali ke Layanan
-              </button>
-              <button type="submit" className="btn lg" disabled={saving}>
-                {saving ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Catat & Cetak Nota'}
-              </button>
-            </div>
-          </>
-        )}
-      </form>
-
-      {/* Mobile Floating Sticky Bar with Running Total & Step Advance */}
-      <div className="order-mobile-sticky-bar">
-        <div className="order-mobile-sticky-info">
-          <div className="order-mobile-sticky-total">{rupiah(currentTotal)}</div>
-          <div className="order-mobile-sticky-sub">
-            {items.length} Barang • {allServices.length} Layanan
           </div>
         </div>
-        <div className="order-mobile-sticky-action">
-          {currentStep === 1 && (
+      )}
+
+      {/* ======================================================== */}
+      {/* SCREEN 2: KONFIRMASI PESANAN (Persis Foto Bilas 6, 7)     */}
+      {/* ======================================================== */}
+      {screenMode === 'confirm' && (
+        <div className="stack" style={{ gap: '12px' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
             <button
               type="button"
-              className="btn sm"
-              style={{ padding: '8px 16px', fontWeight: 700 }}
-              onClick={() => {
-                if (validateStep(1)) {
-                  setCurrentStep(2);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
+              onClick={() => setScreenMode('catalog')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: '1.4rem',
+                color: '#0f172a',
+                cursor: 'pointer',
+                padding: '0 4px',
+                fontWeight: 800,
               }}
             >
-              Lanjut (1/3) →
+              ←
             </button>
-          )}
-          {currentStep === 2 && (
+            <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#0284c7', letterSpacing: '-0.03em' }}>
+              solecare
+            </span>
+            <div style={{ width: '24px' }} />
+          </div>
+
+          <h1 style={{ margin: '0 0 4px', fontSize: '1.18rem', fontWeight: 800, color: '#0f172a' }}>
+            Konfirmasi Pesanan
+          </h1>
+
+          {/* Customer Card */}
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '14px 16px',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.02)',
+            }}
+          >
+            <strong style={{ display: 'block', fontSize: '0.98rem', color: '#0f172a' }}>
+              {initialCustName}
+            </strong>
+            <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
+              {initialCustPhone}
+            </span>
+          </div>
+
+          {/* 1. Layanan Antar Jemput */}
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '14px 16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.3rem' }}>🚚</span>
+                <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Layanan Antar Jemput</strong>
+              </div>
+              <select
+                value={pickupOption}
+                onChange={(e) => setPickupOption(e.target.value as any)}
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '8px',
+                  padding: '6px 10px',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  color: '#334155',
+                  width: 'auto',
+                }}
+              >
+                <option value="dropoff">Diantar Sendiri (Drop-off)</option>
+                <option value="pickup">Jemput ke Rumah (+Rp 15.000)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* 2. Jadikan Prioritas with toggle switch */}
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '14px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span
+                style={{
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  background: '#6d28d9',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.85rem',
+                }}
+              >
+                ★
+              </span>
+              <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Jadikan Prioritas</strong>
+              <button
+                type="button"
+                onClick={() => setPriorityModalOpen(true)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#94a3b8',
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  padding: '0 2px',
+                }}
+              >
+                ⓘ
+              </button>
+            </div>
+
+            {/* Switch Toggle */}
+            <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={isPriority}
+                onChange={(e) => setIsPriority(e.target.checked)}
+                style={{ opacity: 0, width: 0, height: 0 }}
+              />
+              <span
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundColor: isPriority ? '#0284c7' : '#cbd5e1',
+                  borderRadius: '999px',
+                  transition: '0.2s',
+                }}
+              >
+                <span
+                  style={{
+                    position: 'absolute',
+                    left: isPriority ? '22px' : '2px',
+                    top: '2px',
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '50%',
+                    transition: '0.2s',
+                  }}
+                />
+              </span>
+            </label>
+          </div>
+
+          {/* 3. Detail Pesanan */}
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '14px 16px',
+            }}
+          >
+            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
+              Detail Pesanan
+            </div>
+
+            <div className="stack" style={{ gap: '10px' }}>
+              {selectedItems.map((it) => (
+                <div
+                  key={it.serviceId}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderBottom: '1px solid #f1f5f9',
+                    paddingBottom: '8px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {it.category === 'Sepatu' ? <SneakerThumb /> : <span>📦</span>}
+                    </div>
+                    <div>
+                      <strong style={{ display: 'block', fontSize: '0.9rem', color: '#0f172a' }}>
+                        {it.category} {it.name}
+                      </strong>
+                      <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                        {it.price.toLocaleString('id-ID')} • {it.durationDays} Hari
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Counter */}
+                  <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: '999px', padding: '1px 8px', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateItemQty(it.serviceId, -1)}
+                      style={{ background: 'transparent', border: 'none', color: '#0284c7', fontWeight: 800, cursor: 'pointer' }}
+                    >
+                      —
+                    </button>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{it.qty}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateItemQty(it.serviceId, 1)}
+                      style={{ background: 'transparent', border: 'none', color: '#0284c7', fontWeight: 800, cursor: 'pointer' }}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* + Layanan Button */}
+            <div style={{ marginTop: '12px', textAlign: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setScreenMode('catalog')}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#0284c7',
+                  fontSize: '0.88rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                + Layanan
+              </button>
+            </div>
+          </div>
+
+          {/* 4. Pilihan Parfum */}
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '14px 16px',
+            }}
+          >
+            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+              Pilihan Parfum
+            </div>
+
+            <div className="stack" style={{ gap: '8px' }}>
+              {['Tanpa Parfum', 'Vanilla Sweet Shoes', 'Fresh Apple Mint', 'Bubblegum Fresh'].map((p) => (
+                <label key={p} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="parfum"
+                    checked={selectedParfum === p}
+                    onChange={() => setSelectedParfum(p)}
+                    style={{ accentColor: '#f97316' }}
+                  />
+                  <span>{p}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* 5. Informasi Tambahan */}
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '14px 16px',
+            }}
+          >
+            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a', marginBottom: '6px' }}>
+              Informasi Tambahan
+            </div>
+            <input
+              type="text"
+              placeholder="Misalnya : Upper kotor pekat, jangan disikat kawat"
+              value={extraNotes}
+              onChange={(e) => setExtraNotes(e.target.value)}
+              style={{
+                width: '100%',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                padding: '10px 12px',
+                fontSize: '0.85rem',
+              }}
+            />
+          </div>
+
+          {/* 6. Pilih Promo */}
+          <div
+            onClick={() => alert('Tidak ada voucher promo aktif')}
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '14px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>🏷️</span>
+              <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>Pilih Promo</strong>
+            </div>
+            <span style={{ color: '#94a3b8' }}>›</span>
+          </div>
+
+          {/* 7. Informasi Tagihan */}
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '14px 16px',
+            }}
+          >
+            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+              Informasi Tagihan
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0f172a' }}>TOTAL</span>
+              <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#001b3a' }}>
+                {totalAmount.toLocaleString('id-ID')}
+              </span>
+            </div>
+          </div>
+
+          {/* Sticky Bottom Bar: Total Tagihan & Buat Transaksi (Persis Foto 7) */}
+          <div
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              background: '#ffffff',
+              borderTop: '1px solid #e2e8f0',
+              padding: '10px 16px max(10px, env(safe-area-inset-bottom, 10px))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              boxShadow: '0 -4px 12px rgba(0,0,0,0.06)',
+              zIndex: 35,
+            }}
+          >
+            <div>
+              <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Total Tagihan</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#b91c1c' }}>
+                {totalAmount.toLocaleString('id-ID')}
+              </div>
+            </div>
+
             <button
               type="button"
-              className="btn sm"
-              style={{ padding: '8px 16px', fontWeight: 700 }}
-              onClick={() => {
-                if (validateStep(2)) {
-                  setCurrentStep(3);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
+              disabled={submitting}
+              onClick={handleCreateTransaction}
+              style={{
+                background: '#f97316',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '12px 28px',
+                fontSize: '0.95rem',
+                fontWeight: 800,
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 12px rgba(249, 115, 22, 0.35)',
               }}
             >
-              Lanjut (2/3) →
+              {submitting ? 'Memproses...' : 'Buat Transaksi'}
             </button>
-          )}
-          {currentStep === 3 && (
-            <button
-              type="button"
-              className="btn sm"
-              style={{ padding: '8px 16px', fontWeight: 700 }}
-              disabled={saving}
-              onClick={() => {
-                const form = document.getElementById('order-main-form') as HTMLFormElement | null;
-                if (form) {
-                  if (typeof form.requestSubmit === 'function') {
-                    form.requestSubmit();
-                  } else {
-                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                  }
-                }
-              }}
-            >
-              {saving ? 'Menyimpan...' : isEdit ? 'Simpan' : 'Simpan & Nota'}
-            </button>
-          )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL: PESANAN PRIORITAS (Persis Foto Bilas 6)           */}
+      {/* ======================================================== */}
+      {priorityModalOpen && (
+        <div className="modal-backdrop" onClick={() => setPriorityModalOpen(false)}>
+          <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '360px', borderRadius: '18px', padding: '20px', textAlign: 'center' }}
+          >
+            <h3 style={{ margin: '0 0 10px', fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+              Pesanan Prioritas
+            </h3>
+            <p style={{ fontSize: '0.88rem', color: '#64748b', lineHeight: 1.5, margin: '0 0 18px' }}>
+              Pesanan prioritas akan diletakkan di daftar teratas antrian agar mendapatkan perhatian khusus dari pegawai
+            </p>
+            <button
+              type="button"
+              onClick={() => setPriorityModalOpen(false)}
+              style={{
+                width: '100%',
+                background: '#0284c7',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '11px',
+                fontSize: '0.92rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+              }}
+            >
+              Mengerti
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL: TRANSAKSI BERHASIL DISIMPAN (Persis Foto Bilas 5) */}
+      {/* ======================================================== */}
+      {successModalOpen && createdOrder && (
+        <div className="modal-backdrop">
+          <div
+            className="modal"
+            style={{ maxWidth: '420px', borderRadius: '20px', padding: '24px 20px', textAlign: 'center' }}
+          >
+            {/* Green Checkmark Circle */}
+            <div
+              style={{
+                width: '68px',
+                height: '68px',
+                borderRadius: '50%',
+                background: '#22c55e',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '2.2rem',
+                margin: '0 auto 16px',
+                boxShadow: '0 6px 16px rgba(34, 197, 94, 0.35)',
+              }}
+            >
+              ✓
+            </div>
+
+            <h3 style={{ margin: '0 0 4px', fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
+              Transaksi berhasil disimpan.
+            </h3>
+            <p style={{ fontSize: '0.84rem', color: '#64748b', margin: '0 0 20px' }}>
+              Pilih aksi selanjutnya!
+            </p>
+
+            {/* 3 Action Buttons Persis Foto 5 */}
+            <div className="stack" style={{ gap: '10px' }}>
+              {/* 1. Lihat Detail Transaksi */}
+              <button
+                type="button"
+                onClick={() => navigate(`/admin/orders/${createdOrder.id}`)}
+                style={{
+                  width: '100%',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '13px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  fontSize: '0.92rem',
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  cursor: 'pointer',
+                }}
+              >
+                <span>🔍</span>
+                <span>Lihat Detail Transaksi</span>
+              </button>
+
+              {/* 2. Lihat / Cetak Nota */}
+              <button
+                type="button"
+                onClick={() => setInvoiceModalOpen(true)}
+                style={{
+                  width: '100%',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '13px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  fontSize: '0.92rem',
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  cursor: 'pointer',
+                }}
+              >
+                <span>🖨️</span>
+                <span>Lihat / Cetak Nota</span>
+              </button>
+
+              {/* 3. Bayar Sekarang */}
+              <button
+                type="button"
+                onClick={async () => {
+                  await repo.recordPayment(createdOrder.id, {
+                    method: 'qris',
+                    status: 'lunas',
+                    paidAt: new Date().toISOString(),
+                    confirmed: true,
+                  });
+                  alert('Pembayaran berhasil dicatat LUNAS!');
+                  navigate(`/admin/orders/${createdOrder.id}`);
+                }}
+                style={{
+                  width: '100%',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '13px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  fontSize: '0.92rem',
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  cursor: 'pointer',
+                }}
+              >
+                <span>💳</span>
+                <span>Bayar Sekarang</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Receipt Modal */}
+      {invoiceModalOpen && createdOrder && (
+        <InvoiceModal
+          order={createdOrder}
+          settings={settings || null}
+          cashierName="Admin Solecare"
+          onClose={() => {
+            setInvoiceModalOpen(false);
+            navigate(`/admin/orders/${createdOrder.id}`);
+          }}
+        />
+      )}
     </div>
   );
 };
