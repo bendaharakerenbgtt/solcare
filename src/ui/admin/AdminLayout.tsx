@@ -39,7 +39,7 @@ export const AdminLayout: React.FC = () => {
               alt="Solecare Logo"
               style={{ width: '28px', height: '28px', borderRadius: '7px', objectFit: 'cover' }}
             />
-            <span style={{ fontWeight: 800, fontSize: '1.28rem', color: '#0284c7', letterSpacing: '-0.03em' }}>
+            <span style={{ fontWeight: 800, fontSize: '1.28rem', color: '#001b3a', letterSpacing: '-0.03em' }}>
               solecare
             </span>
           </Link>
@@ -52,7 +52,7 @@ export const AdminLayout: React.FC = () => {
               aria-label="Notifikasi"
               style={{ background: 'transparent', border: 'none', padding: '6px', cursor: 'pointer' }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#001b3a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
               </svg>

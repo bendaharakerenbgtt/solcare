@@ -4,7 +4,7 @@ import { repo } from '../../data';
 import type { Customer } from '../../data/types';
 import { useAsync } from '../hooks';
 import { MapsPickerModal } from '../common/MapsPickerModal';
-import { CloseIcon, PinIcon } from '../common/Icons';
+import { CloseIcon, PinIcon, IndonesiaFlagIcon } from '../common/Icons';
 
 interface BilasTransactionSheetProps {
   isOpen: boolean;
@@ -308,9 +308,13 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
                     color: '#334155',
                     whiteSpace: 'nowrap',
                     userSelect: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
                   }}
                 >
-                  🇮🇩 +62
+                  <IndonesiaFlagIcon size={18} />
+                  <span>+62</span>
                 </div>
                 <input
                   type="tel"
@@ -436,7 +440,7 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: '#0284c7',
+                    color: '#bf2f3b',
                     fontSize: '0.8rem',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -446,7 +450,7 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
                     gap: '4px',
                   }}
                 >
-                  <PinIcon size={14} color="#0284c7" />
+                  <PinIcon size={14} color="#bf2f3b" />
                   <span>Maps</span>
                 </button>
               </div>
@@ -521,8 +525,8 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
                         width: '38px',
                         height: '38px',
                         borderRadius: '50%',
-                        background: '#e0f2fe',
-                        color: '#0284c7',
+                        background: '#f0f4f9',
+                        color: '#001b3a',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',

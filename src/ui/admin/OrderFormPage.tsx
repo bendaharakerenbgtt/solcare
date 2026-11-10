@@ -306,13 +306,13 @@ export const OrderFormPage: React.FC = () => {
       case 'Sepatu':
         return <SneakerIllustration width={38} height={24} />;
       case 'Tas':
-        return <BagIllustration size={22} color="#0284c7" />;
+        return <BagIllustration size={22} color="#001b3a" />;
       case 'Topi':
-        return <CapIllustration size={22} color="#0284c7" />;
+        return <CapIllustration size={22} color="#001b3a" />;
       case 'Helm':
-        return <HelmetIllustration size={22} color="#0284c7" />;
+        return <HelmetIllustration size={22} color="#001b3a" />;
       default:
-        return <SparklesIllustration size={22} color="#d97706" />;
+        return <SparklesIllustration size={22} color="#bf2f3b" />;
     }
   };
 
@@ -467,7 +467,7 @@ export const OrderFormPage: React.FC = () => {
                                       width: '28px',
                                       height: '28px',
                                       borderRadius: '50%',
-                                      background: '#0284c7',
+                                      background: '#001b3a',
                                       color: '#ffffff',
                                       border: 'none',
                                       display: 'flex',
@@ -482,7 +482,7 @@ export const OrderFormPage: React.FC = () => {
                                     type="button"
                                     onClick={() => handleOpenAddModal(svc)}
                                     style={{
-                                      background: '#f97316',
+                                      background: '#bf2f3b',
                                       color: '#ffffff',
                                       border: 'none',
                                       borderRadius: '999px',
@@ -490,6 +490,7 @@ export const OrderFormPage: React.FC = () => {
                                       fontSize: '0.8rem',
                                       fontWeight: 700,
                                       cursor: 'pointer',
+                                      boxShadow: '0 2px 8px rgba(191, 47, 59, 0.25)',
                                     }}
                                   >
                                     {existing.qty} items
@@ -500,7 +501,7 @@ export const OrderFormPage: React.FC = () => {
                                   type="button"
                                   onClick={() => handleOpenAddModal(svc)}
                                   style={{
-                                    background: '#0284c7',
+                                    background: '#001b3a',
                                     color: '#ffffff',
                                     border: 'none',
                                     borderRadius: '999px',
@@ -508,6 +509,7 @@ export const OrderFormPage: React.FC = () => {
                                     fontSize: '0.82rem',
                                     fontWeight: 700,
                                     cursor: 'pointer',
+                                    boxShadow: '0 2px 8px rgba(0, 27, 58, 0.2)',
                                   }}
                                 >
                                   Tambah
@@ -546,7 +548,7 @@ export const OrderFormPage: React.FC = () => {
                 onClick={() => setScreenMode('confirm')}
                 style={{
                   width: '100%',
-                  background: '#0284c7',
+                  background: 'linear-gradient(135deg, #001b3a 0%, #0a2548 100%)',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '14px',
@@ -554,7 +556,7 @@ export const OrderFormPage: React.FC = () => {
                   fontSize: '0.98rem',
                   fontWeight: 800,
                   cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
+                  boxShadow: '0 4px 14px rgba(0, 27, 58, 0.35)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -589,7 +591,7 @@ export const OrderFormPage: React.FC = () => {
                 onClick={() => setActiveModalSvc(null)}
                 style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
               >
-                <CloseIcon size={18} color="#f97316" />
+                <CloseIcon size={18} color="#bf2f3b" />
               </button>
             </div>
 
@@ -609,7 +611,7 @@ export const OrderFormPage: React.FC = () => {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  border: '1.5px solid #0284c7',
+                  border: '1.5px solid #001b3a',
                   borderRadius: '999px',
                   padding: '2px 10px',
                   gap: '12px',
@@ -620,9 +622,9 @@ export const OrderFormPage: React.FC = () => {
                   onClick={() => setModalQty(Math.max(1, modalQty - 1))}
                   style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
                 >
-                  <MinusIcon size={14} color="#0284c7" />
+                  <MinusIcon size={14} color="#001b3a" />
                 </button>
-                <span style={{ fontWeight: 800, fontSize: '0.92rem', minWidth: '16px', textAlign: 'center' }}>
+                <span style={{ fontWeight: 800, fontSize: '0.92rem', minWidth: '16px', textAlign: 'center', color: '#001b3a' }}>
                   {modalQty}
                 </span>
                 <button
@@ -630,7 +632,7 @@ export const OrderFormPage: React.FC = () => {
                   onClick={() => setModalQty(modalQty + 1)}
                   style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
                 >
-                  <PlusIcon size={14} color="#0284c7" />
+                  <PlusIcon size={14} color="#001b3a" />
                 </button>
               </div>
             </div>
@@ -670,7 +672,7 @@ export const OrderFormPage: React.FC = () => {
                   width: '44px',
                   height: '44px',
                   borderRadius: '12px',
-                  background: '#fee2e2',
+                  background: '#fef2f2',
                   border: 'none',
                   display: 'flex',
                   alignItems: 'center',
@@ -680,14 +682,14 @@ export const OrderFormPage: React.FC = () => {
                 }}
                 title="Hapus Layanan"
               >
-                <TrashIcon size={20} color="#dc2626" />
+                <TrashIcon size={20} color="#bf2f3b" />
               </button>
               <button
                 type="button"
                 onClick={handleSaveModalItem}
                 style={{
                   flex: 1,
-                  background: '#0284c7',
+                  background: '#001b3a',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '12px',
@@ -695,6 +697,7 @@ export const OrderFormPage: React.FC = () => {
                   fontWeight: 800,
                   fontSize: '0.92rem',
                   cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(0, 27, 58, 0.25)',
                 }}
               >
                 Simpan
@@ -726,7 +729,7 @@ export const OrderFormPage: React.FC = () => {
             >
               ←
             </button>
-            <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#0284c7', letterSpacing: '-0.03em' }}>
+            <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#001b3a', letterSpacing: '-0.03em' }}>
               solecare
             </span>
             <div style={{ width: '24px' }} />
@@ -765,7 +768,7 @@ export const OrderFormPage: React.FC = () => {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <TruckIcon size={22} color="#0284c7" />
+                <TruckIcon size={22} color="#001b3a" />
                 <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Layanan Antar Jemput</strong>
               </div>
               <select
@@ -806,11 +809,12 @@ export const OrderFormPage: React.FC = () => {
                   width: '26px',
                   height: '26px',
                   borderRadius: '50%',
-                  background: '#6d28d9',
+                  background: '#bf2f3b',
                   color: '#ffffff',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  boxShadow: '0 2px 6px rgba(191, 47, 59, 0.3)',
                 }}
               >
                 <StarIcon size={14} color="#ffffff" />
@@ -847,7 +851,7 @@ export const OrderFormPage: React.FC = () => {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: isPriority ? '#6d28d9' : '#cbd5e1',
+                  backgroundColor: isPriority ? '#bf2f3b' : '#cbd5e1',
                   borderRadius: '24px',
                   transition: '0.2s',
                 }}
@@ -913,7 +917,7 @@ export const OrderFormPage: React.FC = () => {
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      border: '1px solid #0284c7',
+                      border: '1.5px solid #001b3a',
                       borderRadius: '999px',
                       padding: '2px 8px',
                       gap: '8px',
@@ -924,9 +928,9 @@ export const OrderFormPage: React.FC = () => {
                       onClick={() => handleUpdateItemQty(it.serviceId, -1)}
                       style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
                     >
-                      <MinusIcon size={12} color="#0284c7" />
+                      <MinusIcon size={12} color="#001b3a" />
                     </button>
-                    <span style={{ fontWeight: 800, fontSize: '0.85rem', minWidth: '14px', textAlign: 'center' }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.85rem', minWidth: '14px', textAlign: 'center', color: '#001b3a' }}>
                       {it.qty}
                     </span>
                     <button
@@ -934,7 +938,7 @@ export const OrderFormPage: React.FC = () => {
                       onClick={() => handleUpdateItemQty(it.serviceId, 1)}
                       style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
                     >
-                      <PlusIcon size={12} color="#0284c7" />
+                      <PlusIcon size={12} color="#001b3a" />
                     </button>
                   </div>
                 </div>
@@ -947,7 +951,7 @@ export const OrderFormPage: React.FC = () => {
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: '#0284c7',
+                color: '#001b3a',
                 fontSize: '0.85rem',
                 fontWeight: 700,
                 marginTop: '12px',
@@ -958,7 +962,7 @@ export const OrderFormPage: React.FC = () => {
                 padding: 0,
               }}
             >
-              <PlusIcon size={14} color="#0284c7" /> Layanan
+              <PlusIcon size={14} color="#001b3a" /> Layanan
             </button>
           </div>
 
@@ -983,7 +987,7 @@ export const OrderFormPage: React.FC = () => {
                     value={p}
                     checked={selectedParfum === p}
                     onChange={(e) => setSelectedParfum(e.target.value)}
-                    style={{ accentColor: '#ea580c' }}
+                    style={{ accentColor: '#bf2f3b' }}
                   />
                   <span>{p}</span>
                 </label>
@@ -1034,7 +1038,7 @@ export const OrderFormPage: React.FC = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <TagIcon size={18} color="#f59e0b" />
+              <TagIcon size={18} color="#bf2f3b" />
               <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>Pilih Promo</strong>
             </div>
             <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
@@ -1081,7 +1085,7 @@ export const OrderFormPage: React.FC = () => {
           >
             <div>
               <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Total Tagihan</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#b91c1c', letterSpacing: '-0.3px' }}>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#bf2f3b', letterSpacing: '-0.3px' }}>
                 {totalAmount.toLocaleString('id-ID')}
               </div>
             </div>
@@ -1091,7 +1095,7 @@ export const OrderFormPage: React.FC = () => {
               disabled={submitting}
               onClick={handleCreateTransaction}
               style={{
-                background: '#f97316',
+                background: '#bf2f3b',
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '14px',
@@ -1099,7 +1103,7 @@ export const OrderFormPage: React.FC = () => {
                 fontSize: '0.96rem',
                 fontWeight: 800,
                 cursor: submitting ? 'not-allowed' : 'pointer',
-                boxShadow: '0 4px 14px rgba(249, 115, 22, 0.4)',
+                boxShadow: '0 4px 14px rgba(191, 47, 59, 0.4)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
@@ -1132,7 +1136,7 @@ export const OrderFormPage: React.FC = () => {
               onClick={() => setPriorityModalOpen(false)}
               style={{
                 width: '100%',
-                background: '#0284c7',
+                background: '#001b3a',
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '12px',
@@ -1140,6 +1144,7 @@ export const OrderFormPage: React.FC = () => {
                 fontWeight: 800,
                 fontSize: '0.92rem',
                 cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(0, 27, 58, 0.25)',
               }}
             >
               Mengerti
@@ -1209,7 +1214,7 @@ export const OrderFormPage: React.FC = () => {
                   cursor: 'pointer',
                 }}
               >
-                <SearchIcon size={20} color="#0284c7" />
+                <SearchIcon size={20} color="#001b3a" />
                 <span>Lihat Detail Transaksi</span>
               </button>
 
@@ -1232,7 +1237,7 @@ export const OrderFormPage: React.FC = () => {
                   cursor: 'pointer',
                 }}
               >
-                <PrinterIcon size={20} color="#0284c7" />
+                <PrinterIcon size={20} color="#001b3a" />
                 <span>Lihat / Cetak Nota</span>
               </button>
 
@@ -1251,8 +1256,8 @@ export const OrderFormPage: React.FC = () => {
                 }}
                 style={{
                   width: '100%',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
+                  background: '#fef2f2',
+                  border: '1px solid #fee2e2',
                   borderRadius: '12px',
                   padding: '13px 16px',
                   display: 'flex',
@@ -1260,11 +1265,11 @@ export const OrderFormPage: React.FC = () => {
                   gap: '12px',
                   fontSize: '0.92rem',
                   fontWeight: 700,
-                  color: '#0f172a',
+                  color: '#bf2f3b',
                   cursor: 'pointer',
                 }}
               >
-                <CreditCardIcon size={20} color="#0284c7" />
+                <CreditCardIcon size={20} color="#bf2f3b" />
                 <span>Bayar Sekarang</span>
               </button>
             </div>

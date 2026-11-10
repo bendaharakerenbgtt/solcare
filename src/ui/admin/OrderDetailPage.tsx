@@ -330,7 +330,7 @@ export const OrderDetailPage: React.FC = () => {
               (e.target as HTMLElement).style.display = 'none';
             }}
           />
-          <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#0052cc', letterSpacing: '-0.3px' }}>
+          <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#001b3a', letterSpacing: '-0.3px' }}>
             solecare
           </span>
         </div>
@@ -347,12 +347,12 @@ export const OrderDetailPage: React.FC = () => {
               border: 'none',
               padding: '2px',
               cursor: 'pointer',
-              color: '#0284c7',
+              color: '#001b3a',
               display: 'flex',
               alignItems: 'center',
             }}
           >
-            <DocumentIcon size={22} color="#0284c7" />
+            <DocumentIcon size={22} color="#001b3a" />
           </button>
 
           {/* Print Icon */}
@@ -368,12 +368,12 @@ export const OrderDetailPage: React.FC = () => {
               border: 'none',
               padding: '2px',
               cursor: 'pointer',
-              color: '#0284c7',
+              color: '#001b3a',
               display: 'flex',
               alignItems: 'center',
             }}
           >
-            <PrinterIcon size={22} color="#0284c7" />
+            <PrinterIcon size={22} color="#001b3a" />
           </button>
         </div>
       </div>
@@ -389,7 +389,7 @@ export const OrderDetailPage: React.FC = () => {
           <strong style={{ fontSize: '0.92rem', color: '#0f172a', letterSpacing: '-0.2px' }}>
             TRX/{displayCode(order.code)}
           </strong>
-          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0284c7' }}>
+          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#bf2f3b' }}>
             {formatBilasDateTime(order.receivedAt)}
           </span>
         </div>
@@ -498,7 +498,7 @@ export const OrderDetailPage: React.FC = () => {
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <TruckIcon size={20} color="#0284c7" />
+            <TruckIcon size={20} color="#001b3a" />
             <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>Informasi Antar/Jemput</strong>
           </div>
           <span style={{ color: '#94a3b8', transform: deliveryExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -526,11 +526,11 @@ export const OrderDetailPage: React.FC = () => {
       <div
         style={{
           margin: '12px 16px 6px',
-          background: 'linear-gradient(135deg, #0284c7 0%, #0052cc 100%)',
+          background: 'linear-gradient(135deg, #001b3a 0%, #0a2548 100%)',
           borderRadius: '18px',
           padding: '16px 20px',
           color: '#ffffff',
-          boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
+          boxShadow: '0 4px 14px rgba(0, 27, 58, 0.25)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -571,7 +571,7 @@ export const OrderDetailPage: React.FC = () => {
                 }
               }}
               style={{
-                background: isLunas ? '#16a34a' : '#f59e0b',
+                background: isLunas ? '#16a34a' : '#bf2f3b',
                 border: 'none',
                 color: '#ffffff',
                 fontSize: '0.76rem',
@@ -579,6 +579,7 @@ export const OrderDetailPage: React.FC = () => {
                 padding: '6px 16px',
                 borderRadius: '20px',
                 cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(191, 47, 59, 0.3)',
               }}
             >
               {isLunas ? 'LUNAS' : 'BAYAR'}
@@ -602,14 +603,14 @@ export const OrderDetailPage: React.FC = () => {
               border: 'none',
               cursor: 'pointer',
               fontSize: '0.78rem',
-              color: '#0284c7',
+              color: '#bf2f3b',
               padding: 0,
               display: 'flex',
               alignItems: 'center',
             }}
             title="Ubah Estimasi"
           >
-            <PencilIcon size={14} color="#0284c7" />
+            <PencilIcon size={14} color="#bf2f3b" />
           </button>
         </div>
       </div>
@@ -631,14 +632,14 @@ export const OrderDetailPage: React.FC = () => {
           <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>Detail Pesanan</strong>
           <Link
             to={`/admin/orders/${order.id}/edit`}
-            style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0284c7', textDecoration: 'none' }}
+            style={{ fontSize: '0.82rem', fontWeight: 700, color: '#bf2f3b', textDecoration: 'none' }}
           >
             Edit
           </Link>
         </div>
 
         <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '14px' }}>
-          Pilih Parfum <span style={{ color: '#0284c7', fontWeight: 600 }}>{order.fragranceName || 'Tanpa Parfum'}</span>
+          Pilih Parfum <span style={{ color: '#001b3a', fontWeight: 600 }}>{order.fragranceName || 'Tanpa Parfum'}</span>
         </div>
 
         {/* Item Rows */}
@@ -802,7 +803,7 @@ export const OrderDetailPage: React.FC = () => {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      background: '#0284c7',
+                      background: '#001b3a',
                       color: '#ffffff',
                       display: 'flex',
                       alignItems: 'center',
@@ -835,7 +836,7 @@ export const OrderDetailPage: React.FC = () => {
                         width: '20px',
                         height: '20px',
                         borderRadius: '50%',
-                        background: '#0284c7',
+                        background: '#001b3a',
                         color: '#ffffff',
                         display: 'flex',
                         alignItems: 'center',
@@ -869,7 +870,7 @@ export const OrderDetailPage: React.FC = () => {
                         width: '20px',
                         height: '20px',
                         borderRadius: '50%',
-                        background: '#6366f1',
+                        background: '#bf2f3b',
                         color: '#ffffff',
                         display: 'flex',
                         alignItems: 'center',
@@ -916,7 +917,7 @@ export const OrderDetailPage: React.FC = () => {
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CameraIcon size={20} color="#0284c7" />
+            <CameraIcon size={20} color="#001b3a" />
             <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Dokumentasi Foto & Kolase 2×2</strong>
           </div>
           <span style={{ color: '#94a3b8', transform: collageExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -1053,8 +1054,8 @@ export const OrderDetailPage: React.FC = () => {
           style={{
             flex: 1,
             background: '#ffffff',
-            border: '1.5px solid #991b1b',
-            color: '#991b1b',
+            border: '1.5px solid #bf2f3b',
+            color: '#bf2f3b',
             fontWeight: 800,
             fontSize: '0.88rem',
             padding: '12px',
@@ -1072,7 +1073,7 @@ export const OrderDetailPage: React.FC = () => {
           disabled={updatingStatus || order.status === 'diambil'}
           style={{
             flex: 2,
-            background: order.status === 'diambil' ? '#94a3b8' : '#0052cc',
+            background: order.status === 'diambil' ? '#94a3b8' : '#001b3a',
             border: 'none',
             color: '#ffffff',
             fontWeight: 800,
@@ -1080,7 +1081,7 @@ export const OrderDetailPage: React.FC = () => {
             padding: '12px',
             borderRadius: '24px',
             cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(0, 82, 204, 0.25)',
+            boxShadow: '0 4px 12px rgba(0, 27, 58, 0.25)',
           }}
         >
           {updatingStatus ? 'Menyimpan...' : order.status === 'diambil' ? 'PESANAN SELESAI' : 'SELESAIKAN PROSES'}
@@ -1125,7 +1126,7 @@ export const OrderDetailPage: React.FC = () => {
 
               <div style={{ borderTop: '1.5px dashed #e2e8f0', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontSize: '1.05rem' }}>
                 <strong>Total Tagihan</strong>
-                <strong style={{ color: '#0052cc' }}>{rupiah(order.total)}</strong>
+                <strong style={{ color: '#001b3a' }}>{rupiah(order.total)}</strong>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
@@ -1187,7 +1188,7 @@ export const OrderDetailPage: React.FC = () => {
                 type="button"
                 onClick={() => void handleRecordPayment('qris')}
                 style={{
-                  background: '#0052cc',
+                  background: '#001b3a',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '12px',
@@ -1277,7 +1278,7 @@ export const OrderDetailPage: React.FC = () => {
                 type="submit"
                 disabled={adjustingEstimate}
                 style={{
-                  background: '#0052cc',
+                  background: '#001b3a',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '12px',

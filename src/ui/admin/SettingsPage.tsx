@@ -3,6 +3,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
+import {
+  UsersIcon,
+  StoreIcon,
+  TagIcon,
+  ShirtIcon,
+  CashIcon,
+  BanIcon,
+  ChatIcon,
+  SettingsIcon,
+  CreditCardIcon,
+  LogoutIcon,
+  CloseIcon,
+} from '../common/Icons';
 
 export const SettingsPage: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -88,8 +101,8 @@ export const SettingsPage: React.FC = () => {
               </span>
               <span
                 style={{
-                  background: '#e0f2fe',
-                  color: '#0284c7',
+                  background: '#fef2f2',
+                  color: '#bf2f3b',
                   fontSize: '0.72rem',
                   fontWeight: 700,
                   padding: '2px 8px',
@@ -108,9 +121,9 @@ export const SettingsPage: React.FC = () => {
               width: '36px',
               height: '36px',
               borderRadius: '50%',
-              border: '1.5px solid #0284c7',
+              border: '1.5px solid #001b3a',
               background: '#ffffff',
-              color: '#0284c7',
+              color: '#001b3a',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -189,7 +202,9 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '1.2rem' }}>👥</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#f0f4f9' }}>
+              <UsersIcon size={18} color="#001b3a" />
+            </span>
             <strong style={{ fontSize: '0.92rem' }}>Pelanggan Saya</strong>
           </div>
           <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
@@ -209,7 +224,9 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '1.2rem' }}>🏪</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#f0f4f9' }}>
+              <StoreIcon size={18} color="#001b3a" />
+            </span>
             <strong style={{ fontSize: '0.92rem' }}>Kelola Outlet</strong>
           </div>
           <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
@@ -229,7 +246,9 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '1.2rem' }}>🏷️</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#f0f4f9' }}>
+              <TagIcon size={18} color="#001b3a" />
+            </span>
             <strong style={{ fontSize: '0.92rem' }}>Kelola Layanan/Produk</strong>
           </div>
           <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
@@ -249,7 +268,9 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '1.2rem' }}>👔</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#f0f4f9' }}>
+              <ShirtIcon size={18} color="#001b3a" />
+            </span>
             <strong style={{ fontSize: '0.92rem' }}>Kelola Pegawai</strong>
           </div>
           <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
@@ -269,7 +290,9 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '1.2rem' }}>💰</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#f0f4f9' }}>
+              <CashIcon size={18} color="#001b3a" />
+            </span>
             <strong style={{ fontSize: '0.92rem' }}>Kelola Keuangan</strong>
           </div>
           <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
@@ -289,7 +312,9 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '1.2rem' }}>❌</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#fef2f2' }}>
+              <BanIcon size={18} color="#bf2f3b" />
+            </span>
             <strong style={{ fontSize: '0.92rem' }}>Pembatalan Transaksi</strong>
           </div>
           <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
@@ -309,7 +334,9 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '1.2rem' }}>💬</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#f0f4f9' }}>
+              <ChatIcon size={18} color="#001b3a" />
+            </span>
             <strong style={{ fontSize: '0.92rem' }}>Kirim WA</strong>
           </div>
           <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
@@ -329,7 +356,9 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '1.2rem' }}>⚙️</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#f0f4f9' }}>
+              <SettingsIcon size={18} color="#001b3a" />
+            </span>
             <strong style={{ fontSize: '0.92rem' }}>Kelola Mesin dan Modul</strong>
           </div>
           <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
@@ -349,7 +378,9 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '1.2rem' }}>💳</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#f0f4f9' }}>
+              <CreditCardIcon size={18} color="#001b3a" />
+            </span>
             <strong style={{ fontSize: '0.92rem' }}>Merchant Solecare</strong>
           </div>
           <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
@@ -372,7 +403,9 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '1.2rem' }}>🚪</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#fef2f2' }}>
+              <LogoutIcon size={18} color="#dc2626" />
+            </span>
             <strong style={{ fontSize: '0.92rem' }}>Keluar Akun</strong>
           </div>
           <span style={{ color: '#dc2626', fontSize: '1.2rem' }}>›</span>
@@ -385,7 +418,9 @@ export const SettingsPage: React.FC = () => {
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
             <div className="modal-header">
               <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Kelola Outlet</h2>
-              <button type="button" className="modal-close" onClick={() => setOutletModalOpen(false)}>✕</button>
+              <button type="button" className="modal-close" onClick={() => setOutletModalOpen(false)}>
+                <CloseIcon size={18} color="#64748b" />
+              </button>
             </div>
             <form onSubmit={handleSaveOutlet} className="stack" style={{ gap: '12px', padding: '16px' }}>
               <label className="field">
@@ -442,7 +477,9 @@ export const SettingsPage: React.FC = () => {
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
             <div className="modal-header">
               <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Broadcast Pesan WhatsApp</h2>
-              <button type="button" className="modal-close" onClick={() => setWaModalOpen(false)}>✕</button>
+              <button type="button" className="modal-close" onClick={() => setWaModalOpen(false)}>
+                <CloseIcon size={18} color="#64748b" />
+              </button>
             </div>
             <div style={{ padding: '16px' }} className="stack">
               <p className="small muted">
@@ -462,7 +499,9 @@ export const SettingsPage: React.FC = () => {
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
             <div className="modal-header">
               <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Kelola Mesin & Rak</h2>
-              <button type="button" className="modal-close" onClick={() => setMachineryModalOpen(false)}>✕</button>
+              <button type="button" className="modal-close" onClick={() => setMachineryModalOpen(false)}>
+                <CloseIcon size={18} color="#64748b" />
+              </button>
             </div>
             <div style={{ padding: '16px' }} className="stack">
               <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '10px' }}>
@@ -487,7 +526,9 @@ export const SettingsPage: React.FC = () => {
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
             <div className="modal-header">
               <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Merchant Solecare</h2>
-              <button type="button" className="modal-close" onClick={() => setMerchantModalOpen(false)}>✕</button>
+              <button type="button" className="modal-close" onClick={() => setMerchantModalOpen(false)}>
+                <CloseIcon size={18} color="#64748b" />
+              </button>
             </div>
             <div style={{ padding: '16px' }} className="stack">
               <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '12px', borderRadius: '10px', color: '#166534' }}>

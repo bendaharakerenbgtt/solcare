@@ -4,6 +4,14 @@ import { useAuth } from '../../auth/AuthContext';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import { isLate } from '../../lib/estimation';
+import {
+  PinIcon,
+  RefreshIcon,
+  CheckIcon,
+  ArrowDownIcon,
+  UsersIcon,
+  StarIcon,
+} from '../common/Icons';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -74,7 +82,7 @@ export const DashboardPage: React.FC = () => {
             border: 'none',
             padding: '6px',
             cursor: 'pointer',
-            color: '#0284c7',
+            color: '#001b3a',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -82,7 +90,7 @@ export const DashboardPage: React.FC = () => {
           title="Scan QR Transaksi"
           aria-label="Scan QR Transaksi"
         >
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#001b3a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
             <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
             <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
@@ -143,7 +151,9 @@ export const DashboardPage: React.FC = () => {
               className="bilas-liquid-tx-item"
               title="Pesanan Masuk"
             >
-              <div className="bilas-liquid-tx-circle">↓</div>
+              <div className="bilas-liquid-tx-circle">
+                <ArrowDownIcon size={18} color="#ffffff" />
+              </div>
               <span className="bilas-liquid-tx-label">{waitingOrders.length} Masuk</span>
             </Link>
 
@@ -152,7 +162,9 @@ export const DashboardPage: React.FC = () => {
               className="bilas-liquid-tx-item"
               title="Harus Selesai"
             >
-              <div className="bilas-liquid-tx-circle">📌</div>
+              <div className="bilas-liquid-tx-circle">
+                <PinIcon size={18} color="#ffffff" />
+              </div>
               <span className="bilas-liquid-tx-label">{activeOrders.length} Harus Selesai</span>
             </Link>
 
@@ -161,7 +173,9 @@ export const DashboardPage: React.FC = () => {
               className="bilas-liquid-tx-item"
               title="Terlambat"
             >
-              <div className="bilas-liquid-tx-circle">↺</div>
+              <div className="bilas-liquid-tx-circle">
+                <RefreshIcon size={18} color="#ffffff" />
+              </div>
               <span className="bilas-liquid-tx-label">{lateOrders.length} Terlambat</span>
             </Link>
 
@@ -170,7 +184,9 @@ export const DashboardPage: React.FC = () => {
               className="bilas-liquid-tx-item"
               title="Total Pesanan"
             >
-              <div className="bilas-liquid-tx-circle">✓</div>
+              <div className="bilas-liquid-tx-circle">
+                <CheckIcon size={18} color="#ffffff" />
+              </div>
               <span className="bilas-liquid-tx-label">{(orders || []).length} Total</span>
             </Link>
 
@@ -275,7 +291,9 @@ export const DashboardPage: React.FC = () => {
               </Link>
 
               <Link to="/admin/customers" className="bilas-shortcut-item">
-                <div className="bilas-shortcut-icon">👥</div>
+                <div className="bilas-shortcut-icon">
+                  <UsersIcon size={20} color="#001b3a" />
+                </div>
                 <div className="bilas-shortcut-info">
                   <strong>Top Pelanggan</strong>
                   <span>Pelanggan dengan transaksi terbanyak</span>
@@ -284,7 +302,9 @@ export const DashboardPage: React.FC = () => {
               </Link>
 
               <Link to="/admin/services" className="bilas-shortcut-item">
-                <div className="bilas-shortcut-icon">⭐</div>
+                <div className="bilas-shortcut-icon">
+                  <StarIcon size={18} color="#bf2f3b" />
+                </div>
                 <div className="bilas-shortcut-info">
                   <strong>Top Layanan</strong>
                   <span>Layanan paling sering dipesan</span>
@@ -326,16 +346,16 @@ export const DashboardPage: React.FC = () => {
             {/* Chart Legend Persis Screenshot 1 */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', fontSize: '0.73rem', marginBottom: '16px', color: '#64748b' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0284c7' }} /> Omzet
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#001b3a' }} /> Omzet
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }} /> Pendapatan
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }} /> Pengeluaran
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#bf2f3b' }} /> Pengeluaran
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#06b6d4' }} /> Self Service
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#64748b' }} /> Self Service
               </span>
             </div>
 
@@ -353,7 +373,7 @@ export const DashboardPage: React.FC = () => {
                 {/* Chart Baseline */}
                 <polyline
                   fill="none"
-                  stroke="#0284c7"
+                  stroke="#001b3a"
                   strokeWidth="2"
                   points="24,85 70,85 120,85 170,85 220,85 270,85 320,85"
                 />

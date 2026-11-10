@@ -6,6 +6,7 @@ import { repo } from '../../data';
 import { fmtDateTime, rupiah, STATUS_LABEL, displayCode, whatsappLink } from '../../lib/format';
 import { isLate } from '../../lib/estimation';
 import type { Order } from '../../data/types';
+import { WhatsAppIcon } from '../common/Icons';
 
 type BilasTab = 'konfirmasi' | 'penjemputan' | 'validasi' | 'antrian' | 'proses' | 'siap_ambil' | 'siap_antar' | 'semua';
 
@@ -73,19 +74,19 @@ export const OrdersListPage: React.FC = () => {
             type="button"
             onClick={() => setSearchOpen(!searchOpen)}
             style={{
-              background: searchOpen ? '#e0f2fe' : 'transparent',
+              background: searchOpen ? '#f0f4f9' : 'transparent',
               border: 'none',
               padding: '6px',
               borderRadius: '8px',
               cursor: 'pointer',
-              color: '#0284c7',
+              color: '#001b3a',
               display: 'flex',
               alignItems: 'center',
             }}
             title="Cari Pesanan"
             aria-label="Cari Pesanan"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#001b3a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -95,19 +96,19 @@ export const OrdersListPage: React.FC = () => {
             type="button"
             onClick={() => handleSelectTab(activeTab === 'semua' ? 'antrian' : 'semua')}
             style={{
-              background: activeTab === 'semua' ? '#e0f2fe' : 'transparent',
+              background: activeTab === 'semua' ? '#f0f4f9' : 'transparent',
               border: 'none',
               padding: '6px',
               borderRadius: '8px',
               cursor: 'pointer',
-              color: '#0284c7',
+              color: '#001b3a',
               display: 'flex',
               alignItems: 'center',
             }}
             title="Riwayat Semua Pesanan"
             aria-label="Riwayat Semua Pesanan"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#001b3a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
@@ -122,14 +123,14 @@ export const OrdersListPage: React.FC = () => {
               padding: '6px',
               borderRadius: '8px',
               cursor: 'pointer',
-              color: '#0284c7',
+              color: '#001b3a',
               display: 'flex',
               alignItems: 'center',
             }}
             title="Scan QR Transaksi"
             aria-label="Scan QR Transaksi"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#001b3a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
               <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
               <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
@@ -496,7 +497,8 @@ export const OrdersListPage: React.FC = () => {
                         flex: '0 0 auto',
                       }}
                     >
-                      💬 WA
+                      <WhatsAppIcon size={16} color="#ffffff" />
+                      <span>WA</span>
                     </a>
                   )}
                   <Link

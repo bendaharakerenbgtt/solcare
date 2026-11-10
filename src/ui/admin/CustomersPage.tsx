@@ -17,6 +17,7 @@ import {
   CloseIcon,
   DocumentIcon,
   ChevronDownIcon,
+  IndonesiaFlagIcon,
 } from '../common/Icons';
 
 export const CustomersPage: React.FC = () => {
@@ -209,7 +210,7 @@ export const CustomersPage: React.FC = () => {
                   width: '56px',
                   height: '56px',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #0284c7 0%, #001b3a 100%)',
+                  background: 'linear-gradient(135deg, #bf2f3b 0%, #001b3a 100%)',
                   color: '#ffffff',
                   display: 'flex',
                   alignItems: 'center',
@@ -318,7 +319,7 @@ export const CustomersPage: React.FC = () => {
                 onClick={() => setExpandedAccordion(expandedAccordion === 'profil' ? null : 'profil')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <UserIcon size={18} color="#0284c7" />
+                  <UserIcon size={18} color="#001b3a" />
                   <strong style={{ fontSize: '0.94rem' }}>Profil & Kontak</strong>
                 </div>
                 <span style={{ color: '#94a3b8', transform: expandedAccordion === 'profil' ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -361,7 +362,7 @@ export const CustomersPage: React.FC = () => {
                 onClick={() => setExpandedAccordion(expandedAccordion === 'keuangan' ? null : 'keuangan')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <WalletIcon size={18} color="#0284c7" />
+                  <WalletIcon size={18} color="#001b3a" />
                   <strong style={{ fontSize: '0.94rem' }}>Data Keuangan</strong>
                 </div>
                 <span style={{ color: '#94a3b8', transform: expandedAccordion === 'keuangan' ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -404,7 +405,7 @@ export const CustomersPage: React.FC = () => {
                 onClick={() => setExpandedAccordion(expandedAccordion === 'transaksi' ? null : 'transaksi')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <ReceiptIcon size={18} color="#0284c7" />
+                  <ReceiptIcon size={18} color="#001b3a" />
                   <strong style={{ fontSize: '0.94rem' }}>Data Transaksi ({customerOrders.length})</strong>
                 </div>
                 <span style={{ color: '#94a3b8', transform: expandedAccordion === 'transaksi' ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -455,7 +456,7 @@ export const CustomersPage: React.FC = () => {
                 onClick={() => setExpandedAccordion(expandedAccordion === 'paket' ? null : 'paket')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <BoxIcon size={18} color="#0284c7" />
+                  <BoxIcon size={18} color="#001b3a" />
                   <strong style={{ fontSize: '0.94rem' }}>Data Paket</strong>
                 </div>
                 <span style={{ color: '#94a3b8', transform: expandedAccordion === 'paket' ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -580,14 +581,14 @@ export const CustomersPage: React.FC = () => {
               type="button"
               onClick={() => setShowTxOptions(!showTxOptions)}
               style={{
-                background: '#f97316',
+                background: '#bf2f3b',
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '999px',
                 padding: '12px 28px',
                 fontSize: '0.94rem',
                 fontWeight: 800,
-                boxShadow: '0 4px 16px rgba(249, 115, 22, 0.4)',
+                boxShadow: '0 4px 16px rgba(191, 47, 59, 0.4)',
                 cursor: 'pointer',
                 pointerEvents: 'auto',
                 display: 'inline-flex',
@@ -620,7 +621,7 @@ export const CustomersPage: React.FC = () => {
               ←
             </Link>
 
-            <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#0284c7', letterSpacing: '-0.03em' }}>
+            <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#001b3a', letterSpacing: '-0.03em' }}>
               solecare
             </span>
 
@@ -635,12 +636,12 @@ export const CustomersPage: React.FC = () => {
                 gap: '4px',
                 fontSize: '0.82rem',
                 fontWeight: 700,
-                color: '#0284c7',
+                color: '#001b3a',
                 cursor: 'pointer',
               }}
               title="Export ke XLS/Excel"
             >
-              <DocumentIcon size={14} color="#0284c7" />
+              <DocumentIcon size={14} color="#001b3a" />
               <span>XLS</span>
             </button>
           </div>
@@ -800,8 +801,8 @@ export const CustomersPage: React.FC = () => {
                         width: '42px',
                         height: '42px',
                         borderRadius: '50%',
-                        background: '#e0f2fe',
-                        color: '#0284c7',
+                        background: '#f0f4f9',
+                        color: '#001b3a',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -885,9 +886,13 @@ export const CustomersPage: React.FC = () => {
                       fontWeight: 700,
                       color: '#334155',
                       whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
                     }}
                   >
-                    🇮🇩 +62
+                    <IndonesiaFlagIcon size={18} />
+                    <span>+62</span>
                   </div>
                   <input
                     type="tel"
@@ -979,7 +984,7 @@ export const CustomersPage: React.FC = () => {
                     style={{
                       background: 'transparent',
                       border: 'none',
-                      color: '#0284c7',
+                      color: '#bf2f3b',
                       fontSize: '0.8rem',
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -988,7 +993,7 @@ export const CustomersPage: React.FC = () => {
                       gap: '4px',
                     }}
                   >
-                    <PinIcon size={14} color="#0284c7" />
+                    <PinIcon size={14} color="#bf2f3b" />
                     <span>Maps</span>
                   </button>
                 </div>

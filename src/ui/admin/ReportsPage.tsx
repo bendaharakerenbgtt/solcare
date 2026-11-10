@@ -105,7 +105,7 @@ export const ReportsPage: React.FC = () => {
             style={{ width: '52px', height: '52px', objectFit: 'contain' }}
           />
           <div style={{ flex: 1 }}>
-            <strong style={{ display: 'block', fontSize: '1.05rem', color: '#f97316', fontWeight: 800 }}>
+            <strong style={{ display: 'block', fontSize: '1.05rem', color: '#bf2f3b', fontWeight: 800 }}>
               Ringkasan Outlet
             </strong>
             <span style={{ fontSize: '0.8rem', color: '#64748b' }}>

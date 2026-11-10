@@ -467,7 +467,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   .mobile-header-icon-btn {
     background: transparent !important;
     border: 0 !important;
-    color: #0284c7 !important;
+    color: var(--navy) !important;
     padding: 6px !important;
     cursor: pointer;
     display: flex;
@@ -1094,13 +1094,13 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 /* ---------- Bilas.id Liquid Blue/Navy Card & Dashboard Components ---------- */
 .bilas-liquid-card {
   border-radius: 20px;
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 40%, #001b3a 100%);
-  background-image: url('/bilas_icons/img_bg_liquid.webp'), linear-gradient(135deg, #0284c7 0%, #0369a1 40%, #001b3a 100%);
+  background: linear-gradient(135deg, #001b3a 0%, #0a2548 50%, #173256 100%);
+  background-image: url('/bilas_icons/img_bg_liquid.webp'), linear-gradient(135deg, #001b3a 0%, #0a2548 50%, #173256 100%);
   background-size: cover;
   background-position: center;
   color: #ffffff;
   padding: 14px 18px 20px;
-  box-shadow: 0 10px 25px rgba(2, 132, 199, 0.28);
+  box-shadow: 0 10px 25px rgba(0, 27, 58, 0.35);
   position: relative;
   overflow: hidden;
   margin-bottom: 18px;
@@ -1244,8 +1244,8 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 }
 
 .bilas-grid-6-item.active {
-  border-color: #0284c7;
-  background: #f0f9ff;
+  border-color: var(--navy);
+  background: var(--navy-50);
 }
 
 .bilas-grid-6-icon-wrap {
@@ -1267,7 +1267,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   position: absolute;
   top: -4px;
   right: -4px;
-  background: #f97316;
+  background: var(--primary);
   color: #ffffff;
   font-size: 0.65rem;
   font-weight: 800;
@@ -1474,8 +1474,8 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   border-color: var(--primary) !important;
 }
 .mini-cal-day.received-day {
-  border: 2px dashed #0284c7;
-  background: #f0f9ff;
+  border: 2px dashed var(--navy);
+  background: var(--navy-50);
 }
 .mini-cal-day.estimated-day {
   border: 2px solid var(--primary);
@@ -1717,7 +1717,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   flex-shrink: 0;
 }
 .cal-dot.green { background: #16a34a; }
-.cal-dot.blue { background: #0284c7; }
+.cal-dot.blue { background: var(--navy); }
 .cal-dot.red { background: #dc2626; }
 .cal-dot.gray { background: #94a3b8; }
 
@@ -2507,9 +2507,9 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   color: #001b3a;
 }
 .activity-filter-btn.active.filter-pencucian {
-  background: #e0f2fe;
-  border-color: #0284c7;
-  color: #0369a1;
+  background: var(--navy-50);
+  border-color: var(--navy);
+  color: var(--navy);
 }
 .activity-filter-btn.active.filter-pengeringan {
   background: #fef3c7;
@@ -3212,9 +3212,9 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   height: 34px;
 }
 .activity-filter-btn.active.filter-main {
-  background: #e0f2fe;
-  border-color: #0284c7;
-  color: #0369a1;
+  background: var(--navy-50);
+  border-color: var(--navy);
+  color: var(--navy);
 }
 .activity-filter-btn.active.filter-express {
   background: #fef3c7;
@@ -3396,7 +3396,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   background: var(--primary);
   transition: width 0.3s ease;
 }
-.report-progress-fill.qris { background: #0284c7; }
+.report-progress-fill.qris { background: var(--navy); }
 .report-progress-fill.cash { background: #16a34a; }
 
 /* Selected Service Line Card in OrderFormPage (Mobile Responsive) */
