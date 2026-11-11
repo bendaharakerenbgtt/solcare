@@ -375,3 +375,44 @@ export const SparklesIllustration: React.FC<{ size?: number; color?: string }> =
     <path d="M19 16l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1z" />
   </svg>
 );
+
+export const EmptyStateIllustration: React.FC<{ size?: number }> = ({ size = 130 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 160 160"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ margin: '0 auto 16px', display: 'block' }}
+  >
+    {/* Soft subtle background glow */}
+    <circle cx="80" cy="84" r="56" fill="#f1f5f9" />
+    <circle cx="80" cy="84" r="42" fill="#e2e8f0" fillOpacity="0.45" />
+
+    {/* Modern clipboard / container backplate */}
+    <rect x="42" y="38" width="76" height="92" rx="14" fill="#ffffff" stroke="#cbd5e1" strokeWidth="2.5" />
+    {/* Header clip */}
+    <rect x="62" y="32" width="36" height="12" rx="6" fill="#001b3a" />
+    <circle cx="80" cy="38" r="2.5" fill="#ffffff" />
+
+    {/* Placeholder horizontal item lines */}
+    <rect x="54" y="56" width="36" height="4" rx="2" fill="#bf2f3b" />
+    <rect x="54" y="66" width="52" height="3" rx="1.5" fill="#e2e8f0" />
+    <rect x="54" y="74" width="44" height="3" rx="1.5" fill="#e2e8f0" />
+
+    {/* Solecare Mini Sneaker outline inside clipboard */}
+    <path
+      d="M56 102 C64 102 90 102 98 102 C100 102 101 100 100 98 L96 90 C95 88 93 86 90 86 H78 L72 78 C70 75 66 75 63 77 L56 82 C54 84 53 87 53 90 V100 C53 101 54.5 102 56 102 Z"
+      fill="#f8fafc"
+      stroke="#001b3a"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path d="M52 102 H102 C103 102 104 103 104 104 C104 105 103 106 102 106 H52 C51 106 50 105 50 104 C50 103 51 102 52 102 Z" fill="#bf2f3b" />
+
+    {/* Sparkle detailing for clean look */}
+    <path d="M116 46 L118 52 L124 54 L118 56 L116 62 L114 56 L108 54 L114 52 Z" fill="#bf2f3b" />
+    <circle cx="44" cy="50" r="3" fill="#001b3a" />
+    <circle cx="122" cy="94" r="2.5" fill="#94a3b8" />
+  </svg>
+);

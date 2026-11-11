@@ -72,7 +72,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '14px' }}>
-      {/* 1. Header Sapaan Persis Screenshot Bilas: Hai, [Nama] \n Selamat datang kembali + QR Scanner */}
+      {/* 1. Header Sapaan: Hai, [Nama] \n Selamat datang kembali */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', marginBottom: '4px' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
@@ -80,29 +80,6 @@ export const DashboardPage: React.FC = () => {
           </h1>
           <span style={{ fontSize: '0.84rem', color: '#64748b' }}>Selamat datang kembali</span>
         </div>
-        <button
-          type="button"
-          onClick={() => alert('Fitur kamera scanner QR siap digunakan')}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            padding: '6px',
-            cursor: 'pointer',
-            color: '#001b3a',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          title="Scan QR Transaksi"
-          aria-label="Scan QR Transaksi"
-        >
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#001b3a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-          </svg>
-        </button>
       </div>
 
       {/* 2. Bilas Signature Liquid Silk Blue Card (img_bg_liquid.webp) */}
@@ -150,8 +127,6 @@ export const DashboardPage: React.FC = () => {
         {/* Card Body When TRANSAKSI (Screenshot 2) */}
         {activeCardTab === 'TRANSAKSI' && (
           <div className="bilas-liquid-tx-carousel">
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.2rem', padding: '0 4px', userSelect: 'none' }}>‹</span>
-
             <Link
               to="/admin/orders?tab=antrian"
               className="bilas-liquid-tx-item"
@@ -195,8 +170,6 @@ export const DashboardPage: React.FC = () => {
               </div>
               <span className="bilas-liquid-tx-label">{(orders || []).length} Total</span>
             </Link>
-
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.2rem', padding: '0 4px', userSelect: 'none' }}>›</span>
           </div>
         )}
       </div>

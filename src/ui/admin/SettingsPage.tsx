@@ -16,6 +16,7 @@ import {
   LogoutIcon,
   CloseIcon,
 } from '../common/Icons';
+import { ModalPortal } from '../common/ModalPortal';
 
 export const SettingsPage: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -326,133 +327,172 @@ export const SettingsPage: React.FC = () => {
 
       {/* Modal: Kelola Outlet */}
       {outletModalOpen && (
-        <div className="modal-backdrop" onClick={() => setOutletModalOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
-            <div className="modal-header">
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Kelola Outlet</h2>
-              <button type="button" className="modal-close" onClick={() => setOutletModalOpen(false)}>
-                <CloseIcon size={18} color="#64748b" />
-              </button>
-            </div>
-            <form onSubmit={handleSaveOutlet} className="stack" style={{ gap: '12px', padding: '16px' }}>
-              <label className="field">
-                <span>Nama Outlet / Bisnis</span>
-                <input
-                  type="text"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  required
-                />
-              </label>
-              <label className="field">
-                <span>Nomor WhatsApp Toko</span>
-                <input
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required
-                />
-              </label>
-              <label className="field">
-                <span>Alamat Toko</span>
-                <textarea
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  rows={2}
-                />
-              </label>
-              <label className="field">
-                <span>Kapasitas Rak Harian (Pasang / Hari)</span>
-                <input
-                  type="number"
-                  step="0.5"
-                  value={dailyCapacity}
-                  onChange={(e) => setDailyCapacity(Number(e.target.value))}
-                />
-              </label>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                <button type="button" className="btn secondary" style={{ flex: 1 }} onClick={() => setOutletModalOpen(false)}>
-                  Batal
-                </button>
-                <button type="submit" className="btn" style={{ flex: 1, background: '#001b3a' }}>
-                  Simpan
+        <ModalPortal>
+          <div className="modal-backdrop" onClick={() => setOutletModalOpen(false)} style={{ zIndex: 9000 }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', width: '92%', margin: '0 auto', padding: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
+                <h2 style={{ fontSize: '1.08rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>Kelola Outlet</h2>
+                <button
+                  type="button"
+                  onClick={() => setOutletModalOpen(false)}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
+                >
+                  <CloseIcon size={18} color="#64748b" />
                 </button>
               </div>
-            </form>
+              <form onSubmit={handleSaveOutlet} className="stack" style={{ gap: '12px', padding: '18px 20px' }}>
+                <label className="field">
+                  <span>Nama Outlet / Bisnis</span>
+                  <input
+                    type="text"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>Nomor WhatsApp Toko</span>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>Alamat Toko</span>
+                  <textarea
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    rows={2}
+                  />
+                </label>
+                <label className="field">
+                  <span>Kapasitas Rak Harian (Pasang / Hari)</span>
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={dailyCapacity}
+                    onChange={(e) => setDailyCapacity(Number(e.target.value))}
+                  />
+                </label>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+                  <button type="button" className="btn secondary" style={{ flex: 1 }} onClick={() => setOutletModalOpen(false)}>
+                    Batal
+                  </button>
+                  <button type="submit" className="btn" style={{ flex: 1, background: '#001b3a' }}>
+                    Simpan
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* Modal: Kirim WA */}
       {waModalOpen && (
-        <div className="modal-backdrop" onClick={() => setWaModalOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
-            <div className="modal-header">
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Broadcast Pesan WhatsApp</h2>
-              <button type="button" className="modal-close" onClick={() => setWaModalOpen(false)}>
-                <CloseIcon size={18} color="#64748b" />
-              </button>
-            </div>
-            <div style={{ padding: '16px' }} className="stack">
-              <p className="small muted">
-                Pilih pelanggan di menu <strong>Pelanggan Saya</strong> untuk langsung mengirim pesan WhatsApp otomatis dengan template notifikasi pengerjaan & pengingat pengambilan.
-              </p>
-              <Link to="/admin/customers" className="btn" style={{ background: '#22c55e' }} onClick={() => setWaModalOpen(false)}>
-                Buka Pelanggan Saya
-              </Link>
+        <ModalPortal>
+          <div className="modal-backdrop" onClick={() => setWaModalOpen(false)} style={{ zIndex: 9000 }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', width: '92%', margin: '0 auto', padding: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
+                <h2 style={{ fontSize: '1.08rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>Broadcast Pesan WhatsApp</h2>
+                <button
+                  type="button"
+                  onClick={() => setWaModalOpen(false)}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
+                >
+                  <CloseIcon size={18} color="#64748b" />
+                </button>
+              </div>
+              <div style={{ padding: '18px 20px' }} className="stack">
+                <p className="small muted" style={{ lineHeight: 1.5, margin: '0 0 16px' }}>
+                  Pilih pelanggan di menu <strong>Pelanggan Saya</strong> untuk langsung mengirim pesan WhatsApp otomatis dengan template notifikasi pengerjaan & pengingat pengambilan.
+                </p>
+                <Link
+                  to="/admin/customers"
+                  className="btn"
+                  style={{ background: '#22c55e', color: '#ffffff', textAlign: 'center', justifyContent: 'center' }}
+                  onClick={() => setWaModalOpen(false)}
+                >
+                  Buka Pelanggan Saya
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* Modal: Kelola Mesin dan Modul */}
       {machineryModalOpen && (
-        <div className="modal-backdrop" onClick={() => setMachineryModalOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
-            <div className="modal-header">
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Kelola Mesin & Rak</h2>
-              <button type="button" className="modal-close" onClick={() => setMachineryModalOpen(false)}>
-                <CloseIcon size={18} color="#64748b" />
-              </button>
-            </div>
-            <div style={{ padding: '16px' }} className="stack">
-              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '10px' }}>
-                <strong>Rak Sepatu Utama (Kapasitas 50 Unit)</strong>
-                <div className="small muted">Status: Terhubung & Optimal</div>
+        <ModalPortal>
+          <div className="modal-backdrop" onClick={() => setMachineryModalOpen(false)} style={{ zIndex: 9000 }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', width: '92%', margin: '0 auto', padding: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
+                <h2 style={{ fontSize: '1.08rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>Kelola Mesin & Rak</h2>
+                <button
+                  type="button"
+                  onClick={() => setMachineryModalOpen(false)}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
+                >
+                  <CloseIcon size={18} color="#64748b" />
+                </button>
               </div>
-              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '10px' }}>
-                <strong>Mesin Pengering Sepatu UV</strong>
-                <div className="small muted">Status: Aktif</div>
+              <div style={{ padding: '18px 20px' }} className="stack">
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '12px 14px', borderRadius: '12px' }}>
+                  <strong style={{ color: '#0f172a', display: 'block', marginBottom: '2px' }}>Rak Sepatu Utama (Kapasitas 50 Unit)</strong>
+                  <div className="small muted">Status: Terhubung & Optimal</div>
+                </div>
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '12px 14px', borderRadius: '12px' }}>
+                  <strong style={{ color: '#0f172a', display: 'block', marginBottom: '2px' }}>Mesin Pengering Sepatu UV</strong>
+                  <div className="small muted">Status: Aktif</div>
+                </div>
+                <button
+                  type="button"
+                  className="btn secondary"
+                  style={{ marginTop: '4px', width: '100%', justifyContent: 'center' }}
+                  onClick={() => setMachineryModalOpen(false)}
+                >
+                  Tutup
+                </button>
               </div>
-              <button type="button" className="btn secondary" onClick={() => setMachineryModalOpen(false)}>
-                Tutup
-              </button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* Modal: Merchant Solecare */}
       {merchantModalOpen && (
-        <div className="modal-backdrop" onClick={() => setMerchantModalOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
-            <div className="modal-header">
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Merchant Solecare</h2>
-              <button type="button" className="modal-close" onClick={() => setMerchantModalOpen(false)}>
-                <CloseIcon size={18} color="#64748b" />
-              </button>
-            </div>
-            <div style={{ padding: '16px' }} className="stack">
-              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '12px', borderRadius: '10px', color: '#166534' }}>
-                <strong>QRIS Statis Aktif</strong>
-                <div className="small">Settlement langsung ke rekening terdaftar Solecare.</div>
+        <ModalPortal>
+          <div className="modal-backdrop" onClick={() => setMerchantModalOpen(false)} style={{ zIndex: 9000 }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', width: '92%', margin: '0 auto', padding: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
+                <h2 style={{ fontSize: '1.08rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>Merchant Solecare</h2>
+                <button
+                  type="button"
+                  onClick={() => setMerchantModalOpen(false)}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
+                >
+                  <CloseIcon size={18} color="#64748b" />
+                </button>
               </div>
-              <button type="button" className="btn secondary" onClick={() => setMerchantModalOpen(false)}>
-                Tutup
-              </button>
+              <div style={{ padding: '18px 20px' }} className="stack">
+                <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '14px', borderRadius: '12px', color: '#166534' }}>
+                  <strong style={{ display: 'block', marginBottom: '4px' }}>QRIS Statis Aktif</strong>
+                  <div className="small" style={{ lineHeight: 1.45 }}>Settlement langsung ke rekening terdaftar Solecare.</div>
+                </div>
+                <button
+                  type="button"
+                  className="btn secondary"
+                  style={{ marginTop: '4px', width: '100%', justifyContent: 'center' }}
+                  onClick={() => setMerchantModalOpen(false)}
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

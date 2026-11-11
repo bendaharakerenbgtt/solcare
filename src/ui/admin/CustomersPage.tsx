@@ -18,6 +18,7 @@ import {
   DocumentIcon,
   ChevronDownIcon,
   IndonesiaFlagIcon,
+  EmptyStateIllustration,
 } from '../common/Icons';
 
 export const CustomersPage: React.FC = () => {
@@ -728,11 +729,7 @@ export const CustomersPage: React.FC = () => {
             </div>
           ) : filteredCustomers.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px 16px 60px' }}>
-              <img
-                src="/bilas_icons/img_nodata.webp"
-                alt="Belum ada data"
-                style={{ width: '220px', maxWidth: '75%', margin: '0 auto 16px', display: 'block' }}
-              />
+              <EmptyStateIllustration size={130} />
               <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>
                 Belum ada data
               </div>

@@ -5,6 +5,7 @@ import type { Customer } from '../../data/types';
 import { useAsync } from '../hooks';
 import { MapsPickerModal } from '../common/MapsPickerModal';
 import { CloseIcon, PinIcon, IndonesiaFlagIcon } from '../common/Icons';
+import { ModalPortal } from '../common/ModalPortal';
 
 interface BilasTransactionSheetProps {
   isOpen: boolean;
@@ -96,19 +97,20 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
   });
 
   return (
-    <div className="modal-backdrop" onClick={onClose} style={{ zIndex: 110 }}>
-      <div
-        className="bilas-sheet-container"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          maxHeight: subMode === 'new' ? '92vh' : '82vh',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div className="bilas-sheet-handle-bar" />
+    <ModalPortal>
+      <div className="modal-backdrop" onClick={onClose} style={{ zIndex: 9000 }}>
+        <div
+          className="bilas-sheet-container"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            maxHeight: subMode === 'new' ? '92vh' : '82vh',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <div className="bilas-sheet-handle-bar" />
 
-        {/* Header Bar Sheet */}
+          {/* Header Bar Sheet */}
         <div className="bilas-sheet-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {subMode !== 'menu' && (
@@ -561,5 +563,6 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
         onSelectAddress={(addr) => setNewCustAddress(addr)}
       />
     </div>
+    </ModalPortal>
   );
 };

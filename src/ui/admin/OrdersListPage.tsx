@@ -6,7 +6,7 @@ import { repo } from '../../data';
 import { fmtDateTime, rupiah, STATUS_LABEL, displayCode, whatsappLink } from '../../lib/format';
 import { isLate } from '../../lib/estimation';
 import type { Order } from '../../data/types';
-import { WhatsAppIcon } from '../common/Icons';
+import { WhatsAppIcon, EmptyStateIllustration } from '../common/Icons';
 
 type BilasTab = 'konfirmasi' | 'penjemputan' | 'validasi' | 'antrian' | 'proses' | 'siap_ambil' | 'siap_antar' | 'semua';
 
@@ -111,30 +111,6 @@ export const OrdersListPage: React.FC = () => {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#001b3a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
-            </svg>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => alert('Fitur kamera scanner QR siap digunakan')}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              padding: '6px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              color: '#001b3a',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-            title="Scan QR Transaksi"
-            aria-label="Scan QR Transaksi"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#001b3a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-              <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-              <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-              <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
             </svg>
           </button>
         </div>
@@ -387,11 +363,7 @@ export const OrdersListPage: React.FC = () => {
         </div>
       ) : filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 16px 60px' }}>
-          <img
-            src="/bilas_icons/img_nodata.webp"
-            alt="Belum ada data"
-            style={{ width: '220px', maxWidth: '75%', margin: '0 auto 16px', display: 'block' }}
-          />
+          <EmptyStateIllustration size={130} />
           <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>
             Belum ada data
           </div>
