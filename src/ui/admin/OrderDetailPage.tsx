@@ -60,6 +60,7 @@ export const OrderDetailPage: React.FC = () => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [adjustModalOpen, setAdjustModalOpen] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [deliveryExpanded, setDeliveryExpanded] = useState(false);
   const [historyExpanded, setHistoryExpanded] = useState(true);
 
@@ -132,14 +133,13 @@ export const OrderDetailPage: React.FC = () => {
     }
   };
 
-  // Cancel order
-  const handleCancelOrder = async () => {
+  // Cancel order execution
+  const executeCancelOrder = async () => {
     if (!id || !order) return;
-    if (!confirm(`Batalkan transaksi ${displayCode(order.code)}?`)) return;
     setUpdatingStatus(true);
     try {
       await repo.updateStatus(id, 'diambil', 'Dibatalkan oleh pelanggan/admin');
-      alert('Transaksi berhasil dibatalkan.');
+      setCancelModalOpen(false);
       await loadData();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal membatalkan transaksi');
@@ -599,83 +599,93 @@ export const OrderDetailPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Workflow Station Icons & Riwayat Pill */}
+              {/* Workflow Station Icons with Stage Label & Riwayat Pill */}
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   marginTop: '12px',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '8px 12px',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span
-                    style={{
-                      width: '26px',
-                      height: '26px',
-                      borderRadius: '50%',
-                      background: order.status === 'menunggu' ? '#001b3a' : '#e2e8f0',
-                      color: order.status === 'menunggu' ? '#ffffff' : '#64748b',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.72rem',
-                      fontWeight: 800,
-                    }}
-                    title="Antrian Masuk"
-                  >
-                    1
-                  </span>
-                  <span
-                    style={{
-                      width: '26px',
-                      height: '26px',
-                      borderRadius: '50%',
-                      background: order.status === 'pencucian' ? '#bf2f3b' : '#e2e8f0',
-                      color: order.status === 'pencucian' ? '#ffffff' : '#64748b',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.72rem',
-                      fontWeight: 800,
-                    }}
-                    title="Cuci"
-                  >
-                    2
-                  </span>
-                  <span
-                    style={{
-                      width: '26px',
-                      height: '26px',
-                      borderRadius: '50%',
-                      background: order.status === 'pengeringan' ? '#bf2f3b' : '#e2e8f0',
-                      color: order.status === 'pengeringan' ? '#ffffff' : '#64748b',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.72rem',
-                      fontWeight: 800,
-                    }}
-                    title="Kering"
-                  >
-                    3
-                  </span>
-                  <span
-                    style={{
-                      width: '26px',
-                      height: '26px',
-                      borderRadius: '50%',
-                      background: order.status === 'finishing' || order.status === 'selesai' ? '#16a34a' : '#e2e8f0',
-                      color: order.status === 'finishing' || order.status === 'selesai' ? '#ffffff' : '#64748b',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.72rem',
-                      fontWeight: 800,
-                    }}
-                    title="Finishing / Selesai"
-                  >
-                    ✓
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        background: order.status === 'menunggu' ? '#001b3a' : '#e2e8f0',
+                        color: order.status === 'menunggu' ? '#ffffff' : '#64748b',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                      }}
+                      title="Antrian Masuk"
+                    >
+                      1
+                    </span>
+                    <span
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        background: order.status === 'pencucian' ? '#bf2f3b' : '#e2e8f0',
+                        color: order.status === 'pencucian' ? '#ffffff' : '#64748b',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                      }}
+                      title="Cuci"
+                    >
+                      2
+                    </span>
+                    <span
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        background: order.status === 'pengeringan' ? '#bf2f3b' : '#e2e8f0',
+                        color: order.status === 'pengeringan' ? '#ffffff' : '#64748b',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                      }}
+                      title="Kering"
+                    >
+                      3
+                    </span>
+                    <span
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        background: order.status === 'finishing' || order.status === 'selesai' || order.status === 'diambil' ? '#16a34a' : '#e2e8f0',
+                        color: order.status === 'finishing' || order.status === 'selesai' || order.status === 'diambil' ? '#ffffff' : '#64748b',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                      }}
+                      title="Finishing / Selesai"
+                    >
+                      ✓
+                    </span>
+                  </div>
+
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#001b3a' }}>
+                    {BILAS_STAGE_LABEL[order.status] || 'Antrian'}
                   </span>
                 </div>
 
@@ -689,7 +699,7 @@ export const OrderDetailPage: React.FC = () => {
                     fontSize: '0.74rem',
                     fontWeight: 700,
                     borderRadius: '14px',
-                    padding: '4px 14px',
+                    padding: '4px 12px',
                     cursor: 'pointer',
                   }}
                 >
@@ -859,7 +869,7 @@ export const OrderDetailPage: React.FC = () => {
         {/* BATAL BUTTON */}
         <button
           type="button"
-          onClick={() => void handleCancelOrder()}
+          onClick={() => setCancelModalOpen(true)}
           disabled={updatingStatus || order.status === 'diambil'}
           className="order-detail-action-btn"
           style={{
@@ -1100,6 +1110,83 @@ export const OrderDetailPage: React.FC = () => {
             </form>
           </div>
         </div>
+        </ModalPortal>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL 4: KONFIRMASI BATAL TRANSAKSI                      */}
+      {/* ======================================================== */}
+      {cancelModalOpen && (
+        <ModalPortal>
+          <div className="modal-backdrop" onClick={() => setCancelModalOpen(false)} style={{ zIndex: 9000 }}>
+            <div
+              className="modal-content"
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '380px', width: '92%', borderRadius: '20px', padding: '24px 20px', textAlign: 'center' }}
+            >
+              <div
+                style={{
+                  width: '54px',
+                  height: '54px',
+                  borderRadius: '50%',
+                  background: '#fef2f2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 14px',
+                  color: '#bf2f3b',
+                }}
+              >
+                <CloseIcon size={26} color="#bf2f3b" />
+              </div>
+
+              <strong style={{ fontSize: '1.08rem', color: '#0f172a', display: 'block', marginBottom: '8px' }}>
+                Batalkan Transaksi?
+              </strong>
+              <p style={{ fontSize: '0.86rem', color: '#64748b', margin: '0 0 20px', lineHeight: 1.5 }}>
+                Apakah Anda yakin ingin membatalkan transaksi kode <strong>{displayCode(order.code)}</strong> ({order.customerName})?
+              </p>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setCancelModalOpen(false)}
+                  style={{
+                    flex: 1,
+                    background: '#f1f5f9',
+                    border: 'none',
+                    color: '#475569',
+                    borderRadius: '12px',
+                    padding: '12px',
+                    fontWeight: 700,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Kembali
+                </button>
+                <button
+                  type="button"
+                  disabled={updatingStatus}
+                  onClick={() => void executeCancelOrder()}
+                  style={{
+                    flex: 1,
+                    background: '#bf2f3b',
+                    border: 'none',
+                    color: '#ffffff',
+                    borderRadius: '12px',
+                    padding: '12px',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    cursor: updatingStatus ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 12px rgba(191, 47, 59, 0.3)',
+                  }}
+                >
+                  {updatingStatus ? 'Membatalkan...' : 'Ya, Batalkan'}
+                </button>
+              </div>
+            </div>
+          </div>
         </ModalPortal>
       )}
 
