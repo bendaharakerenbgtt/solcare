@@ -278,10 +278,7 @@ export const OrderDetailPage: React.FC = () => {
           {/* Print Icon */}
           <button
             type="button"
-            onClick={() => {
-              setInvoiceOpen(true);
-              setTimeout(() => window.print(), 350);
-            }}
+            onClick={() => setInvoiceOpen(true)}
             title="Cetak Nota"
             style={{
               background: 'transparent',

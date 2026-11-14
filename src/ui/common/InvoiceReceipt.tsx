@@ -109,36 +109,36 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
         background: '#ffffff',
         color: textColor,
         width: '100%',
-        maxWidth: '420px',
+        maxWidth: '380px',
         margin: '0 auto',
-        padding: '24px 20px',
+        padding: '16px 14px',
         fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
         boxSizing: 'border-box',
-        fontSize: '0.86rem',
-        lineHeight: 1.4,
+        fontSize: '0.80rem',
+        lineHeight: 1.35,
       }}
     >
       {/* 1. Brand Logo & Store Header */}
-      <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '8px' }}>
         <img
           src={isBlack ? '/logo-black.png' : '/logo-color.jpg'}
           alt="Soleful Soaks! Shoes Care"
           style={{
-            width: '180px',
-            maxWidth: '85%',
+            width: '150px',
+            maxWidth: '80%',
             height: 'auto',
             display: 'block',
-            margin: '0 auto 6px auto',
+            margin: '0 auto 4px auto',
             objectFit: 'contain',
           }}
         />
-        <div style={{ fontWeight: 600, fontSize: '0.96rem', letterSpacing: '0.01em', marginTop: '4px', color: textColor }}>
+        <div style={{ fontWeight: 600, fontSize: '0.90rem', letterSpacing: '0.01em', marginTop: '2px', color: textColor }}>
           Soleful Soaks!
         </div>
-        <div style={{ fontSize: '0.82rem', marginTop: '2px', color: mutedTextColor }}>
+        <div style={{ fontSize: '0.78rem', marginTop: '1px', color: mutedTextColor }}>
           {storeAddress}
         </div>
-        <div style={{ fontSize: '0.82rem', marginTop: '1px', color: mutedTextColor, fontWeight: 500 }}>
+        <div style={{ fontSize: '0.78rem', marginTop: '1px', color: mutedTextColor, fontWeight: 500 }}>
           {storePhone}
         </div>
       </div>
@@ -147,29 +147,29 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
       {renderDivider()}
 
       {/* 2. Order Metadata */}
-      <div style={{ fontSize: '0.82rem', lineHeight: 1.55, margin: '8px 0', color: textColor }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '115px 10px 1fr' }}>
+      <div style={{ fontSize: '0.78rem', lineHeight: 1.45, margin: '6px 0', color: textColor }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span>Tanggal Pesan</span>
           <span>:</span>
           <span style={{ fontWeight: 600 }}>{formatReceiptDateTime(orderTime)}</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '115px 10px 1fr' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span>Kasir</span>
           <span>:</span>
           <span style={{ fontWeight: 600 }}>{cashier}</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '115px 10px 1fr' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span>Nama Customer</span>
           <span>:</span>
           <span style={{ fontWeight: 600 }}>{customerName}</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '115px 10px 1fr' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span>Telp Customer</span>
           <span>:</span>
           <span style={{ fontWeight: 600 }}>{customerPhone}</span>
         </div>
         {order.estimatedAt && (
-          <div style={{ display: 'grid', gridTemplateColumns: '115px 10px 1fr' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
             <span>Estimasi Selesai</span>
             <span>:</span>
             <span style={{ fontWeight: 600 }}>{formatReceiptDate(order.estimatedAt)}</span>
@@ -181,23 +181,23 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
       {renderDivider()}
 
       {/* 3. Services List */}
-      <div style={{ margin: '10px 0' }}>
-        <div style={{ fontWeight: 700, fontSize: '0.90rem', textDecoration: 'underline', marginBottom: '8px', color: textColor }}>
+      <div style={{ margin: '6px 0' }}>
+        <div style={{ fontWeight: 700, fontSize: '0.84rem', textDecoration: 'underline', marginBottom: '6px', color: textColor }}>
           Jenis Service
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {itemsToDisplay.map((item, idx) => (
             <div key={idx} style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-              <div style={{ fontWeight: 600, fontSize: '0.84rem', color: textColor }}>
+              <div style={{ fontWeight: 600, fontSize: '0.80rem', color: textColor }}>
                 {item.header}
               </div>
               {item.services.map((svc, sIdx) => (
                 <div key={sIdx} style={{ marginTop: '1px' }}>
-                  <div style={{ fontSize: '0.82rem', color: mutedTextColor }}>
+                  <div style={{ fontSize: '0.78rem', color: mutedTextColor }}>
                     {svc.name}
                   </div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 600, color: textColor }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: textColor }}>
                     {formatCurrency(svc.price)}
                   </div>
                 </div>
@@ -208,15 +208,15 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
           {/* Additional Products */}
           {productsToDisplay.length > 0 && (
             <div style={{ marginTop: '4px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-              <div style={{ fontWeight: 700, fontSize: '0.86rem', textDecoration: 'underline', marginBottom: '6px', color: textColor }}>
+              <div style={{ fontWeight: 700, fontSize: '0.82rem', textDecoration: 'underline', marginBottom: '4px', color: textColor }}>
                 Produk Tambahan
               </div>
               {productsToDisplay.map((prod, pIdx) => (
                 <div key={pIdx} style={{ marginTop: '2px' }}>
-                  <div style={{ fontSize: '0.82rem', color: mutedTextColor }}>
+                  <div style={{ fontSize: '0.78rem', color: mutedTextColor }}>
                     {prod.name} (x{prod.qty})
                   </div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 600, color: textColor }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: textColor }}>
                     {formatCurrency(prod.subtotal)}
                   </div>
                 </div>
@@ -230,13 +230,13 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
       {renderDivider()}
 
       {/* 4. Total and Payment Method */}
-      <div style={{ margin: '8px 0', fontSize: '0.84rem', lineHeight: 1.6, color: textColor }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '115px 10px 1fr' }}>
+      <div style={{ margin: '6px 0', fontSize: '0.80rem', lineHeight: 1.5, color: textColor }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span style={{ fontWeight: 700 }}>Total Harga</span>
           <span style={{ fontWeight: 700 }}>:</span>
-          <span style={{ fontWeight: 800, fontSize: '0.94rem' }}>{formatCurrency(order.total)}</span>
+          <span style={{ fontWeight: 800, fontSize: '0.90rem' }}>{formatCurrency(order.total)}</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '115px 10px 1fr' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span>Pembayaran</span>
           <span>:</span>
           <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>
@@ -249,13 +249,13 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
       {renderDivider()}
 
       {/* 5. Perfume & Notes */}
-      <div style={{ margin: '8px 0', fontSize: '0.82rem', lineHeight: 1.55, color: textColor }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '115px 10px 1fr' }}>
+      <div style={{ margin: '6px 0', fontSize: '0.78rem', lineHeight: 1.45, color: textColor }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span>Parfume</span>
           <span>:</span>
           <span style={{ fontWeight: 600 }}>{order.fragranceName || 'Green Apple'}</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '115px 10px 1fr' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span>Catatan</span>
           <span>:</span>
           <span>{notes}</span>
@@ -268,15 +268,15 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
       {/* 6. Footer */}
       <div
         style={{
-          marginTop: '14px',
-          paddingTop: '6px',
+          marginTop: '10px',
+          paddingTop: '4px',
           textAlign: 'center',
           pageBreakInside: 'avoid',
           breakInside: 'avoid',
           color: textColor,
         }}
       >
-        <div style={{ fontSize: '0.92rem', fontWeight: 700 }}>
+        <div style={{ fontSize: '0.86rem', fontWeight: 700 }}>
           <span style={{ borderBottom: isBlack ? '1.5px solid #000000' : '2px solid #c82d38', paddingBottom: '1px' }}>
             Thank You
           </span>{' '}
@@ -287,14 +287,14 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
             Us
           </span>
         </div>
-        <div style={{ fontSize: '0.86rem', fontWeight: 600, marginTop: '3px' }}>
+        <div style={{ fontSize: '0.80rem', fontWeight: 600, marginTop: '2px' }}>
           <span style={{ borderBottom: isBlack ? '1.5px solid #000000' : '2px solid #0c2340', paddingBottom: '1px' }}>
             To Clean Your Shoes
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '12px', fontSize: '0.82rem', fontWeight: 600 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '8px', fontSize: '0.78rem', fontWeight: 600 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
             <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>

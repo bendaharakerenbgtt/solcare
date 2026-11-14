@@ -35,11 +35,12 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
 
     const iframe = document.createElement('iframe');
     iframe.id = 'receipt-print-iframe';
+    // Must have non-zero dimensions off-screen so Chromium renders it before print
     iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
+    iframe.style.left = '-9999px';
+    iframe.style.top = '-9999px';
+    iframe.style.width = '400px';
+    iframe.style.height = '600px';
     iframe.style.border = '0';
     document.body.appendChild(iframe);
 
@@ -60,8 +61,8 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
           <title>Nota - Soleful Soaks</title>
           <style>
             @page {
-              size: auto;
-              margin: 4mm 6mm;
+              size: 80mm auto;
+              margin: 3mm 4mm;
             }
             * {
               box-sizing: border-box;
@@ -73,15 +74,21 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
               width: 100%;
               height: auto;
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+              font-size: 11px;
+              color: #000000;
+              page-break-after: avoid !important;
+              break-after: avoid !important;
             }
             .soleful-receipt-container {
               width: 100% !important;
               max-width: 380px !important;
               margin: 0 auto !important;
-              padding: 10px 8px !important;
+              padding: 4px 6px !important;
               box-shadow: none !important;
               page-break-after: avoid !important;
               break-after: avoid !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
             }
           </style>
         </head>
@@ -97,8 +104,8 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
       iframe.contentWindow?.print();
       setTimeout(() => {
         iframe.remove();
-      }, 1000);
-    }, 250);
+      }, 3000);
+    }, 400);
   };
 
   const handleDownloadPDF = async () => {
