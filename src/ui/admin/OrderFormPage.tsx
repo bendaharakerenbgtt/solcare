@@ -35,6 +35,7 @@ interface SelectedServiceItem {
   durationDays: number;
   expressHours?: number | null;
   qty: number;
+  itemBrand?: string;
   notes: string;
 }
 
@@ -94,7 +95,9 @@ export const OrderFormPage: React.FC = () => {
   // Modal 1: Tambah Layanan Satuan (Image 2)
   const [activeModalSvc, setActiveModalSvc] = useState<ServiceDef | null>(null);
   const [modalQty, setModalQty] = useState(1);
+  const [modalItemBrand, setModalItemBrand] = useState('');
   const [modalNotes, setModalNotes] = useState('');
+  const [generalShoeName, setGeneralShoeName] = useState('');
 
   // Confirmation screen options (Image 7)
   const [pickupOption, setPickupOption] = useState<'dropoff' | 'pickup'>('dropoff');
@@ -119,12 +122,17 @@ export const OrderFormPage: React.FC = () => {
     const existing = selectedItems.find((x) => x.serviceId === svc.id);
     setActiveModalSvc(svc);
     setModalQty(existing ? existing.qty : 1);
+    setModalItemBrand(existing?.itemBrand || generalShoeName || '');
     setModalNotes(existing ? existing.notes : '');
   };
 
   // Save from Tambah Layanan Satuan modal into basket
   const handleSaveModalItem = () => {
     if (!activeModalSvc) return;
+
+    if (modalItemBrand.trim() && !generalShoeName.trim()) {
+      setGeneralShoeName(modalItemBrand.trim());
+    }
 
     if (modalQty <= 0) {
       // Remove if qty is 0
@@ -142,6 +150,7 @@ export const OrderFormPage: React.FC = () => {
           durationDays: activeModalSvc.days,
           expressHours: activeModalSvc.expressHours,
           qty: modalQty,
+          itemBrand: modalItemBrand.trim(),
           notes: modalNotes,
         };
         if (idx >= 0) {
@@ -218,6 +227,8 @@ export const OrderFormPage: React.FC = () => {
       });
 
       const firstItem = selectedItems[0];
+      const primaryShoeName = generalShoeName.trim() || selectedItems.find((s) => s.itemBrand)?.itemBrand || 'Sepatu Pelanggan';
+
       const created = await repo.createOrder({
         customer: {
           id: customerId,
@@ -227,7 +238,7 @@ export const OrderFormPage: React.FC = () => {
         items: selectedItems.map((s, idx) => ({
           id: `item-${idx + 1}`,
           itemType: s.category,
-          brand: 'Solecare Customer Item',
+          brand: s.itemBrand || primaryShoeName,
           model: s.name,
           color: '',
           conditionNotes: s.notes || extraNotes,
@@ -247,7 +258,7 @@ export const OrderFormPage: React.FC = () => {
           ],
         })),
         itemType: firstItem.category,
-        brand: 'Solecare Item',
+        brand: primaryShoeName,
         model: selectedItems.map((s) => s.name).join(', '),
         color: '',
         conditionNotes: extraNotes || 'Kondisi standar',
@@ -665,6 +676,29 @@ export const OrderFormPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Field: Nama / Merk Sepatu */}
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#001b3a', marginBottom: '4px' }}>
+                Nama / Merk Sepatu
+              </label>
+              <input
+                type="text"
+                placeholder="Misalnya : Nike Air Jordan 1 / Converse 70s"
+                value={modalItemBrand}
+                onChange={(e) => setModalItemBrand(e.target.value)}
+                style={{
+                  width: '100%',
+                  background: '#f8fafc',
+                  border: '1.5px solid #cbd5e1',
+                  borderRadius: '10px',
+                  padding: '10px 12px',
+                  fontSize: '0.86rem',
+                  color: '#0f172a',
+                  fontWeight: 600,
+                }}
+              />
+            </div>
+
             {/* Field: Keterangan */}
             <div style={{ marginBottom: '14px' }}>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
@@ -934,6 +968,11 @@ export const OrderFormPage: React.FC = () => {
                       <strong style={{ display: 'block', fontSize: '0.9rem', color: '#0f172a' }}>
                         {it.name}
                       </strong>
+                      {it.itemBrand && (
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#bf2f3b', display: 'block' }}>
+                          👟 {it.itemBrand}
+                        </span>
+                      )}
                       <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
                         {it.price.toLocaleString('id-ID')} • {it.expressHours ? `${it.expressHours} Jam` : `${it.durationDays} Hari`}
                       </span>
@@ -994,7 +1033,37 @@ export const OrderFormPage: React.FC = () => {
             </button>
           </div>
 
-          {/* 4. Pilihan Parfum */}
+          {/* 4. Identitas & Nama Sepatu */}
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '14px 16px',
+            }}
+          >
+            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a', marginBottom: '6px' }}>
+              Nama / Merk Sepatu
+            </div>
+            <input
+              type="text"
+              placeholder="Misalnya : Nike Air Jordan 1 / Converse 70s Parchment White"
+              value={generalShoeName}
+              onChange={(e) => setGeneralShoeName(e.target.value)}
+              style={{
+                width: '100%',
+                background: '#f8fafc',
+                border: '1px solid #cbd5e1',
+                borderRadius: '10px',
+                padding: '10px 12px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                color: '#0f172a',
+              }}
+            />
+          </div>
+
+          {/* 5. Pilihan Parfum */}
           <div
             style={{
               background: '#ffffff',
