@@ -5,6 +5,7 @@ import { repo } from '../../data';
 import { SEED_SERVICES } from '../../data/seed';
 import type { Order, ServiceCategory } from '../../data/types';
 import { InvoiceModal } from '../common/InvoiceModal';
+import { ModalPortal } from '../common/ModalPortal';
 import {
   TruckIcon,
   StarIcon,
@@ -567,21 +568,7 @@ export const OrderFormPage: React.FC = () => {
 
           {/* Sticky Bottom Bar: Lanjutkan X Layanan (Persis Foto 3) */}
           {totalQty > 0 && (
-            <div
-              style={{
-                position: 'fixed',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                padding: '12px 16px max(12px, env(safe-area-inset-bottom, 12px))',
-                background: '#ffffff',
-                borderTop: '1px solid #e2e8f0',
-                boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
-                zIndex: 100,
-                maxWidth: '480px',
-                margin: '0 auto',
-              }}
-            >
+            <div className="admin-sticky-bottom-bar">
               <button
                 type="button"
                 onClick={() => setScreenMode('confirm')}
@@ -614,9 +601,10 @@ export const OrderFormPage: React.FC = () => {
       {/* MODAL 1: TAMBAH LAYANAN SATUAN (Persis Foto Bilas 2)     */}
       {/* ======================================================== */}
       {activeModalSvc && (
-        <div className="modal-backdrop" onClick={() => setActiveModalSvc(null)} style={{ zIndex: 120 }}>
+        <ModalPortal>
+        <div className="modal-backdrop" onClick={() => setActiveModalSvc(null)} style={{ zIndex: 9000 }}>
           <div
-            className="modal"
+            className="modal-content"
             onClick={(e) => e.stopPropagation()}
             style={{ maxWidth: '380px', width: '92%', borderRadius: '20px', padding: '20px' }}
           >
@@ -767,6 +755,7 @@ export const OrderFormPage: React.FC = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* ======================================================== */}
@@ -1163,21 +1152,11 @@ export const OrderFormPage: React.FC = () => {
 
           {/* Sticky Bottom Bar: Total Tagihan & Buat Transaksi (Persis Foto 7) */}
           <div
+            className="admin-sticky-bottom-bar"
             style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              background: '#ffffff',
-              borderTop: '1px solid #e2e8f0',
-              padding: '12px 16px max(12px, env(safe-area-inset-bottom, 12px))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.12)',
-              zIndex: 100,
-              maxWidth: '480px',
-              margin: '0 auto',
             }}
           >
             <div>
@@ -1216,9 +1195,10 @@ export const OrderFormPage: React.FC = () => {
       {/* MODAL: PESANAN PRIORITAS (Persis Foto Bilas 6)           */}
       {/* ======================================================== */}
       {priorityModalOpen && (
-        <div className="modal-backdrop" onClick={() => setPriorityModalOpen(false)} style={{ zIndex: 120 }}>
+        <ModalPortal>
+        <div className="modal-backdrop" onClick={() => setPriorityModalOpen(false)} style={{ zIndex: 9000 }}>
           <div
-            className="modal"
+            className="modal-content"
             onClick={(e) => e.stopPropagation()}
             style={{ maxWidth: '360px', width: '90%', borderRadius: '18px', padding: '20px', textAlign: 'center' }}
           >
@@ -1248,15 +1228,17 @@ export const OrderFormPage: React.FC = () => {
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* ======================================================== */}
       {/* MODAL: TRANSAKSI BERHASIL DISIMPAN (Persis Foto Bilas 5) */}
       {/* ======================================================== */}
       {successModalOpen && createdOrder && (
-        <div className="modal-backdrop" style={{ zIndex: 125 }}>
+        <ModalPortal>
+        <div className="modal-backdrop" style={{ zIndex: 9005 }}>
           <div
-            className="modal"
+            className="modal-content"
             style={{
               maxWidth: '380px',
               width: '92%',
@@ -1372,6 +1354,7 @@ export const OrderFormPage: React.FC = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Invoice Receipt Modal */}

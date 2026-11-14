@@ -5,6 +5,7 @@ import { repo } from '../../data';
 import type { Customer, Order } from '../../data/types';
 import { fmtDateTime, rupiah, whatsappLink } from '../../lib/format';
 import { MapsPickerModal } from '../common/MapsPickerModal';
+import { ModalPortal } from '../common/ModalPortal';
 import {
   WhatsAppIcon,
   PhoneIcon,
@@ -23,15 +24,24 @@ import {
 
 export const CustomersPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: customers, loading, reload } = useAsync(() => repo.listCustomers(), []);
   const { data: orders } = useAsync(() => repo.listOrders(), []);
 
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<'semua' | 'offline' | 'online'>('semua');
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
+  const [selectedCustomerId, setSelectedCustomerIdState] = useState<string | null>(
     searchParams.get('selectedId') || null
   );
+
+  const selectCustomer = (id: string | null) => {
+    setSelectedCustomerIdState(id);
+    if (id) {
+      setSearchParams({ selectedId: id });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   // Form state for Tambah / Edit Pelanggan
   const [modalOpen, setModalOpen] = useState(false);
@@ -123,7 +133,7 @@ export const CustomersPage: React.FC = () => {
 
       setModalOpen(false);
       await reload();
-      setSelectedCustomerId(saved.id);
+      selectCustomer(saved.id);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal menyimpan data');
     }
@@ -177,7 +187,7 @@ export const CustomersPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <button
               type="button"
-              onClick={() => setSelectedCustomerId(null)}
+              onClick={() => selectCustomer(null)}
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -476,20 +486,7 @@ export const CustomersPage: React.FC = () => {
           </div>
 
           {/* Sticky Bottom Action: BUAT TRANSAKSI Persis Bilas Screenshot */}
-          <div
-            style={{
-              position: 'fixed',
-              bottom: 'calc(65px + env(safe-area-inset-bottom, 0px))',
-              left: 0,
-              right: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              padding: '0 16px',
-              zIndex: 35,
-              pointerEvents: 'none',
-            }}
-          >
+          <div className="customer-detail-sticky-action">
             {/* Expanded Carousel options when tapped */}
             {showTxOptions && (
               <div
@@ -518,9 +515,9 @@ export const CustomersPage: React.FC = () => {
                     background: '#001b3a',
                     color: '#ffffff',
                     border: 'none',
-                    padding: '8px 14px',
+                    padding: '9px 16px',
                     borderRadius: '10px',
-                    fontSize: '0.82rem',
+                    fontSize: '0.84rem',
                     fontWeight: 700,
                     cursor: 'pointer',
                   }}
@@ -534,9 +531,9 @@ export const CustomersPage: React.FC = () => {
                     background: '#f1f5f9',
                     color: '#334155',
                     border: 'none',
-                    padding: '8px 14px',
+                    padding: '9px 16px',
                     borderRadius: '10px',
-                    fontSize: '0.82rem',
+                    fontSize: '0.84rem',
                     fontWeight: 700,
                     cursor: 'pointer',
                   }}
@@ -554,7 +551,7 @@ export const CustomersPage: React.FC = () => {
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '999px',
-                padding: '12px 28px',
+                padding: '13px 30px',
                 fontSize: '0.94rem',
                 fontWeight: 800,
                 boxShadow: '0 4px 16px rgba(191, 47, 59, 0.4)',
@@ -750,7 +747,7 @@ export const CustomersPage: React.FC = () => {
               {filteredCustomers.map((c) => (
                 <div
                   key={c.id}
-                  onClick={() => setSelectedCustomerId(c.id)}
+                  onClick={() => selectCustomer(c.id)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -798,11 +795,12 @@ export const CustomersPage: React.FC = () => {
       {/* MODAL TAMBAH PELANGGAN (Persis Bilas Screenshot)        */}
       {/* ======================================================== */}
       {modalOpen && (
-        <div className="modal-backdrop" onClick={() => setModalOpen(false)}>
+        <ModalPortal>
+        <div className="modal-backdrop" onClick={() => setModalOpen(false)} style={{ zIndex: 9000 }}>
           <div
-            className="modal"
+            className="modal-content"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '460px', borderRadius: '20px', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}
+            style={{ maxWidth: '460px', width: '92%', borderRadius: '20px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', padding: 0 }}
           >
             {/* Header Form */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
@@ -992,6 +990,7 @@ export const CustomersPage: React.FC = () => {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Interactive Maps Picker Modal */}

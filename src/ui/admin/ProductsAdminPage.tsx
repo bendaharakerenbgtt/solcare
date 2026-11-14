@@ -3,6 +3,7 @@ import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import type { Product, Fragrance } from '../../data/types';
 import { rupiah } from '../../lib/format';
+import { ModalPortal } from '../common/ModalPortal';
 
 export const ProductsAdminPage: React.FC = () => {
   const { data: products, reload: reloadProducts } = useAsync(() => repo.listProducts(true), []);
@@ -400,6 +401,7 @@ export const ProductsAdminPage: React.FC = () => {
 
       {/* Product Modal */}
       {productModal && (
+        <ModalPortal>
         <div className="modal-backdrop">
           <div className="modal">
             <header>
@@ -459,10 +461,12 @@ export const ProductsAdminPage: React.FC = () => {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Fragrance Modal */}
       {fragranceModal && (
+        <ModalPortal>
         <div className="modal-backdrop">
           <div className="modal">
             <header>
@@ -512,6 +516,7 @@ export const ProductsAdminPage: React.FC = () => {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

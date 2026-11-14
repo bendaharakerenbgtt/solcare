@@ -22,7 +22,9 @@ export const AdminLayout: React.FC = () => {
 
   const isOrderNew = location.pathname === '/admin/orders/new';
   const isOrderDetail = location.pathname.startsWith('/admin/orders/') && !isOrderNew;
+  const isCustomerPage = location.pathname === '/admin/customers';
   const isSubPageWithAction = isOrderNew || isOrderDetail;
+  const hasCustomerDetailOpen = isCustomerPage && location.search.includes('selectedId=');
 
   const isBeranda = location.pathname === '/admin';
   const isPesanan = location.pathname.startsWith('/admin/orders') && !isOrderNew;
@@ -31,18 +33,34 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div>
-      {!isSubPageWithAction && (
+      {!isSubPageWithAction && !isCustomerPage && (
         <div className="admin-mobile-bar">
-          <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-            <img
-              src="/logo-color.jpg"
-              alt="Solecare Logo"
-              style={{ width: '28px', height: '28px', borderRadius: '7px', objectFit: 'cover' }}
-            />
-            <span style={{ fontWeight: 800, fontSize: '1.28rem', color: '#001b3a', letterSpacing: '-0.03em' }}>
-              solecare
-            </span>
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              type="button"
+              className="mobile-header-icon-btn"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Buka Menu"
+              title="Buka Menu Navigasi"
+              style={{ background: 'transparent', border: 'none', padding: '6px', cursor: 'pointer' }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#001b3a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+            <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+              <img
+                src="/logo-color.jpg"
+                alt="Solecare Logo"
+                style={{ width: '28px', height: '28px', borderRadius: '7px', objectFit: 'cover' }}
+              />
+              <span style={{ fontWeight: 800, fontSize: '1.28rem', color: '#001b3a', letterSpacing: '-0.03em' }}>
+                solecare
+              </span>
+            </Link>
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               type="button"
@@ -91,6 +109,22 @@ export const AdminLayout: React.FC = () => {
               <CloseIcon size={18} color="#64748b" />
             </button>
           </div>
+
+          {/* Primary Action Button for Desktop & Sidebar */}
+          <button
+            type="button"
+            className="sidebar-create-tx-btn"
+            onClick={() => {
+              closeSidebar();
+              setTransactionSheetOpen(true);
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Buat Transaksi Baru</span>
+          </button>
 
           <div className="group">Operasional</div>
           <nav>
@@ -206,7 +240,7 @@ export const AdminLayout: React.FC = () => {
       </div>
 
       {/* Bilas-Style Mobile App Bottom Navigation Bar with Floating (+) Button */}
-      {!isSubPageWithAction && (
+      {!isSubPageWithAction && !hasCustomerDetailOpen && (
         <nav className="bilas-bottom-nav" aria-label="Menu Navigasi Bawah Bilas">
           {/* 1. Beranda */}
           <Link

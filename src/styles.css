@@ -197,21 +197,22 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   background: var(--primary-50);
 }
 
-.modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 50; overflow-y: auto; }
-.modal { background: #fff; border-radius: 16px; width: 100%; max-width: 640px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); overflow: hidden; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); display: flex; align-items: center; justify-content: center; padding: 24px 16px; z-index: 9000; overflow-y: auto; }
+.modal { background: #fff; border-radius: 16px; width: 100%; max-width: 640px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); overflow: hidden; margin: auto; }
 .modal.wide { max-width: 900px; }
 .modal header { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
 .modal header h3 { margin: 0; }
-.modal .body { padding: 20px; max-height: calc(85vh - 120px); overflow-y: auto; }
+.modal .body { padding: 20px; max-height: calc(85vh - 120px); max-height: calc(85dvh - 120px); overflow-y: auto; }
 .modal footer { padding: 14px 20px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; }
-.x { background: none; border: 0; font-size: 1.4rem; cursor: pointer; color: var(--muted); line-height: 1; }
+.x { background: none; border: 0; font-size: 1.4rem; cursor: pointer; color: var(--muted); line-height: 1; padding: 4px 8px; border-radius: 8px; }
+.x:hover { background: #f1f5f9; color: var(--ink); }
 
 @media (max-width: 640px) {
   .modal-backdrop { padding: 12px 10px; align-items: center; }
-  .modal { border-radius: 14px; max-height: 94vh; display: flex; flex-direction: column; width: 100%; }
+  .modal { border-radius: 14px; max-height: 92vh; max-height: 92dvh; display: flex; flex-direction: column; width: 100%; }
   .modal header { padding: 14px 16px; }
   .modal header h3 { font-size: 1.1rem; }
-  .modal .body { padding: 16px; overflow-y: auto; max-height: calc(90vh - 120px); }
+  .modal .body { padding: 16px; overflow-y: auto; max-height: calc(88vh - 120px); max-height: calc(88dvh - 120px); }
   .modal footer { padding: 12px 16px; flex-direction: column-reverse; gap: 8px; }
   .modal footer .btn, .modal footer button { width: 100%; justify-content: center; }
 }
@@ -898,14 +899,34 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   right: 0;
   background: #ffffff;
   border-radius: 20px 20px 0 0;
-  padding: 16px 18px 28px;
+  padding: 16px 18px calc(24px + env(safe-area-inset-bottom, 0px));
   box-shadow: 0 -8px 30px rgba(0, 27, 58, 0.18);
-  z-index: 120;
+  z-index: 9010;
   max-width: 500px;
+  width: 100%;
   margin: 0 auto;
   animation: slideUpBilas 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   max-height: 85vh;
+  max-height: 85dvh;
   overflow-y: auto;
+}
+@media (min-width: 641px) {
+  .bilas-sheet-container {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    border-radius: 20px;
+    padding: 20px 24px 24px;
+    box-shadow: 0 20px 60px rgba(0, 27, 58, 0.28);
+    margin: auto;
+    max-width: 480px;
+    max-height: calc(100vh - 64px);
+    max-height: calc(100dvh - 64px);
+  }
+  .bilas-sheet-handle-bar {
+    display: none;
+  }
 }
 @keyframes slideUpBilas {
   from { transform: translateY(100%); }
@@ -3778,21 +3799,105 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   border-radius: 24px;
   cursor: pointer;
   transition: filter 0.15s ease;
+  min-height: 44px;
 }
 
 .order-detail-action-btn:disabled {
   cursor: not-allowed;
   opacity: 0.65;
 }
+
+/* ---------- Order Form & Customer Detail Sticky Bars (Mobile + PC Aligned) ---------- */
+.admin-sticky-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  z-index: 40;
+  box-sizing: border-box;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.1);
+}
+
+@media (min-width: 901px) {
+  .admin-sticky-bottom-bar {
+    left: calc(50% + 120px);
+  }
+}
+
+/* Customer Detail Floating Action Container (Above bottom nav on mobile if visible, or clean bottom bar) */
+.customer-detail-sticky-action {
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 16px;
+  z-index: 42;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+@media (min-width: 901px) {
+  .customer-detail-sticky-action {
+    left: calc(50% + 120px);
+    bottom: 24px;
+  }
+}
+
+/* Desktop Sidebar CTA Button (+ Buat Transaksi) */
+.sidebar-create-tx-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: calc(100% - 16px);
+  margin: 0 8px 16px;
+  padding: 11px 14px;
+  background: linear-gradient(135deg, #bf2f3b 0%, #9e242e 100%);
+  color: #ffffff !important;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(191, 47, 59, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  text-decoration: none !important;
+}
+.sidebar-create-tx-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 6px 16px rgba(191, 47, 59, 0.45);
+}
+.sidebar-create-tx-btn:active {
+  transform: translateY(0);
+}
+
+/* Hide redundant mobile-only top brand bars on desktop when sidebar is already visible */
+@media (min-width: 901px) {
+  .mobile-only-subbar {
+    display: none !important;
+  }
+}
+
 /* ---------- Modal cards used by Order Detail (.modal-content) ---------- */
-/* Kelas ini sebelumnya dipakai di JSX tapi belum pernah didefinisikan,
-   sehingga card modal tampil transparan dan menumpuk konten halaman. */
 .modal-content {
   background: #ffffff;
   border-radius: 20px;
   border: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow: 0 20px 60px rgba(0, 27, 58, 0.28);
   max-height: calc(100vh - 80px);
+  max-height: calc(100dvh - 80px);
   overflow-y: auto;
   overscroll-behavior: contain;
   animation: modalContentPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
@@ -3806,5 +3911,6 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 @media (max-width: 640px) {
   .modal-content {
     max-height: calc(100vh - 48px);
+    max-height: calc(100dvh - 48px);
   }
 }

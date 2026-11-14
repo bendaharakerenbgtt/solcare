@@ -4,6 +4,7 @@ import { repo } from '../../data';
 import type { Announcement, AnnouncementCategory } from '../../data/types';
 import { fmtDateTime, ANNOUNCEMENT_CATEGORY_LABEL } from '../../lib/format';
 import { toLocalInput, fromLocalInput } from '../hooks';
+import { ModalPortal } from '../common/ModalPortal';
 
 export const AnnouncementsAdminPage: React.FC = () => {
   const { data: list, loading, reload } = useAsync(() => repo.listAnnouncements(), []);
@@ -250,6 +251,7 @@ export const AnnouncementsAdminPage: React.FC = () => {
       </div>
 
       {modalOpen && (
+        <ModalPortal>
         <div className="modal-backdrop">
           <div className="modal">
             <header>
@@ -345,6 +347,7 @@ export const AnnouncementsAdminPage: React.FC = () => {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

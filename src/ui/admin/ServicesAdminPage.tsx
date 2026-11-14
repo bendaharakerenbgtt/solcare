@@ -3,6 +3,7 @@ import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import type { Service, ServiceCategory } from '../../data/types';
 import { CATEGORY_LABEL, priceLabel, durationLabel } from '../../lib/format';
+import { ModalPortal } from '../common/ModalPortal';
 
 export const ServicesAdminPage: React.FC = () => {
   const { data: services, loading, reload } = useAsync(() => repo.listServices(true), []);
@@ -343,6 +344,7 @@ export const ServicesAdminPage: React.FC = () => {
 
       {/* Modal Form */}
       {modalOpen && (
+        <ModalPortal>
         <div className="modal-backdrop">
           <div className="modal">
             <header>
@@ -505,6 +507,7 @@ export const ServicesAdminPage: React.FC = () => {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

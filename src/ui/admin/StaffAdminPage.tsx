@@ -4,6 +4,7 @@ import { repo } from '../../data';
 import type { StaffUser, Role } from '../../data/types';
 import { fmtDateTime } from '../../lib/format';
 import { useAuth } from '../../auth/AuthContext';
+import { ModalPortal } from '../common/ModalPortal';
 
 export const StaffAdminPage: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -242,6 +243,7 @@ export const StaffAdminPage: React.FC = () => {
       </div>
 
       {modalOpen && (
+        <ModalPortal>
         <div className="modal-backdrop">
           <div className="modal">
             <header>
@@ -301,9 +303,11 @@ export const StaffAdminPage: React.FC = () => {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {pwdModalOpen && (
+        <ModalPortal>
         <div className="modal-backdrop">
           <div className="modal">
             <header>
@@ -336,6 +340,7 @@ export const StaffAdminPage: React.FC = () => {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

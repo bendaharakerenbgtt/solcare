@@ -20,14 +20,6 @@ export const ReportsPage: React.FC = () => {
   const pendingRevenue = unpaidOrders.reduce((sum, o) => sum + o.total, 0);
   const totalOmzet = (orders || []).reduce((sum, o) => sum + o.total, 0);
 
-  // QRIS vs Cash
-  const qrisOrders = paidOrders.filter((o) => o.payment.method === 'qris');
-  const cashOrders = paidOrders.filter((o) => o.payment.method === 'tunai');
-  const qrisRevenue = qrisOrders.reduce((sum, o) => sum + o.total, 0);
-  const cashRevenue = cashOrders.reduce((sum, o) => sum + o.total, 0);
-  const qrisPct = realRevenue > 0 ? Math.round((qrisRevenue / realRevenue) * 100) : 0;
-  const cashPct = realRevenue > 0 ? Math.round((cashRevenue / realRevenue) * 100) : 0;
-
   // Late orders
   const lateOrders = (orders || []).filter((o) => isLate(o, now) && o.status !== 'diambil');
 
@@ -172,12 +164,8 @@ export const ReportsPage: React.FC = () => {
             <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
               <div className="bilas-finance-breakdown-table">
                 <div className="bilas-finance-breakdown-row">
-                  <span>Metode Pembayaran QRIS</span>
-                  <strong>{rupiah(qrisRevenue)} ({qrisPct}%)</strong>
-                </div>
-                <div className="bilas-finance-breakdown-row">
-                  <span>Metode Pembayaran Tunai</span>
-                  <strong>{rupiah(cashRevenue)} ({cashPct}%)</strong>
+                  <span>Metode Pembayaran Tunai (Cash)</span>
+                  <strong>{rupiah(realRevenue)} (100%)</strong>
                 </div>
                 <div className="bilas-finance-breakdown-row">
                   <span>Piutang Belum Lunas</span>
@@ -258,12 +246,12 @@ export const ReportsPage: React.FC = () => {
             <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f1f5f9', fontSize: '0.85rem', color: '#334155' }}>
               <div className="bilas-finance-breakdown-table">
                 <div className="bilas-finance-breakdown-row">
-                  <span>Kapasitas Rak Harian</span>
-                  <strong>8.5 Pasang / Hari</strong>
-                </div>
-                <div className="bilas-finance-breakdown-row">
                   <span>Status Rak Pengerjaan</span>
                   <strong style={{ color: '#15803d' }}>Normal & Optimal</strong>
+                </div>
+                <div className="bilas-finance-breakdown-row">
+                  <span>Status Mesin Pengering UV</span>
+                  <strong style={{ color: '#15803d' }}>Aktif</strong>
                 </div>
               </div>
             </div>

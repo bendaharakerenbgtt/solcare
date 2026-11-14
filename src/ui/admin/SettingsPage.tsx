@@ -367,15 +367,6 @@ export const SettingsPage: React.FC = () => {
                     rows={2}
                   />
                 </label>
-                <label className="field">
-                  <span>Kapasitas Rak Harian (Pasang / Hari)</span>
-                  <input
-                    type="number"
-                    step="0.5"
-                    value={dailyCapacity}
-                    onChange={(e) => setDailyCapacity(Number(e.target.value))}
-                  />
-                </label>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
                   <button type="button" className="btn secondary" style={{ flex: 1 }} onClick={() => setOutletModalOpen(false)}>
                     Batal
@@ -440,7 +431,7 @@ export const SettingsPage: React.FC = () => {
               </div>
               <div style={{ padding: '18px 20px' }} className="stack">
                 <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '12px 14px', borderRadius: '12px' }}>
-                  <strong style={{ color: '#0f172a', display: 'block', marginBottom: '2px' }}>Rak Sepatu Utama (Kapasitas 50 Unit)</strong>
+                  <strong style={{ color: '#0f172a', display: 'block', marginBottom: '2px' }}>Rak Sepatu Utama</strong>
                   <div className="small muted">Status: Terhubung & Optimal</div>
                 </div>
                 <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '12px 14px', borderRadius: '12px' }}>
@@ -478,8 +469,8 @@ export const SettingsPage: React.FC = () => {
               </div>
               <div style={{ padding: '18px 20px' }} className="stack">
                 <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '14px', borderRadius: '12px', color: '#166534' }}>
-                  <strong style={{ display: 'block', marginBottom: '4px' }}>QRIS Statis Aktif</strong>
-                  <div className="small" style={{ lineHeight: 1.45 }}>Settlement langsung ke rekening terdaftar Solecare.</div>
+                  <strong style={{ display: 'block', marginBottom: '4px' }}>Pembayaran Tunai (Cash) Aktif</strong>
+                  <div className="small" style={{ lineHeight: 1.45 }}>Seluruh transaksi kasir dicatat langsung sebagai pembayaran Tunai (Cash).</div>
                 </div>
                 <button
                   type="button"
