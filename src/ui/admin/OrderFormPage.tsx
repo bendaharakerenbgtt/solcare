@@ -12,7 +12,7 @@ import {
   TrashIcon,
   SearchIcon,
   PrinterIcon,
-  CreditCardIcon,
+  CashIcon,
   CheckIcon,
   CloseIcon,
   PlusIcon,
@@ -263,7 +263,7 @@ export const OrderFormPage: React.FC = () => {
           reason: isPriority ? 'Pesanan Prioritas Pelanggan' : 'Standar pengerjaan',
         },
         payment: {
-          method: 'qris',
+          method: 'tunai',
           status: 'belum_lunas',
           paidAt: null,
           confirmed: false,
@@ -1269,23 +1269,23 @@ export const OrderFormPage: React.FC = () => {
                 <span>Lihat / Cetak Nota</span>
               </button>
 
-              {/* 3. Bayar Sekarang */}
+              {/* 3. Bayar Tunai Sekarang */}
               <button
                 type="button"
                 onClick={async () => {
                   await repo.recordPayment(createdOrder.id, {
-                    method: 'qris',
+                    method: 'tunai',
                     status: 'lunas',
                     paidAt: new Date().toISOString(),
                     confirmed: true,
                   });
-                  alert('Pembayaran berhasil dicatat LUNAS!');
+                  alert('Pembayaran TUNAI berhasil dicatat LUNAS!');
                   navigate(`/admin/orders/${createdOrder.id}`);
                 }}
                 style={{
                   width: '100%',
-                  background: '#fef2f2',
-                  border: '1px solid #fee2e2',
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
                   borderRadius: '12px',
                   padding: '13px 16px',
                   display: 'flex',
@@ -1293,12 +1293,12 @@ export const OrderFormPage: React.FC = () => {
                   gap: '12px',
                   fontSize: '0.92rem',
                   fontWeight: 700,
-                  color: '#bf2f3b',
+                  color: '#15803d',
                   cursor: 'pointer',
                 }}
               >
-                <CreditCardIcon size={20} color="#bf2f3b" />
-                <span>Bayar Sekarang</span>
+                <CashIcon size={20} color="#15803d" />
+                <span>Bayar Tunai Sekarang</span>
               </button>
             </div>
           </div>

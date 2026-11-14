@@ -12,7 +12,6 @@ import {
   PencilIcon,
   CheckIcon,
   CloseIcon,
-  QrisIcon,
   CashIcon,
   ClockIcon,
   PrinterIcon,
@@ -995,32 +994,10 @@ export const OrderDetailPage: React.FC = () => {
             </div>
 
             <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '0 0 16px 0' }}>
-              Pilih metode pembayaran untuk melunasi tagihan sebesar <strong>{rupiah(order.total)}</strong>:
+              Konfirmasi penerimaan pembayaran tunai (cash) untuk melunasi tagihan sebesar <strong>{rupiah(order.total)}</strong>:
             </p>
 
             <div className="stack" style={{ gap: '10px' }}>
-              <button
-                type="button"
-                onClick={() => void handleRecordPayment('qris')}
-                style={{
-                  background: '#001b3a',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '12px',
-                  padding: '12px',
-                  fontWeight: 800,
-                  fontSize: '0.9rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                }}
-              >
-                <QrisIcon size={18} color="#ffffff" />
-                <span>QRIS (Lunas Langsung)</span>
-              </button>
-
               <button
                 type="button"
                 onClick={() => void handleRecordPayment('tunai')}
@@ -1029,18 +1006,19 @@ export const OrderDetailPage: React.FC = () => {
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '12px',
-                  padding: '12px',
+                  padding: '13px',
                   fontWeight: 800,
-                  fontSize: '0.9rem',
+                  fontSize: '0.92rem',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
+                  boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)',
                 }}
               >
-                <CashIcon size={18} color="#ffffff" />
-                <span>Tunai / Cash (Lunas Langsung)</span>
+                <CashIcon size={20} color="#ffffff" />
+                <span>Terima Pembayaran Tunai (Lunas)</span>
               </button>
             </div>
           </div>

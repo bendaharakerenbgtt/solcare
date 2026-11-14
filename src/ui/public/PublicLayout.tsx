@@ -137,7 +137,7 @@ export const PublicLayout: React.FC = () => {
           </div>
           <div className="footer-bottom-row small muted">
             <div>© {new Date().getFullYear()} Soleful Soaks! Shoes Care. All rights reserved.</div>
-            <div>Pelayanan langsung di tempat • Pembayaran tunai & QRIS</div>
+            <div>Pelayanan langsung di tempat • Pembayaran tunai (Cash)</div>
           </div>
         </div>
       </footer>

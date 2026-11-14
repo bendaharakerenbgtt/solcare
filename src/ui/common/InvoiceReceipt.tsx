@@ -72,15 +72,34 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
   const customerName = 'customerName' in order ? order.customerName : order.customerDisplayName;
   const customerPhone = 'customerPhone' in order ? order.customerPhone : '-';
   const cashier = cashierName || ('payment' in order ? order.payment.recordedByName : '') || 'Staff';
-  const paymentMethod = 'payment' in order ? order.payment.method : order.paymentMethod;
   const rawNotes = 'conditionNotes' in order ? (order.conditionNotes || order.internalNotes || '') : '';
   const notes = rawNotes && rawNotes !== '-' ? rawNotes : '';
   const orderTime = 'createdAt' in order ? (order.receivedAt || order.createdAt) : order.receivedAt;
 
   const isBlack = theme === 'black';
-  const dividerClass = isBlack ? 'receipt-dashed-divider black' : 'receipt-dashed-divider';
   const textColor = isBlack ? '#000000' : '#111827';
   const mutedTextColor = isBlack ? '#000000' : '#374151';
+
+  // SVG Dashed Divider to ensure html2canvas renders the lines identically to on-screen preview
+  const renderDivider = () => {
+    if (isBlack) {
+      return (
+        <div style={{ width: '100%', margin: '10px 0', lineHeight: 0 }}>
+          <svg width="100%" height="2" viewBox="0 0 400 2" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '2px' }}>
+            <line x1="0" y1="1" x2="400" y2="1" stroke="#000000" strokeWidth="2" strokeDasharray="6 4" />
+          </svg>
+        </div>
+      );
+    }
+    return (
+      <div style={{ width: '100%', margin: '10px 0', lineHeight: 0 }}>
+        <svg width="100%" height="3" viewBox="0 0 400 3" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '3px' }}>
+          <line x1="0" y1="1.5" x2="400" y2="1.5" stroke="#0c2340" strokeWidth="3" strokeDasharray="10 14" />
+          <line x1="12" y1="1.5" x2="400" y2="1.5" stroke="#c82d38" strokeWidth="3" strokeDasharray="10 14" />
+        </svg>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -125,7 +144,7 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
       </div>
 
       {/* Dashed Line Divider */}
-      <div className={dividerClass} />
+      {renderDivider()}
 
       {/* 2. Order Metadata */}
       <div style={{ fontSize: '0.82rem', lineHeight: 1.55, margin: '8px 0', color: textColor }}>
@@ -159,7 +178,7 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
       </div>
 
       {/* Dashed Line Divider */}
-      <div className={dividerClass} />
+      {renderDivider()}
 
       {/* 3. Services List */}
       <div style={{ margin: '10px 0' }}>
@@ -208,7 +227,7 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
       </div>
 
       {/* Dashed Line Divider */}
-      <div className={dividerClass} />
+      {renderDivider()}
 
       {/* 4. Total and Payment Method */}
       <div style={{ margin: '8px 0', fontSize: '0.84rem', lineHeight: 1.6, color: textColor }}>
@@ -221,13 +240,13 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
           <span>Pembayaran</span>
           <span>:</span>
           <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>
-            {paymentMethod ? paymentMethod.toUpperCase() : 'TUNAI'}
+            TUNAI / CASH
           </span>
         </div>
       </div>
 
       {/* Dashed Line Divider */}
-      <div className={dividerClass} />
+      {renderDivider()}
 
       {/* 5. Perfume & Notes */}
       <div style={{ margin: '8px 0', fontSize: '0.82rem', lineHeight: 1.55, color: textColor }}>
@@ -244,7 +263,7 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
       </div>
 
       {/* Dashed Line Divider */}
-      <div className={dividerClass} />
+      {renderDivider()}
 
       {/* 6. Footer */}
       <div

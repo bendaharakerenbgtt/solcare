@@ -3503,11 +3503,17 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
 }
 
 @media print {
+  @page {
+    size: auto;
+    margin: 0mm;
+  }
   html, body {
     overflow: visible !important;
     height: auto !important;
     min-height: auto !important;
     background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   body * {
     visibility: hidden;
@@ -3521,22 +3527,27 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
     left: 0 !important;
     top: 0 !important;
     width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
+    max-width: 400px !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     background: #ffffff !important;
   }
-  .modal-overlay {
+  .modal-overlay,
+  .modal-backdrop {
     position: static !important;
     padding: 0 !important;
     background: transparent !important;
     display: block !important;
     overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
   }
   .invoice-modal-card {
+    position: static !important;
     max-height: none !important;
+    height: auto !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     background: transparent !important;

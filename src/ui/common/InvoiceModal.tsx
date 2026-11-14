@@ -24,7 +24,81 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   const handlePrint = () => {
-    window.print();
+    if (!receiptRef.current) {
+      window.print();
+      return;
+    }
+
+    // Isolate receipt in an invisible iframe to guarantee 1 single page without parent page bleed
+    const existingIframe = document.getElementById('receipt-print-iframe');
+    if (existingIframe) existingIframe.remove();
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'receipt-print-iframe';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    const receiptHtml = receiptRef.current.outerHTML;
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>Nota - Soleful Soaks</title>
+          <style>
+            @page {
+              size: auto;
+              margin: 4mm 6mm;
+            }
+            * {
+              box-sizing: border-box;
+              margin: 0;
+              padding: 0;
+            }
+            html, body {
+              background: #ffffff;
+              width: 100%;
+              height: auto;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            }
+            .soleful-receipt-container {
+              width: 100% !important;
+              max-width: 380px !important;
+              margin: 0 auto !important;
+              padding: 10px 8px !important;
+              box-shadow: none !important;
+              page-break-after: avoid !important;
+              break-after: avoid !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${receiptHtml}
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        iframe.remove();
+      }, 1000);
+    }, 250);
   };
 
   const handleDownloadPDF = async () => {
