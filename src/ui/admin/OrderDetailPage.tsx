@@ -14,7 +14,6 @@ import {
   CloseIcon,
   CashIcon,
   ClockIcon,
-  PrinterIcon,
   DocumentIcon,
   SneakerIllustration,
 } from '../common/Icons';
@@ -273,24 +272,6 @@ export const OrderDetailPage: React.FC = () => {
             }}
           >
             <DocumentIcon size={22} color="#001b3a" />
-          </button>
-
-          {/* Print Icon */}
-          <button
-            type="button"
-            onClick={() => setInvoiceOpen(true)}
-            title="Cetak Nota"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              padding: '2px',
-              cursor: 'pointer',
-              color: '#001b3a',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <PrinterIcon size={22} color="#001b3a" />
           </button>
         </div>
       </div>

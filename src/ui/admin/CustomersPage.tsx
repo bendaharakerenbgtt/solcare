@@ -17,7 +17,6 @@ import {
   PinIcon,
   CloseIcon,
   DocumentIcon,
-  ChevronDownIcon,
   IndonesiaFlagIcon,
   EmptyStateIllustration,
 } from '../common/Icons';
@@ -57,7 +56,6 @@ export const CustomersPage: React.FC = () => {
 
   // Accordions in Detail Pelanggan
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>('profil');
-  const [showTxOptions, setShowTxOptions] = useState(false);
 
   const selectedCustomer = (customers || []).find((c) => c.id === selectedCustomerId);
 
@@ -487,65 +485,15 @@ export const CustomersPage: React.FC = () => {
 
           {/* Sticky Bottom Action: BUAT TRANSAKSI Persis Bilas Screenshot */}
           <div className="customer-detail-sticky-action">
-            {/* Expanded Carousel options when tapped */}
-            {showTxOptions && (
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '8px',
-                  background: '#ffffff',
-                  padding: '10px 14px',
-                  borderRadius: '16px',
-                  boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
-                  border: '1px solid #e2e8f0',
-                  marginBottom: '10px',
-                  pointerEvents: 'auto',
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigate(
-                      `/admin/orders/new?customerId=${selectedCustomer.id}&name=${encodeURIComponent(
-                        selectedCustomer.name
-                      )}&phone=${encodeURIComponent(selectedCustomer.phone)}`
-                    )
-                  }
-                  style={{
-                    background: '#001b3a',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '9px 16px',
-                    borderRadius: '10px',
-                    fontSize: '0.84rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Reguler
-                </button>
-                <button
-                  type="button"
-                  onClick={() => alert('Fitur Paket Cuci siap')}
-                  style={{
-                    background: '#f1f5f9',
-                    color: '#334155',
-                    border: 'none',
-                    padding: '9px 16px',
-                    borderRadius: '10px',
-                    fontSize: '0.84rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Paket
-                </button>
-              </div>
-            )}
-
             <button
               type="button"
-              onClick={() => setShowTxOptions(!showTxOptions)}
+              onClick={() =>
+                navigate(
+                  `/admin/orders/new?customerId=${selectedCustomer.id}&name=${encodeURIComponent(
+                    selectedCustomer.name
+                  )}&phone=${encodeURIComponent(selectedCustomer.phone)}`
+                )
+              }
               style={{
                 background: '#bf2f3b',
                 color: '#ffffff',
@@ -563,7 +511,6 @@ export const CustomersPage: React.FC = () => {
               }}
             >
               <span>BUAT TRANSAKSI</span>
-              {showTxOptions ? <CloseIcon size={14} color="#ffffff" /> : <ChevronDownIcon size={14} color="#ffffff" />}
             </button>
           </div>
         </div>

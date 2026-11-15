@@ -12,7 +12,6 @@ import {
   TagIcon,
   TrashIcon,
   SearchIcon,
-  PrinterIcon,
   CashIcon,
   CheckIcon,
   CloseIcon,
@@ -24,6 +23,7 @@ import {
   HelmetIllustration,
   SparklesIllustration,
   ChevronRightIcon,
+  ChevronDownIcon,
 } from '../common/Icons';
 
 interface SelectedServiceItem {
@@ -102,6 +102,7 @@ export const OrderFormPage: React.FC = () => {
 
   // Confirmation screen options (Image 7)
   const [pickupOption, setPickupOption] = useState<'dropoff' | 'pickup'>('dropoff');
+  const [pickupDropdownOpen, setPickupDropdownOpen] = useState(false);
   const [isPriority, setIsPriority] = useState(false);
   const [priorityModalOpen, setPriorityModalOpen] = useState(false);
   const [selectedParfum, setSelectedParfum] = useState<string>('Tanpa Parfum');
@@ -815,30 +816,163 @@ export const OrderFormPage: React.FC = () => {
               borderRadius: '16px',
               border: '1px solid #e2e8f0',
               padding: '14px 16px',
+              position: 'relative',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <TruckIcon size={22} color="#001b3a" />
+                <TruckIcon size={20} color="#001b3a" />
                 <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Layanan Antar Jemput</strong>
               </div>
-              <select
-                value={pickupOption}
-                onChange={(e) => setPickupOption(e.target.value as any)}
-                style={{
-                  background: '#f8fafc',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '8px',
-                  padding: '6px 10px',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  color: '#334155',
-                  width: 'auto',
-                }}
-              >
-                <option value="dropoff">Diantar Sendiri (Drop-off)</option>
-                <option value="pickup">Jemput ke Rumah (+Rp 15.000)</option>
-              </select>
+
+              {/* Custom Branded Selector - matches Bilas / Solecare red & navy theme */}
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setPickupDropdownOpen((prev) => !prev)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: '#f8fafc',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '12px',
+                    padding: '10px 14px',
+                    fontSize: '0.86rem',
+                    fontWeight: 600,
+                    color: '#0f172a',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <span>
+                    {pickupOption === 'dropoff' ? 'Diantar Sendiri (Drop-off)' : 'Jemput ke Rumah (+Rp 15.000)'}
+                  </span>
+                  <span
+                    style={{
+                      display: 'flex',
+                      transform: pickupDropdownOpen ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 0.2s ease',
+                      color: '#64748b',
+                    }}
+                  >
+                    <ChevronDownIcon size={16} />
+                  </span>
+                </button>
+
+                {/* Dropdown Menu Popup */}
+                {pickupDropdownOpen && (
+                  <>
+                    <div
+                      style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 40,
+                      }}
+                      onClick={() => setPickupDropdownOpen(false)}
+                    />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 'calc(100% + 6px)',
+                        left: 0,
+                        right: 0,
+                        background: '#ffffff',
+                        borderRadius: '14px',
+                        border: '1px solid #e2e8f0',
+                        boxShadow: '0 8px 24px rgba(0, 27, 58, 0.12)',
+                        padding: '6px',
+                        zIndex: 50,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPickupOption('dropoff');
+                          setPickupDropdownOpen(false);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          border: 'none',
+                          background: pickupOption === 'dropoff' ? '#fee2e2' : 'transparent',
+                          color: pickupOption === 'dropoff' ? '#9e242e' : '#334155',
+                          fontSize: '0.86rem',
+                          fontWeight: pickupOption === 'dropoff' ? 700 : 500,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <span>Diantar Sendiri (Drop-off)</span>
+                        {pickupOption === 'dropoff' && (
+                          <span
+                            style={{
+                              width: '16px',
+                              height: '16px',
+                              borderRadius: '50%',
+                              background: '#bf2f3b',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <CheckIcon size={10} color="#ffffff" />
+                          </span>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPickupOption('pickup');
+                          setPickupDropdownOpen(false);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          border: 'none',
+                          background: pickupOption === 'pickup' ? '#fee2e2' : 'transparent',
+                          color: pickupOption === 'pickup' ? '#9e242e' : '#334155',
+                          fontSize: '0.86rem',
+                          fontWeight: pickupOption === 'pickup' ? 700 : 500,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <span>Jemput ke Rumah (+Rp 15.000)</span>
+                        {pickupOption === 'pickup' && (
+                          <span
+                            style={{
+                              width: '16px',
+                              height: '16px',
+                              borderRadius: '50%',
+                              background: '#bf2f3b',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <CheckIcon size={10} color="#ffffff" />
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -1297,30 +1431,8 @@ export const OrderFormPage: React.FC = () => {
                 <span>Lihat Detail Transaksi</span>
               </button>
 
-              {/* 2. Lihat / Cetak Nota */}
-              <button
-                type="button"
-                onClick={() => setInvoiceModalOpen(true)}
-                style={{
-                  width: '100%',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '12px',
-                  padding: '13px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  fontSize: '0.92rem',
-                  fontWeight: 700,
-                  color: '#0f172a',
-                  cursor: 'pointer',
-                }}
-              >
-                <PrinterIcon size={20} color="#001b3a" />
-                <span>Lihat / Cetak Nota</span>
-              </button>
+              {/* 2. Bayar Tunai Sekarang */}
 
-              {/* 3. Bayar Tunai Sekarang */}
               <button
                 type="button"
                 onClick={async () => {
