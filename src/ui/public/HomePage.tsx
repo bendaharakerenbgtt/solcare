@@ -193,6 +193,9 @@ export const HomePage: React.FC = () => {
                 <form onSubmit={handleTrackSubmit} style={{ display: 'flex', gap: '8px' }}>
                   <input
                     type="text"
+                    id="track-order-input"
+                    name="orderCode"
+                    autoComplete="off"
                     placeholder="Contoh: SS-7K3QX-9MPRA"
                     value={searchCode}
                     onChange={(e) => setSearchCode(e.target.value)}
@@ -200,13 +203,15 @@ export const HomePage: React.FC = () => {
                     autoCapitalize="characters"
                     autoCorrect="off"
                     spellCheck={false}
-                    aria-label="Kode Pesanan"
+                    aria-label="Kode Pesanan Sepatu"
                     style={{
                       border: '1.5px solid #cbd5e1',
                       borderRadius: '10px',
                       padding: '10px 12px',
                       fontSize: '0.88rem',
                       fontWeight: 700,
+                      flex: 1,
+                      minWidth: 0,
                     }}
                   />
                   <button
@@ -214,7 +219,7 @@ export const HomePage: React.FC = () => {
                     className="btn"
                     style={{ background: '#001b3a', color: '#ffffff', borderRadius: '10px', padding: '10px 18px', whiteSpace: 'nowrap' }}
                   >
-                    Cek
+                    Cek Pesanan
                   </button>
                 </form>
 
@@ -355,8 +360,9 @@ export const HomePage: React.FC = () => {
             {/* Grid Kartu Harga (Hanya Informasi, Tidak Bisa Dipilih) */}
             <div className="grid grid-2" style={{ gap: '10px' }}>
               {filteredServices.map((svc) => (
-                <div
+                <article
                   key={svc.id}
+                  className="public-service-card"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -381,14 +387,16 @@ export const HomePage: React.FC = () => {
                         justifyContent: 'center',
                         flexShrink: 0,
                       }}
+                      aria-hidden="true"
                     >
                       {renderServiceIcon(svc.category, svc.name)}
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <strong
+                      <h3
                         style={{
-                          display: 'block',
+                          margin: 0,
                           fontSize: '0.88rem',
+                          fontWeight: 700,
                           color: '#0f172a',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
@@ -396,7 +404,7 @@ export const HomePage: React.FC = () => {
                         }}
                       >
                         {svc.name}
-                      </strong>
+                      </h3>
                       <span style={{ fontSize: '0.73rem', color: '#64748b', display: 'block' }}>
                         {durationLabel(svc) || '2 Hari'} • {svc.description}
                       </span>
@@ -404,14 +412,14 @@ export const HomePage: React.FC = () => {
                   </div>
 
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <strong className="price" style={{ fontSize: '0.92rem', color: '#bf2f3b', display: 'block' }}>
+                    <strong className="price" style={{ fontSize: '0.92rem', color: '#bf2f3b', display: 'block', fontVariantNumeric: 'tabular-nums' }}>
                       {priceLabel(svc)}
                     </strong>
                     <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
                       per pasang/unit
                     </span>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
 
@@ -568,41 +576,43 @@ export const HomePage: React.FC = () => {
 
             <div className="grid grid-2" style={{ gap: '10px' }}>
               {PARFUMS.map((p, idx) => (
-                <div
+                <article
                   key={p.name}
+                  className="public-parfum-card"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
-                    padding: '10px 12px',
-                    background: '#f8fafc',
-                    borderRadius: '12px',
+                    padding: '12px',
+                    background: '#ffffff',
+                    borderRadius: '14px',
                     border: '1px solid #e2e8f0',
                   }}
                 >
                   <div
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '10px',
-                      background: '#ffffff',
-                      border: '1px solid #cbd5e1',
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '12px',
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '1rem',
+                      fontSize: '1.25rem',
                       flexShrink: 0,
                     }}
+                    aria-hidden="true"
                   >
                     {idx === 0 ? '🍦' : idx === 1 ? '🍏' : idx === 2 ? '🍬' : '✨'}
                   </div>
                   <div>
-                    <strong style={{ fontSize: '0.86rem', color: '#001b3a', display: 'block' }}>
+                    <h4 style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: '#001b3a' }}>
                       {p.name}
-                    </strong>
-                    <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{p.note}</span>
+                    </h4>
+                    <span style={{ fontSize: '0.74rem', color: '#64748b' }}>{p.note}</span>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           </section>

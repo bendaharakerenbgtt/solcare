@@ -58,7 +58,7 @@ export const PublicLayout: React.FC = () => {
         <div className="public-nav-container">
           <Link to="/" className="brand" onClick={closeMenu}>
             <div className="brand-mark">
-              <img src="/solecare_logo.jpg" alt="Solecare Logo" />
+              <img src="/solecare_logo.jpg" alt="Logo Soleful Soaks Shoes Care" width="36" height="36" />
             </div>
             <div>
               Soleful Soaks!
@@ -103,7 +103,8 @@ export const PublicLayout: React.FC = () => {
               type="button"
               className="public-burger-btn"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Buka Menu"
+              aria-label={mobileMenuOpen ? 'Tutup navigasi' : 'Buka menu navigasi'}
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? '✕' : '☰'}
             </button>
