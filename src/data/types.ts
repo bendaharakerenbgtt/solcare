@@ -208,7 +208,16 @@ export interface OrderPhoto {
   deleteNote: string;
 }
 
-export type AnnouncementCategory = 'kendala' | 'keterlambatan' | 'jam_operasional' | 'libur' | 'promosi' | 'lainnya';
+export type AnnouncementCategory =
+  | 'kendala'
+  | 'teknis'
+  | 'operasional'
+  | 'keterlambatan'
+  | 'jam_operasional'
+  | 'libur'
+  | 'promosi'
+  | 'lainnya'
+  | (string & {});
 
 export interface Announcement {
   id: ID;

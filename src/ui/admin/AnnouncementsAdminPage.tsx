@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
-import type { Announcement, AnnouncementCategory } from '../../data/types';
-import { fmtDateTime, ANNOUNCEMENT_CATEGORY_LABEL } from '../../lib/format';
+import type { Announcement } from '../../data/types';
+import { fmtDateTime, getAnnouncementCategoryLabel } from '../../lib/format';
 import { toLocalInput, fromLocalInput } from '../hooks';
 import { ModalPortal } from '../common/ModalPortal';
 
@@ -15,17 +15,21 @@ export const AnnouncementsAdminPage: React.FC = () => {
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-  const [category, setCategory] = useState<AnnouncementCategory>('promosi');
+  const [categoryType, setCategoryType] = useState<string>('promosi');
+  const [customCategory, setCustomCategory] = useState<string>('');
   const [publishAt, setPublishAt] = useState(toLocalInput(new Date().toISOString()));
   const [expiresAt, setExpiresAt] = useState('');
   const [status, setStatus] = useState<'draft' | 'published'>('published');
   const [important, setImportant] = useState(false);
 
+  const PRESET_CATEGORIES = ['promosi', 'operasional', 'libur', 'teknis', 'keterlambatan'];
+
   const openNew = () => {
     setEditing(null);
     setTitle('');
     setBody('');
-    setCategory('promosi');
+    setCategoryType('promosi');
+    setCustomCategory('');
     setPublishAt(toLocalInput(new Date().toISOString()));
     setExpiresAt('');
     setStatus('published');
@@ -37,7 +41,13 @@ export const AnnouncementsAdminPage: React.FC = () => {
     setEditing(a);
     setTitle(a.title);
     setBody(a.body);
-    setCategory(a.category);
+    if (PRESET_CATEGORIES.includes(a.category)) {
+      setCategoryType(a.category);
+      setCustomCategory('');
+    } else {
+      setCategoryType('custom');
+      setCustomCategory(a.category);
+    }
     setPublishAt(toLocalInput(a.publishAt));
     setExpiresAt(a.expiresAt ? toLocalInput(a.expiresAt) : '');
     setStatus(a.status);
@@ -47,12 +57,16 @@ export const AnnouncementsAdminPage: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    const finalCategory = categoryType === 'custom'
+      ? (customCategory.trim() || 'Informasi')
+      : categoryType;
+
     try {
       await repo.saveAnnouncement({
         id: editing?.id,
         title,
         body,
-        category,
+        category: finalCategory,
         publishAt: fromLocalInput(publishAt) || new Date().toISOString(),
         expiresAt: expiresAt ? fromLocalInput(expiresAt) : null,
         status,
@@ -166,7 +180,7 @@ export const AnnouncementsAdminPage: React.FC = () => {
                           </div>
                         </td>
                         <td>
-                          <span className="badge teal">{ANNOUNCEMENT_CATEGORY_LABEL[a.category]}</span>
+                          <span className="badge teal">{getAnnouncementCategoryLabel(a.category)}</span>
                         </td>
                         <td>
                           <div>Mulai: {fmtDateTime(a.publishAt)}</div>
@@ -217,7 +231,7 @@ export const AnnouncementsAdminPage: React.FC = () => {
 
                   <div className="service-card-badges">
                     <span className="badge teal" style={{ fontSize: '0.72rem' }}>
-                      {ANNOUNCEMENT_CATEGORY_LABEL[a.category]}
+                      {getAnnouncementCategoryLabel(a.category)}
                     </span>
                   </div>
 
@@ -272,18 +286,34 @@ export const AnnouncementsAdminPage: React.FC = () => {
                   />
                 </label>
 
-                <label className="field">
-                  <span>Kategori *</span>
+                <div className="field">
+                  <span>Kategori Pengumuman *</span>
                   <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as AnnouncementCategory)}
+                    value={categoryType}
+                    onChange={(e) => setCategoryType(e.target.value)}
                   >
                     <option value="promosi">Promosi & Diskon</option>
                     <option value="operasional">Info Operasional (Buka / Tutup)</option>
                     <option value="libur">Pemberitahuan Hari Libur</option>
                     <option value="teknis">Kendala Teknis / Pemeliharaan</option>
+                    <option value="keterlambatan">Potensi Keterlambatan</option>
+                    <option value="custom">✍️ Tulis Kategori Sendiri...</option>
                   </select>
-                </label>
+                </div>
+
+                {categoryType === 'custom' && (
+                  <label className="field" style={{ marginTop: '-4px' }}>
+                    <span style={{ color: '#001b3a', fontWeight: 600 }}>Tulis Nama Kategori Kustom *</span>
+                    <input
+                      type="text"
+                      placeholder="Contoh: Info Event, Cuci Gratis, Workshop..."
+                      value={customCategory}
+                      onChange={(e) => setCustomCategory(e.target.value)}
+                      required={categoryType === 'custom'}
+                      autoFocus
+                    />
+                  </label>
+                )}
 
                 <label className="field">
                   <span>Isi Pengumuman *</span>

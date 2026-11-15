@@ -4,7 +4,7 @@ import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import { SEED_SERVICES } from '../../data/seed';
 import {
-  ANNOUNCEMENT_CATEGORY_LABEL,
+  getAnnouncementCategoryLabel,
   durationLabel,
   priceLabel,
   whatsappLink,
@@ -358,7 +358,7 @@ export const HomePage: React.FC = () => {
                         marginRight: '6px',
                       }}
                     >
-                      {ANNOUNCEMENT_CATEGORY_LABEL[a.category] || 'Info'}
+                      {getAnnouncementCategoryLabel(a.category)}
                     </span>
                     <strong>{a.title}</strong> — {a.body}
                   </div>

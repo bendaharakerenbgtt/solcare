@@ -1,4 +1,4 @@
-import type { AnnouncementCategory, OrderStatus, PaymentMethod, PaymentStatus, Service, ServiceCategory } from '../data/types';
+import type { OrderStatus, PaymentMethod, PaymentStatus, Service, ServiceCategory } from '../data/types';
 export { displayCode } from './code';
 
 export function rupiah(n: number | null | undefined): string {
@@ -55,14 +55,26 @@ export const CATEGORY_LABEL: Record<ServiceCategory, string> = {
 export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = { tunai: 'Tunai', qris: 'QRIS' };
 export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = { lunas: 'Lunas', belum_lunas: 'Belum lunas' };
 
-export const ANNOUNCEMENT_CATEGORY_LABEL: Record<AnnouncementCategory, string> = {
+export const ANNOUNCEMENT_CATEGORY_LABEL: Record<string, string> = {
   kendala: 'Kendala teknis',
+  teknis: 'Kendala teknis',
+  operasional: 'Info operasional',
   keterlambatan: 'Potensi keterlambatan',
   jam_operasional: 'Jam operasional',
-  libur: 'Libur',
-  promosi: 'Promosi',
-  lainnya: 'Informasi',
+  libur: 'Pemberitahuan libur',
+  promosi: 'Promosi & Diskon',
+  lainnya: 'Informasi umum',
 };
+
+export function getAnnouncementCategoryLabel(category: string | undefined | null): string {
+  if (!category || !category.trim()) return 'Informasi';
+  const trimmed = category.trim();
+  if (ANNOUNCEMENT_CATEGORY_LABEL[trimmed]) {
+    return ANNOUNCEMENT_CATEGORY_LABEL[trimmed];
+  }
+  // If it's a custom string, return cleanly formatted/trimmed
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+}
 
 export const WEEKDAY_LABEL = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
