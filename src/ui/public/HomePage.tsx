@@ -87,12 +87,12 @@ function checkStoreOpen(openTimeStr?: string, closeTimeStr?: string): { isOpen: 
   if (currentMinutes >= openMinutes && currentMinutes < closeMinutes) {
     return {
       isOpen: true,
-      label: `Buka Sekarang • Tutup jam ${close} WIB`,
+      label: `Buka Hari Ini • Sampai ${close} WIB`,
     };
   } else {
     return {
       isOpen: false,
-      label: `Tutup Sekarang • Buka besok jam ${open} WIB`,
+      label: `Tutup Sekarang • Buka besok ${open} WIB`,
     };
   }
 }
@@ -100,7 +100,6 @@ function checkStoreOpen(openTimeStr?: string, closeTimeStr?: string): { isOpen: 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [searchCode, setSearchCode] = useState('');
-  const [selectedCat, setSelectedCat] = useState<ServiceCategory | 'all'>('all');
 
   const { data: settings } = useAsync(() => repo.getSettings(), []);
   const { data: announcements } = useAsync(() => repo.listPublicAnnouncements(), []);
@@ -122,10 +121,15 @@ export const HomePage: React.FC = () => {
     }));
   }, [dbServices]);
 
-  const filteredServices = useMemo(() => {
-    if (selectedCat === 'all') return services;
-    return services.filter((s) => s.category === selectedCat);
-  }, [services, selectedCat]);
+  // Featured 4 preview services for homepage
+  const previewServices = useMemo(() => {
+    // Pick the most popular essentials
+    const prioritized = ['Basic Clean', 'Deep Clean', 'Heavy Clean', 'Unyellowing'];
+    const matched = services.filter((s) =>
+      prioritized.some((p) => s.name.toLowerCase().includes(p.toLowerCase()))
+    );
+    return matched.length >= 4 ? matched.slice(0, 4) : services.slice(0, 4);
+  }, [services]);
 
   const handleTrackSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,60 +171,58 @@ export const HomePage: React.FC = () => {
         <div className="stack" style={{ gap: '22px' }}>
 
           {/* ======================================================== */}
-          {/* 1. HERO CARD DENGAN STATUS JAM BUKA OTOMATIS & SLOGAN    */}
+          {/* 1. HERO CARD DENGAN TYPOGRAPHY SLOGAN & STATUS BUKA RAPI */}
           {/* ======================================================== */}
           <section className="public-hero-card">
             <div className="public-hero-grid">
               <div>
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: storeStatus.isOpen ? '#f0fdf4' : '#f1f5f9',
-                    border: storeStatus.isOpen ? '1px solid #bbf7d0' : '1px solid #cbd5e1',
-                    color: storeStatus.isOpen ? '#15803d' : '#475569',
-                    fontSize: '0.76rem',
-                    fontWeight: 700,
-                    padding: '4px 10px',
-                    borderRadius: '999px',
-                    marginBottom: '10px',
-                  }}
-                >
-                  <span
-                    style={{
-                      width: '7px',
-                      height: '7px',
-                      borderRadius: '50%',
-                      background: storeStatus.isOpen ? '#16a34a' : '#94a3b8',
-                    }}
-                  />
-                  {storeStatus.label}
-                </span>
-
                 <h1 className="public-hero-heading">
                   Soleful Soaks! <br />
                   <span>Shoes Care &amp; Laundry</span>
                 </h1>
 
-                {/* Slogan Image / Text Banner */}
-                <div style={{ margin: '8px 0 12px', maxWidth: '320px' }}>
-                  <img
-                    src="/slogan_solefulsoaks.jpg"
-                    alt='Let Us Clean Ur Sole'
-                    width="320"
-                    height="64"
-                    style={{ maxWidth: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
-                  />
+                {/* Slogan Text Stylized (Ketik Ulang tanpa gambar tempelan) */}
+                <div
+                  style={{
+                    display: 'inline-block',
+                    margin: '6px 0 12px',
+                    padding: '4px 10px',
+                    background: '#f8fafc',
+                    borderRadius: '8px',
+                    border: '1px dashed #cbd5e1',
+                    fontSize: '0.88rem',
+                    fontWeight: 800,
+                    letterSpacing: '0.04em',
+                    color: '#0f172a',
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, monospace',
+                  }}
+                >
+                  &ldquo;LET US CLEAN UR <span style={{ textDecoration: 'line-through', opacity: 0.55 }}>SOUL</span> <span style={{ color: '#bf2f3b' }}>SOLE</span>&rdquo;
                 </div>
 
                 <p className="public-hero-desc">
                   Perawatan mendalam, unyellowing, recolor hingga pembersihan harian untuk sepatu, tas, helm, dan topi dengan pengerjaan higienis dan wangi.
                 </p>
 
+                {/* Status Buka/Tutup Rapi di Bawah Deskripsi (Bukan mengambang di atas card) */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
+                  <span
+                    style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: storeStatus.isOpen ? '#16a34a' : '#94a3b8',
+                      display: 'inline-block',
+                    }}
+                  />
+                  <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600 }}>
+                    {storeStatus.label}
+                  </span>
+                </div>
+
                 <div className="row" style={{ gap: '10px', marginTop: '16px' }}>
                   <a href="#pricelist" className="btn sm" style={{ background: '#bf2f3b' }}>
-                    Lihat Daftar Harga ↓
+                    Lihat Cuplikan Harga ↓
                   </a>
                   {waUrl && (
                     <a
@@ -280,7 +282,7 @@ export const HomePage: React.FC = () => {
                 </form>
 
                 <div style={{ marginTop: '10px', fontSize: '0.74rem', color: '#64748b' }}>
-                  Belum punya kode? Kunjungi workshop kami atau kirim sepatu via layanan antar-jemput.
+                  Belum punya kode? Kunjungi workshop kami atau minta kurir jemput sepatu Anda.
                 </div>
               </div>
             </div>
@@ -373,137 +375,134 @@ export const HomePage: React.FC = () => {
           </section>
 
           {/* ======================================================== */}
-          {/* 4. DAFTAR HARGA LAYANAN (PRICELIST)                      */}
+          {/* 4. PREVIEW HARGA POPULER & TOMBOL LIHAT FULL PRICELIST   */}
           {/* ======================================================== */}
           <section id="pricelist" className="public-card">
-            <div style={{ marginBottom: '14px' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 2px' }}>
-                Daftar Harga Layanan (Pricelist)
-              </h2>
-              <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                Tarif resmi pengerjaan sepatu &amp; apparel di workshop Soleful Soaks
-              </span>
-            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 2px' }}>
+                  Layanan Terfavorit
+                </h2>
+                <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                  Beberapa pilihan pencucian paling sering dipilih pelanggan kami
+                </span>
+              </div>
 
-            {/* Horizontal Scroll Filter Tab Kategori (HP Friendly) */}
-            <div className="public-category-scroll">
-              {[
-                { id: 'all' as const, label: `Semua (${services.length})` },
-                { id: 'main' as const, label: 'Main Services' },
-                { id: 'express' as const, label: 'Express' },
-                { id: 'additional' as const, label: 'Treatment & Repaint' },
-                { id: 'other' as const, label: 'Tas, Helm & Topi' },
-              ].map((tab) => {
-                const active = selectedCat === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => setSelectedCat(tab.id)}
-                    className="public-category-btn"
-                    style={{
-                      background: active ? '#001b3a' : '#f8fafc',
-                      color: active ? '#ffffff' : '#475569',
-                      border: active ? '1px solid #001b3a' : '1px solid #e2e8f0',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Grid Kartu Harga */}
-            {filteredServices.length === 0 ? (
-              <div
+              <Link
+                to="/layanan"
+                className="btn secondary sm"
                 style={{
-                  background: '#f8fafc',
-                  border: '1px dashed #cbd5e1',
-                  borderRadius: '14px',
-                  padding: '24px',
-                  textAlign: 'center',
-                  color: '#64748b',
-                  fontSize: '0.86rem',
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
                 }}
               >
-                Belum ada layanan pada kategori ini. Silakan pilih tab kategori lain atau hubungi CS kami.
-              </div>
-            ) : (
-              <div className="grid grid-2" style={{ gap: '10px' }}>
-                {filteredServices.map((svc) => (
-                  <article
-                    key={svc.id}
-                    className="public-service-card"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '12px',
-                      padding: '12px 14px',
-                      background: '#ffffff',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '14px',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                      <div
-                        style={{
-                          width: '42px',
-                          height: '42px',
-                          borderRadius: '12px',
-                          background: '#f8fafc',
-                          border: '1px solid #e2e8f0',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                        }}
-                        aria-hidden="true"
-                      >
-                        {renderServiceIcon(svc.category, svc.name)}
-                      </div>
-                      <div style={{ minWidth: 0 }}>
-                        <h3
-                          style={{
-                            margin: 0,
-                            fontSize: '0.88rem',
-                            fontWeight: 700,
-                            color: '#0f172a',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {svc.name}
-                        </h3>
-                        <span style={{ fontSize: '0.73rem', color: '#64748b', display: 'block' }}>
-                          {durationLabel(svc) || '2 Hari'} • {svc.description}
-                        </span>
-                      </div>
-                    </div>
+                Lihat Seluruh Layanan ({services.length}) →
+              </Link>
+            </div>
 
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <strong className="price" style={{ fontSize: '0.92rem', color: '#bf2f3b', display: 'block', fontVariantNumeric: 'tabular-nums' }}>
-                        {priceLabel(svc)}
-                      </strong>
-                      <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
-                        per pasang/unit
+            {/* Grid 4 Layanan Paling Populer (Ringkas & Menarik) */}
+            <div className="grid grid-2" style={{ gap: '10px' }}>
+              {previewServices.map((svc) => (
+                <article
+                  key={svc.id}
+                  className="public-service-card"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    padding: '12px 14px',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '14px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                    <div
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '12px',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                      aria-hidden="true"
+                    >
+                      {renderServiceIcon(svc.category, svc.name)}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <h3
+                        style={{
+                          margin: 0,
+                          fontSize: '0.88rem',
+                          fontWeight: 700,
+                          color: '#0f172a',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {svc.name}
+                      </h3>
+                      <span style={{ fontSize: '0.73rem', color: '#64748b', display: 'block' }}>
+                        {durationLabel(svc) || '2 Hari'} • {svc.description}
                       </span>
                     </div>
-                  </article>
-                ))}
-              </div>
-            )}
+                  </div>
 
-            <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px dashed #e2e8f0', fontSize: '0.75rem', color: '#64748b' }}>
-              * Catatan: Harga akhir dapat disesuaikan di workshop bila terdapat tingkat kesulitan atau noda membandel khusus.
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <strong className="price" style={{ fontSize: '0.92rem', color: '#bf2f3b', display: 'block', fontVariantNumeric: 'tabular-nums' }}>
+                      {priceLabel(svc)}
+                    </strong>
+                    <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
+                      per pasang
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {/* Banner Ajakan Buka Full Pricelist Page */}
+            <div
+              style={{
+                marginTop: '14px',
+                padding: '12px 16px',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '10px',
+              }}
+            >
+              <span style={{ fontSize: '0.8rem', color: '#475569' }}>
+                Tersedia juga Cuci Tas, Topi, Helm, Unyellowing, serta Repaint &amp; Reglue lengkap.
+              </span>
+              <Link
+                to="/layanan"
+                style={{
+                  color: '#bf2f3b',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  textDecoration: 'none',
+                }}
+              >
+                Buka Katalog Lengkap →
+              </Link>
             </div>
           </section>
 
           {/* ======================================================== */}
-          {/* 5. KETENTUAN LAYANAN ANTAR JEMPUT (DI BAWAH PRICELIST)   */}
+          {/* 5. KETENTUAN LAYANAN ANTAR JEMPUT                        */}
           {/* ======================================================== */}
           <section className="public-card">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
