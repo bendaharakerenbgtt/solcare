@@ -264,10 +264,10 @@ export const TrackOrderPage: React.FC = () => {
               padding: '4px 5px 4px 14px',
             }}
           >
-            <SearchIcon size={17} color="#94a3b8" style={{ flexShrink: 0 }} />
+            <SearchIcon size={16} color="#94a3b8" style={{ flexShrink: 0 }} />
             <input
               type="text"
-              placeholder="Contoh: SS-7K3QX-9MPRA"
+              placeholder="Kode pesanan..."
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="mono"
@@ -281,10 +281,12 @@ export const TrackOrderPage: React.FC = () => {
                 border: 'none',
                 background: 'transparent',
                 outline: 'none',
-                padding: '6px 0',
-                fontSize: '0.88rem',
-                fontWeight: 700,
+                padding: '6px 4px',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                flex: 1,
                 minWidth: 0,
+                width: '100%',
               }}
             />
             {code && (

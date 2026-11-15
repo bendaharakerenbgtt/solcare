@@ -166,7 +166,7 @@ export class LocalRepo implements Repo {
       address: 'Jl. Mampang Prapatan XV No.32',
       whatsappNumber: '081210043758',
       instagramUrl: 'https://www.instagram.com/soleful.soaks?obrf=MXRsZWc0OTFwanB1bA==',
-      publicHoursText: 'Senin - Sabtu: 09.00 - 18.00 WIB (Minggu Libur)',
+      publicHoursText: 'Senin - Sabtu: 09.00 - 18.00 WIB (Hari Libur Nasional Tutup)',
     });
     this.save<Service>(
       'services',

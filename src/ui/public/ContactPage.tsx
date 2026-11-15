@@ -51,8 +51,8 @@ export const ContactPage: React.FC = () => {
     : null;
 
   const hoursText =
-    settings?.publicHoursText?.trim() ||
-    `${settings?.openTime || '09:00'} - ${settings?.closeTime || '18:00'} WIB`;
+    (settings?.publicHoursText?.trim() || `${settings?.openTime || '09:00'} - ${settings?.closeTime || '18:00'} WIB (Hari Libur Nasional Tutup)`)
+      .replace(/Minggu Libur/gi, 'Hari Libur Nasional Tutup');
 
   const workshopAddress = settings?.address?.trim() || 'Jl. Mampang Prapatan XV No.32 (Konfirmasi via WhatsApp CS)';
 
@@ -96,79 +96,68 @@ export const ContactPage: React.FC = () => {
           </span>
         </div>
 
-        {/* 1. Navy Gradient Outlet Hero Card */}
-        <div className="public-navy-banner">
-          <div style={{ marginBottom: '14px' }}>
-            <strong style={{ fontSize: '1.15rem', color: '#ffffff', display: 'block' }}>
-              {settings?.businessName || 'Soleful Soaks! Shoes Care'}
-            </strong>
-            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.82)', display: 'block', marginTop: '2px' }}>
-              {settings?.tagline || 'Perawatan & pembersihan sepatu profesional'}
-            </span>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-            {waUrl ? (
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  background: '#16a34a',
-                  color: '#ffffff',
-                  borderRadius: '12px',
-                  padding: '10px 14px',
-                  fontSize: '0.84rem',
-                  fontWeight: 800,
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '7px',
-                  boxShadow: '0 4px 12px rgba(22, 163, 74, 0.35)',
-                }}
-              >
-                <WhatsAppIcon size={17} color="#ffffff" />
-                <span>WhatsApp CS</span>
-              </a>
-            ) : (
-              <div
-                style={{
-                  background: 'rgba(255,255,255,0.14)',
-                  border: '1px solid rgba(255,255,255,0.28)',
-                  borderRadius: '10px',
-                  padding: '9px 12px',
-                  fontSize: '0.78rem',
-                  color: '#ffffff',
-                }}
-              >
-                WhatsApp CS
-              </div>
-            )}
-
+        {/* 1. Tombol WhatsApp & Instagram */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+          {waUrl ? (
             <a
-              href={igUrl}
+              href={waUrl}
               target="_blank"
               rel="noreferrer"
               style={{
-                background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+                background: '#16a34a',
                 color: '#ffffff',
                 borderRadius: '12px',
-                padding: '10px 14px',
-                fontSize: '0.84rem',
+                padding: '11px 14px',
+                fontSize: '0.86rem',
                 fontWeight: 800,
                 textDecoration: 'none',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '7px',
-                boxShadow: '0 4px 12px rgba(220, 39, 67, 0.35)',
+                boxShadow: '0 3px 10px rgba(22, 163, 74, 0.25)',
               }}
             >
-              <InstagramIcon size={17} color="#ffffff" />
-              <span>Instagram</span>
+              <WhatsAppIcon size={18} color="#ffffff" />
+              <span>WhatsApp CS</span>
             </a>
-          </div>
+          ) : (
+            <div
+              style={{
+                background: '#f1f5f9',
+                borderRadius: '12px',
+                padding: '11px 14px',
+                fontSize: '0.82rem',
+                color: '#64748b',
+                textAlign: 'center',
+              }}
+            >
+              WhatsApp CS
+            </div>
+          )}
+
+          <a
+            href={igUrl}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+              color: '#ffffff',
+              borderRadius: '12px',
+              padding: '11px 14px',
+              fontSize: '0.86rem',
+              fontWeight: 800,
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '7px',
+              boxShadow: '0 3px 10px rgba(220, 39, 67, 0.25)',
+            }}
+          >
+            <InstagramIcon size={18} color="#ffffff" />
+            <span>Instagram</span>
+          </a>
         </div>
 
         {/* 2. Lokasi, Jam Operasional & Embedded Google Maps */}
