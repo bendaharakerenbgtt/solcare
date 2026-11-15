@@ -18,8 +18,16 @@ export const StaffAdminPage: React.FC = () => {
   const [role, setRole] = useState<Role>('staff');
 
   const [pwdModalOpen, setPwdModalOpen] = useState(false);
-  const [pwdTargetId, setPwdTargetId] = useState<string | null>(null);
+  const [pwdTarget, setPwdTarget] = useState<StaffUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
+
+  const handleCopy = (text: string, id: string) => {
+    void navigator.clipboard.writeText(text);
+    setCopiedEmail(id);
+    setTimeout(() => setCopiedEmail(null), 2000);
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,12 +54,12 @@ export const StaffAdminPage: React.FC = () => {
 
   const handleChangePwd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pwdTargetId) return;
+    if (!pwdTarget) return;
     try {
-      await repo.changePassword(pwdTargetId, newPassword);
+      await repo.changePassword(pwdTarget.id, newPassword);
       setPwdModalOpen(false);
       setNewPassword('');
-      alert('Password berhasil diubah.');
+      alert(`Password untuk akun "${pwdTarget.email}" (${pwdTarget.name}) berhasil diperbarui!`);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal mengubah password');
     }
@@ -122,11 +130,11 @@ export const StaffAdminPage: React.FC = () => {
                   <thead>
                     <tr>
                       <th>Nama Pegawai</th>
-                      <th>Email</th>
+                      <th>Email (Akun Login)</th>
                       <th>Role</th>
                       <th>Status</th>
                       <th>Dibuat Pada</th>
-                      <th className="right">Aksi</th>
+                      <th className="right">Aksi &amp; Password</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -140,7 +148,27 @@ export const StaffAdminPage: React.FC = () => {
                             </span>
                           )}
                         </td>
-                        <td>{s.email}</td>
+                        <td>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <strong className="mono" style={{ color: '#001b3a', fontSize: '0.84rem' }}>{s.email}</strong>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(s.email, s.id)}
+                              title="Salin email login"
+                              style={{
+                                background: '#f1f5f9',
+                                border: '1px solid #cbd5e1',
+                                borderRadius: '6px',
+                                padding: '2px 6px',
+                                fontSize: '0.68rem',
+                                cursor: 'pointer',
+                                color: '#475569',
+                              }}
+                            >
+                              {copiedEmail === s.id ? '✓ Tersalin' : 'Salin'}
+                            </button>
+                          </div>
+                        </td>
                         <td>
                           <span className="badge teal" style={{ textTransform: 'uppercase' }}>
                             {s.role}
@@ -155,13 +183,16 @@ export const StaffAdminPage: React.FC = () => {
                         <td className="right">
                           <button
                             type="button"
-                            className="btn secondary sm"
+                            className="btn sm"
+                            style={{ background: '#001b3a', color: '#ffffff' }}
                             onClick={() => {
-                              setPwdTargetId(s.id);
+                              setPwdTarget(s);
                               setPwdModalOpen(true);
+                              setNewPassword('');
+                              setShowPassword(false);
                             }}
                           >
-                            Ubah Password
+                            🔑 Ubah Password
                           </button>
                           {s.id !== currentUser?.id && (
                             <button
@@ -184,13 +215,13 @@ export const StaffAdminPage: React.FC = () => {
             {/* Mobile Card View (Touch-friendly responsive) */}
             <div className="mobile-only-cards">
               {filtered.map((s) => (
-                <div key={s.id} className="staff-mobile-card">
-                  <div className="service-card-top">
+                <div key={s.id} className="staff-mobile-card" style={{ border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px', background: '#ffffff', marginBottom: '10px' }}>
+                  <div className="service-card-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <div>
-                      <strong className="service-card-name">{s.name}</strong>
+                      <strong className="service-card-name" style={{ fontSize: '1rem', color: '#0f172a' }}>{s.name}</strong>
                       {s.id === currentUser?.id && (
-                        <span className="badge teal" style={{ marginLeft: '6px', fontSize: '0.7rem' }}>
-                          Anda
+                        <span className="badge teal" style={{ marginLeft: '6px', fontSize: '0.68rem' }}>
+                          Akun Anda
                         </span>
                       )}
                     </div>
@@ -199,30 +230,66 @@ export const StaffAdminPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="service-card-badges">
-                    <span className="badge teal" style={{ textTransform: 'uppercase', fontSize: '0.72rem' }}>
-                      Role: {s.role}
-                    </span>
-                    <span className="mono xs muted" style={{ wordBreak: 'break-all' }}>
-                      {s.email}
-                    </span>
-                  </div>
-
-                  <div className="service-card-meta-row">
-                    <span className="xs muted">Terdaftar: {fmtDateTime(s.createdAt)}</span>
-                  </div>
-
-                  <div className="service-card-footer">
-                    <div className="service-card-actions">
+                  {/* Info Akun Login */}
+                  <div
+                    style={{
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '10px',
+                      padding: '10px 12px',
+                      margin: '8px 0',
+                    }}
+                  >
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', marginBottom: '2px' }}>
+                      Akun Login (Email):
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                      <strong className="mono" style={{ fontSize: '0.86rem', color: '#001b3a', wordBreak: 'break-all' }}>
+                        {s.email}
+                      </strong>
                       <button
                         type="button"
-                        className="btn secondary sm"
-                        onClick={() => {
-                          setPwdTargetId(s.id);
-                          setPwdModalOpen(true);
+                        onClick={() => handleCopy(s.email, s.id)}
+                        style={{
+                          background: '#ffffff',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          padding: '3px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          color: '#334155',
+                          flexShrink: 0,
                         }}
                       >
-                        Ubah Password
+                        {copiedEmail === s.id ? '✓ Tersalin' : 'Salin'}
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
+                      <span className="badge teal" style={{ textTransform: 'uppercase', fontSize: '0.68rem' }}>
+                        Hak Akses: {s.role === 'admin' ? 'Administrator' : 'Staff Operasional'}
+                      </span>
+                      <span className="xs muted">
+                        Dibuat: {fmtDateTime(s.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="service-card-footer" style={{ marginTop: '10px' }}>
+                    <div className="service-card-actions" style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        type="button"
+                        className="btn sm"
+                        style={{ flex: 1, background: '#001b3a', color: '#ffffff', justifyContent: 'center' }}
+                        onClick={() => {
+                          setPwdTarget(s);
+                          setPwdModalOpen(true);
+                          setNewPassword('');
+                          setShowPassword(false);
+                        }}
+                      >
+                        🔑 Ubah Password
                       </button>
                       {s.id !== currentUser?.id && (
                         <button
@@ -306,10 +373,10 @@ export const StaffAdminPage: React.FC = () => {
         </ModalPortal>
       )}
 
-      {pwdModalOpen && (
+      {pwdModalOpen && pwdTarget && (
         <ModalPortal>
-        <div className="modal-backdrop">
-          <div className="modal">
+        <div className="modal-backdrop" onClick={() => setPwdModalOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
             <header>
               <h3>Ubah Password Pegawai</h3>
               <button type="button" className="x" onClick={() => setPwdModalOpen(false)}>
@@ -318,23 +385,71 @@ export const StaffAdminPage: React.FC = () => {
             </header>
             <form onSubmit={handleChangePwd}>
               <div className="body stack" style={{ gap: '14px' }}>
+                {/* Info Identitas Akun yang Sedang Diubah */}
+                <div
+                  style={{
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '10px',
+                    padding: '12px 14px',
+                  }}
+                >
+                  <div style={{ fontSize: '0.74rem', color: '#64748b', marginBottom: '2px' }}>
+                    Mengubah Password Untuk Akun:
+                  </div>
+                  <strong style={{ fontSize: '0.96rem', color: '#0f172a', display: 'block' }}>
+                    {pwdTarget.name}
+                  </strong>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                    <span className="mono" style={{ fontSize: '0.84rem', color: '#001b3a', fontWeight: 600 }}>
+                      {pwdTarget.email}
+                    </span>
+                    <span className="badge teal" style={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>
+                      {pwdTarget.role}
+                    </span>
+                  </div>
+                </div>
+
                 <label className="field">
-                  <span>Password Baru *</span>
-                  <input
-                    type="password"
-                    placeholder="Minimal 6 karakter"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                  />
+                  <span>Masukkan Password Baru *</span>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Minimal 6 karakter..."
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                      autoFocus
+                      style={{ paddingRight: '40px', width: '100%' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        padding: '4px',
+                      }}
+                      title={showPassword ? 'Sembunyikan password' : 'Lihat password'}
+                    >
+                      {showPassword ? '🙈' : '👁️'}
+                    </button>
+                  </div>
+                  <span style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '4px' }}>
+                    Pastikan password baru dicatat atau langsung diinformasikan ke pegawai terkait.
+                  </span>
                 </label>
               </div>
               <footer>
                 <button type="button" className="btn secondary" onClick={() => setPwdModalOpen(false)}>
                   Batal
                 </button>
-                <button type="submit" className="btn">
-                  Perbarui Password
+                <button type="submit" className="btn" style={{ background: '#001b3a' }}>
+                  Simpan Password Baru
                 </button>
               </footer>
             </form>
