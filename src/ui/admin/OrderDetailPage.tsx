@@ -829,38 +829,41 @@ export const OrderDetailPage: React.FC = () => {
               ))}
 
               {/* Estimate adjustments log items */}
-              {estimateHistory.map((eh) => (
-                <div key={eh.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                    <div
-                      style={{
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        background: '#bf2f3b',
-                        color: '#ffffff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginTop: '2px',
-                      }}
-                    >
-                      <ClockIcon size={12} color="#ffffff" />
+              {estimateHistory.map((eh) => {
+                const isInitial = !eh.previousAt || eh.reason?.toLowerCase().includes('otomatis saat input') || eh.reason?.toLowerCase().includes('manual saat input');
+                return (
+                  <div key={eh.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                      <div
+                        style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          background: isInitial ? '#001b3a' : '#bf2f3b',
+                          color: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginTop: '2px',
+                        }}
+                      >
+                        <ClockIcon size={12} color="#ffffff" />
+                      </div>
+                      <div>
+                        <strong style={{ fontSize: '0.88rem', color: '#0f172a', display: 'block' }}>
+                          {isInitial ? 'Target Selesai Ditetapkan' : 'Perubahan Target Selesai'}: {eh.newAt ? formatBilasDateTime(eh.newAt) : '-'}
+                        </strong>
+                        <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                          {eh.reason || (isInitial ? 'Estimasi pengerjaan' : 'Penyesuaian')} • Oleh : {eh.byName}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <strong style={{ fontSize: '0.88rem', color: '#0f172a', display: 'block' }}>
-                        Estimasi Diubah: {eh.newAt ? formatBilasDateTime(eh.newAt) : '-'}
-                      </strong>
-                      <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                        {eh.reason || 'Penyesuaian'} • Oleh : {eh.byName}
-                      </span>
-                    </div>
+                    <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
+                      {formatBilasDateTime(eh.at)}
+                    </span>
                   </div>
-                  <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
-                    {formatBilasDateTime(eh.at)}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
