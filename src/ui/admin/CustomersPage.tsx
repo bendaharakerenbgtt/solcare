@@ -19,6 +19,7 @@ import {
   DocumentIcon,
   IndonesiaFlagIcon,
   EmptyStateIllustration,
+  TrashIcon,
 } from '../common/Icons';
 
 export const CustomersPage: React.FC = () => {
@@ -138,6 +139,37 @@ export const CustomersPage: React.FC = () => {
       selectCustomer(saved.id);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal menyimpan data');
+    }
+  };
+
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+
+  const handleDeleteCustomer = async (cust: Customer) => {
+    // Cek apakah ada order pelanggan ini
+    const hasOrders = (orders || []).some((o) => o.customerId === cust.id);
+    if (hasOrders) {
+      alert(`Pelanggan "${cust.name}" tidak dapat dihapus karena masih memiliki riwayat transaksi/pesanan.`);
+      return;
+    }
+
+    setCustomerToDelete(cust);
+  };
+
+  const confirmDeleteCustomer = async () => {
+    if (!customerToDelete) return;
+    setIsDeleting(true);
+    try {
+      await repo.deleteCustomer(customerToDelete.id);
+      if (selectedCustomerId === customerToDelete.id) {
+        selectCustomer(null);
+      }
+      setCustomerToDelete(null);
+      await reload();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Gagal menghapus pelanggan');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -309,6 +341,28 @@ export const CustomersPage: React.FC = () => {
                   >
                     <PencilIcon size={13} color="#ffffff" />
                     <span>Edit Profil</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteCustomer(selectedCustomer)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: '#fee2e2',
+                      color: '#dc2626',
+                      padding: '6px 10px',
+                      borderRadius: '8px',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      border: '1px solid #fecaca',
+                      cursor: 'pointer',
+                    }}
+                    title="Hapus Pelanggan"
+                  >
+                    <TrashIcon size={13} color="#dc2626" />
+                    <span>Hapus</span>
                   </button>
                 </div>
               </div>
@@ -920,12 +974,38 @@ export const CustomersPage: React.FC = () => {
                 />
               </label>
 
-              {/* Sticky SIMPAN button */}
-              <div style={{ marginTop: '12px' }}>
+              {/* Sticky SIMPAN & HAPUS button */}
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                {editingCustomer && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cust = editingCustomer;
+                      setModalOpen(false);
+                      handleDeleteCustomer(cust);
+                    }}
+                    style={{
+                      background: '#fee2e2',
+                      color: '#dc2626',
+                      border: '1px solid #fecaca',
+                      borderRadius: '12px',
+                      padding: '12px 16px',
+                      fontSize: '0.94rem',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <TrashIcon size={16} color="#dc2626" />
+                    <span>HAPUS</span>
+                  </button>
+                )}
                 <button
                   type="submit"
                   style={{
-                    width: '100%',
+                    flex: 1,
                     background: '#001b3a',
                     color: '#ffffff',
                     border: 'none',
@@ -952,6 +1032,81 @@ export const CustomersPage: React.FC = () => {
         initialAddress={address}
         onSelectAddress={(addr) => setAddress(addr)}
       />
+
+      {/* Confirmation Modal: Hapus Pelanggan */}
+      {customerToDelete && (
+        <ModalPortal>
+          <div className="modal-backdrop" onClick={() => !isDeleting && setCustomerToDelete(null)} style={{ zIndex: 9999 }}>
+            <div
+              className="modal-content"
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '400px', width: '90%', borderRadius: '18px', padding: '24px', textAlign: 'center' }}
+            >
+              <div
+                style={{
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '50%',
+                  background: '#fee2e2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
+                }}
+              >
+                <TrashIcon size={26} color="#dc2626" />
+              </div>
+
+              <h3 style={{ margin: '0 0 8px', fontSize: '1.15rem', color: '#0f172a', fontWeight: 800 }}>
+                Hapus Pelanggan?
+              </h3>
+              <p style={{ margin: '0 0 20px', fontSize: '0.86rem', color: '#64748b', lineHeight: 1.5 }}>
+                Apakah Anda yakin ingin menghapus pelanggan <strong>"{customerToDelete.name}"</strong>? Data yang dihapus tidak dapat dipulihkan.
+              </p>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => setCustomerToDelete(null)}
+                  style={{
+                    flex: 1,
+                    background: '#f1f5f9',
+                    color: '#475569',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '10px 16px',
+                    fontWeight: 700,
+                    fontSize: '0.9rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={confirmDeleteCustomer}
+                  style={{
+                    flex: 1,
+                    background: '#dc2626',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '10px 16px',
+                    fontWeight: 800,
+                    fontSize: '0.9rem',
+                    cursor: 'pointer',
+                    opacity: isDeleting ? 0.7 : 1,
+                  }}
+                >
+                  {isDeleting ? 'Menghapus...' : 'Ya, Hapus'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </ModalPortal>
+      )}
     </div>
   );
 };

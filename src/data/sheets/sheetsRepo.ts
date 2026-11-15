@@ -510,6 +510,22 @@ export class SheetsRepo extends LocalRepo implements Repo {
   }
 
   // -----------------------------------------------------------------
+  // OVERRIDES: Customers
+  // -----------------------------------------------------------------
+  override async saveCustomer(c: SaveInput<Customer>): Promise<Customer> {
+    const cust = await super.saveCustomer(c);
+    this.lastSyncAt = Date.now();
+    void this.callScript({ action: 'saveCustomer', customer: cust });
+    return cust;
+  }
+
+  override async deleteCustomer(id: ID): Promise<void> {
+    await super.deleteCustomer(id);
+    this.lastSyncAt = Date.now();
+    void this.callScript({ action: 'delete', table: 'customers', keyField: 'id', keyValue: id });
+  }
+
+  // -----------------------------------------------------------------
   // OVERRIDES: Staff & Password
   // -----------------------------------------------------------------
   override async createStaff(input: { name: string; email: string; password: string; role: Role }): Promise<StaffUser> {
