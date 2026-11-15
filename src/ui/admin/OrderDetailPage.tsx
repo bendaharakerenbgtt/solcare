@@ -406,13 +406,17 @@ export const OrderDetailPage: React.FC = () => {
 
         {deliveryExpanded && (
           <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f1f5f9', fontSize: '0.84rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span style={{ color: '#64748b' }}>Metode</span>
-              <strong>{order.internalNotes?.includes('Antar-Jemput') ? 'Layanan Antar-Jemput' : 'Drop-off di Outlet'}</strong>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '12px' }}>
+              <span style={{ color: '#64748b', flexShrink: 0 }}>Metode</span>
+              <strong style={{ textAlign: 'right', wordBreak: 'break-word' }}>
+                {order.internalNotes?.includes('Antar-Jemput') ? 'Layanan Antar-Jemput' : 'Drop-off di Outlet'}
+              </strong>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <span style={{ color: '#64748b' }}>Catatan</span>
-              <strong>{order.internalNotes || 'Standar'}</strong>
+              <strong style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#0f172a', wordBreak: 'break-word', lineHeight: 1.45, fontWeight: 600 }}>
+                {order.internalNotes || 'Standar'}
+              </strong>
             </div>
           </div>
         )}

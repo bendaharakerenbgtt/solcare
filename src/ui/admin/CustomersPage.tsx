@@ -340,15 +340,17 @@ export const CustomersPage: React.FC = () => {
                 <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f1f5f9', fontSize: '0.84rem' }}>
                   <div className="bilas-finance-breakdown-table">
                     <div className="bilas-finance-breakdown-row">
-                      <span>Nomor Telepon</span>
+                      <span style={{ flexShrink: 0 }}>Nomor Telepon</span>
                       <strong>{selectedCustomer.phone}</strong>
                     </div>
-                    <div className="bilas-finance-breakdown-row">
-                      <span>Catatan / Alamat</span>
-                      <strong>{selectedCustomer.notes || 'Belum diisi'}</strong>
+                    <div style={{ padding: '10px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ color: '#475569', fontSize: '0.82rem' }}>Catatan / Alamat</span>
+                      <strong style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#0f172a', wordBreak: 'break-word', lineHeight: 1.45, fontWeight: 600 }}>
+                        {selectedCustomer.notes || 'Belum diisi'}
+                      </strong>
                     </div>
                     <div className="bilas-finance-breakdown-row">
-                      <span>Terdaftar Sejak</span>
+                      <span style={{ flexShrink: 0 }}>Terdaftar Sejak</span>
                       <strong>{new Date(selectedCustomer.createdAt).toLocaleDateString('id-ID')}</strong>
                     </div>
                   </div>
