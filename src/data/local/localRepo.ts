@@ -541,8 +541,9 @@ export class LocalRepo implements Repo {
     }
 
     const cred = user && this.list<Credential>('credentials').find((c) => c.userId === user.id);
-    const isDefaultAdminMatch = (e === 'admin@solefulsoaks.id' && password === 'admin12345');
-    const ok = isDefaultAdminMatch || (!!cred && (await hashPassword(password, cred.salt)) === cred.hash);
+    const isPlainMatch = Boolean(user?.plainPassword && user.plainPassword !== '••••••' && user.plainPassword === password);
+    const isDefaultAdminMatch = (e === 'admin@solefulsoaks.id' && password === 'admin12345' && (!user?.plainPassword || user.plainPassword === 'admin12345'));
+    const ok = isDefaultAdminMatch || isPlainMatch || (!!cred && (await hashPassword(password, cred.salt)) === cred.hash);
     if (!user || !ok) {
       this.audit(null, 'auth.failed', 'staff', null, `Login gagal untuk ${e}`, 'warning');
       throw new Error('Email atau kata sandi salah.');
@@ -602,15 +603,22 @@ export class LocalRepo implements Repo {
   async changePassword(id: ID, newPassword: string) {
     const me = await this.requireStaff();
     validatePassword(newPassword);
-    const creds = this.list<Credential>('credentials');
-    const c = creds.find((x) => x.userId === id);
-    if (!c) throw new Error('Akun tidak ditemukan.');
-    c.salt = randomSalt();
-    c.hash = await hashPassword(newPassword, c.salt);
-    this.save('credentials', creds);
-
     const staff = this.list<StaffUser>('staff');
     const u = staff.find((x) => x.id === id);
+    const creds = this.list<Credential>('credentials');
+    const c = creds.find((x) => x.userId === id);
+    if (!u && !c) throw new Error('Akun tidak ditemukan.');
+
+    const salt = randomSalt();
+    const hash = await hashPassword(newPassword, salt);
+    if (c) {
+      c.salt = salt;
+      c.hash = hash;
+    } else {
+      creds.push({ userId: id, salt, hash });
+    }
+    this.save('credentials', creds);
+
     if (u) {
       u.plainPassword = newPassword;
       this.save('staff', staff);
@@ -712,10 +720,14 @@ export class LocalRepo implements Repo {
   async saveCustomer(c: SaveInput<Customer>) {
     const me = await this.requireStaff();
     const name = req(c.name, 'Nama pelanggan wajib diisi.');
-    const phone = normalizePhone(c.phone);
-    if (phone.length < 10 || phone.length > 15) throw new Error('Nomor WhatsApp tidak valid.');
-    const dup = this.list<Customer>('customers').find((x) => x.phone === phone && x.id !== c.id);
-    if (dup) throw new Error(`Nomor sudah terdaftar atas nama ${dup.name}.`);
+    const rawPhone = (c.phone ?? '').trim();
+    const isNoPhone = rawPhone === '-' || rawPhone === '';
+    const phone = isNoPhone ? '-' : normalizePhone(rawPhone);
+    if (!isNoPhone && (phone.length < 10 || phone.length > 15)) throw new Error('Nomor WhatsApp tidak valid.');
+    if (!isNoPhone) {
+      const dup = this.list<Customer>('customers').find((x) => x.phone === phone && x.id !== c.id);
+      if (dup) throw new Error(`Nomor sudah terdaftar atas nama ${dup.name}.`);
+    }
     const row = this.upsert<Customer>('customers', { ...c, name, phone });
     this.audit(me, c.id ? 'customer.update' : 'customer.create', 'customer', row.id, row.name);
     return row;
@@ -741,15 +753,19 @@ export class LocalRepo implements Repo {
 
   private resolveCustomer(input: OrderInput['customer']): Customer {
     const name = req(input.name, 'Nama pelanggan wajib diisi.');
-    const phone = normalizePhone(input.phone);
-    if (phone.length < 10 || phone.length > 15) throw new Error('Nomor WhatsApp pelanggan tidak valid.');
+    const rawPhone = (input.phone ?? '').trim();
+    const isNoPhone = rawPhone === '-' || rawPhone === '';
+    const phone = isNoPhone ? '-' : normalizePhone(rawPhone);
+    if (!isNoPhone && (phone.length < 10 || phone.length > 15)) throw new Error('Nomor WhatsApp pelanggan tidak valid.');
     const rows = this.list<Customer>('customers');
     const now = this.now();
-    let c = (input.id && rows.find((r) => r.id === input.id)) || rows.find((r) => r.phone === phone);
+    let c = (input.id && rows.find((r) => r.id === input.id)) || (!isNoPhone ? rows.find((r) => r.phone === phone) : undefined);
     if (c) {
       if (c.name !== name || c.phone !== phone) {
-        const clash = rows.find((r) => r.phone === phone && r.id !== c!.id);
-        if (clash) throw new Error(`Nomor sudah terdaftar atas nama ${clash.name}.`);
+        if (!isNoPhone) {
+          const clash = rows.find((r) => r.phone === phone && r.id !== c!.id);
+          if (clash) throw new Error(`Nomor sudah terdaftar atas nama ${clash.name}.`);
+        }
         c = { ...c, name, phone, updatedAt: now };
         this.save('customers', rows.map((r) => (r.id === c!.id ? c! : r)));
       }
@@ -824,7 +840,7 @@ export class LocalRepo implements Repo {
       services: input.services.map((s) => ({ ...s })),
       products,
       fragranceId: input.fragranceId,
-      fragranceName: this.fragranceName(input.fragranceId),
+      fragranceName: input.fragranceName?.trim() || this.fragranceName(input.fragranceId),
       receivedAt: input.receivedAt || now,
       estimatedEarliestAt: input.estimate.earliestAt,
       estimatedAt: input.estimate.estimatedAt,
@@ -891,7 +907,7 @@ export class LocalRepo implements Repo {
       services: input.services.map((s) => ({ ...s })),
       products,
       fragranceId: input.fragranceId,
-      fragranceName: input.fragranceId === prev.fragranceId ? prev.fragranceName : this.fragranceName(input.fragranceId),
+      fragranceName: input.fragranceName?.trim() || (input.fragranceId === prev.fragranceId ? prev.fragranceName : this.fragranceName(input.fragranceId)),
       receivedAt: input.receivedAt || prev.receivedAt,
       estimatedEarliestAt: input.estimate.earliestAt,
       estimatedAt: input.estimate.estimatedAt,
@@ -1188,7 +1204,7 @@ export class LocalRepo implements Repo {
     if (!order) return null;
     if (settings.trackingRequirePhoneSuffix) {
       const suf = (phoneSuffix ?? '').replace(/\D/g, '');
-      if (suf.length !== 4 || !order.customerPhone.endsWith(suf)) return null;
+      if (suf.length !== 4 || !String(order.customerPhone ?? '').endsWith(suf)) return null;
     }
     return order;
   }

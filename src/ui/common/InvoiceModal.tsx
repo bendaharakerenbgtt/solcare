@@ -42,7 +42,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
 
   const customerName = 'customerName' in order ? order.customerName : order.customerDisplayName;
   const customerPhone = 'customerPhone' in order ? order.customerPhone : null;
-  const waTrackUrl = `https://solcare.ebon.vercel.app/cek-pesanan?code=${order.code}`;
+  const waTrackUrl = `${window.location.origin}/cek-pesanan?code=${order.code}`;
   const waText = `Halo Kak ${customerName}, berikut nota digital pesanan perawatan sepatu di Soleful Soaks! Shoes Care (Kode: ${displayCode(order.code)}).\n\nPantau progres & nota online: ${waTrackUrl}\n\nTerima kasih telah mempercayakan sepatu Anda di Soleful Soaks!`;
   const waHref = customerPhone ? whatsappLink(customerPhone, waText) : null;
 

@@ -74,6 +74,12 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
   const cashier = cashierName || ('payment' in order ? order.payment.recordedByName : '') || 'Staff';
   const rawNotes = 'conditionNotes' in order ? (order.conditionNotes || order.internalNotes || '') : '';
   const notes = rawNotes && rawNotes !== '-' ? rawNotes : '';
+  const parfumLabel =
+    order.fragranceName ||
+    ('internalNotes' in order && order.internalNotes
+      ? order.internalNotes.match(/Parfum:\s*([^|]+)/i)?.[1]?.trim() || ''
+      : '') ||
+    'Tanpa Parfum';
   const orderTime = 'createdAt' in order ? (order.receivedAt || order.createdAt) : order.receivedAt;
 
   const isBlack = theme === 'black';
@@ -148,6 +154,11 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
 
       {/* 2. Order Metadata */}
       <div style={{ fontSize: '0.78rem', lineHeight: 1.45, margin: '6px 0', color: textColor }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
+          <span>No. Resi</span>
+          <span>:</span>
+          <span style={{ fontWeight: 700 }}>{order.code}</span>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span>Tanggal Pesan</span>
           <span>:</span>
@@ -246,7 +257,7 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
         <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span>Parfume</span>
           <span>:</span>
-          <span style={{ fontWeight: 600 }}>{order.fragranceName || 'Green Apple'}</span>
+          <span style={{ fontWeight: 600 }}>{parfumLabel}</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span>Catatan</span>

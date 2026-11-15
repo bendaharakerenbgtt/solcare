@@ -146,9 +146,14 @@ export const OrderDetailPage: React.FC = () => {
     if (!id || !order) return;
     setUpdatingStatus(true);
     try {
-      await repo.updateStatus(id, 'diambil', 'Dibatalkan oleh pelanggan/admin');
+      await repo.deleteOrder(id);
       setCancelModalOpen(false);
-      await loadData();
+      showToast({
+        title: 'Transaksi Dibatalkan',
+        message: 'Transaksi berhasil dibatalkan & dihapus',
+        type: 'success',
+      });
+      navigate('/admin/orders');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal membatalkan transaksi');
     } finally {
@@ -211,7 +216,7 @@ export const OrderDetailPage: React.FC = () => {
       ? `Halo Kak ${order.customerName}, pesanan ${order.itemType} (${order.brand} ${order.model}) dengan kode TRX/${displayCode(order.code)} di Solecare SUDAH SELESAI dan siap diambil. Total tagihan: ${rupiah(order.total)} (${order.payment.status === 'lunas' ? 'LUNAS' : 'Belum Lunas'}). Cek nota & detail di: ${trackUrl}`
       : `Halo Kak ${order.customerName}, terima kasih telah mempercayakan perawatan di Solecare! Kode pesanan Anda: TRX/${displayCode(order.code)} (Status: ${BILAS_STAGE_LABEL[order.status]}). Pantau progres di: ${trackUrl}`;
 
-  const waCustomer = order.customerPhone ? whatsappLink(order.customerPhone, waMessage) : null;
+  const waCustomer = order.customerPhone && order.customerPhone !== '-' ? whatsappLink(order.customerPhone, waMessage) : null;
   const isLunas = order.payment.status === 'lunas';
 
   return (
@@ -375,7 +380,7 @@ export const OrderDetailPage: React.FC = () => {
               />
             </a>
           )}
-          {order.customerPhone && (
+          {order.customerPhone && order.customerPhone !== '-' && (
             <a
               href={`tel:${order.customerPhone}`}
               style={{
@@ -427,7 +432,9 @@ export const OrderDetailPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '12px' }}>
               <span style={{ color: '#64748b', flexShrink: 0 }}>Metode</span>
               <strong style={{ textAlign: 'right', wordBreak: 'break-word' }}>
-                {order.internalNotes?.includes('Antar-Jemput') ? 'Layanan Antar-Jemput' : 'Drop-off di Outlet'}
+                {order.internalNotes?.includes('Antar-Jemput') || order.internalNotes?.includes('Antar Jemput')
+                  ? 'Layanan Antar-Jemput'
+                  : 'Drop-off di Outlet'}
               </strong>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -563,7 +570,10 @@ export const OrderDetailPage: React.FC = () => {
         </div>
 
         <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '14px' }}>
-          Pilih Parfum <span style={{ color: '#001b3a', fontWeight: 600 }}>{order.fragranceName || 'Tanpa Parfum'}</span>
+          Pilih Parfum{' '}
+          <span style={{ color: '#001b3a', fontWeight: 600 }}>
+            {order.fragranceName || order.internalNotes?.match(/Parfum:\s*([^|]+)/i)?.[1]?.trim() || 'Tanpa Parfum'}
+          </span>
         </div>
 
         {/* Item Rows */}
@@ -1027,7 +1037,30 @@ export const OrderDetailPage: React.FC = () => {
                 }}
               >
                 <CheckIcon size={20} color="#ffffff" />
-                <span>Tandai Lunas</span>
+                <span>Lunas via Tunai</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void handleRecordPayment('qris')}
+                style={{
+                  background: '#001b3a',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '13px',
+                  fontWeight: 800,
+                  fontSize: '0.92rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 12px rgba(0, 27, 58, 0.25)',
+                }}
+              >
+                <CheckIcon size={20} color="#ffffff" />
+                <span>Lunas via QRIS</span>
               </button>
             </div>
           </div>

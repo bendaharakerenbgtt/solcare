@@ -38,6 +38,7 @@ export interface OrderInput {
   services: OrderServiceLine[];
   products: OrderProductLine[];
   fragranceId: ID | null;
+  fragranceName?: string;
   receivedAt: ISODateTime;
   estimate: {
     earliestAt: ISODateTime | null;

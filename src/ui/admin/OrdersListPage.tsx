@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useAsync } from '../hooks';
@@ -8,7 +8,21 @@ import { isLate } from '../../lib/estimation';
 import type { Order } from '../../data/types';
 import { WhatsAppIcon, EmptyStateIllustration } from '../common/Icons';
 
-type BilasTab = 'konfirmasi' | 'penjemputan' | 'validasi' | 'antrian' | 'proses' | 'siap_ambil' | 'siap_antar' | 'semua';
+type BilasTab =
+  | 'konfirmasi'
+  | 'penjemputan'
+  | 'validasi'
+  | 'antrian'
+  | 'proses'
+  | 'siap_ambil'
+  | 'siap_antar'
+  | 'terlambat'
+  | 'self_service'
+  | 'semua';
+
+function isPickupOrder(o: Order): boolean {
+  return Boolean(o.internalNotes && (o.internalNotes.includes('Antar-Jemput') || o.internalNotes.includes('Antar Jemput')));
+}
 
 export const OrdersListPage: React.FC = () => {
   const { user } = useAuth();
@@ -19,6 +33,11 @@ export const OrdersListPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<BilasTab>(tabParam);
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const nextTab = (searchParams.get('tab') as BilasTab) || 'antrian';
+    setActiveTab(nextTab);
+  }, [searchParams]);
 
   const now = new Date();
 
@@ -33,6 +52,7 @@ export const OrdersListPage: React.FC = () => {
     (o) => o.status === 'pencucian' || o.status === 'pengeringan' || o.status === 'finishing'
   );
   const readyOrders = (orders || []).filter((o) => o.status === 'selesai');
+  const lateOrders = (orders || []).filter((o) => isLate(o, now) && o.status !== 'diambil');
 
   // Filter orders by Bilas tab
   const filtered = (orders || []).filter((o) => {
@@ -40,17 +60,17 @@ export const OrdersListPage: React.FC = () => {
     if (activeTab === 'antrian' && o.status !== 'menunggu') return false;
     if (activeTab === 'proses' && !['pencucian', 'pengeringan', 'finishing'].includes(o.status)) return false;
     if (activeTab === 'siap_ambil' && o.status !== 'selesai') return false;
-    if (activeTab === 'konfirmasi') return false; // Solecare regular store has 0 in pickup/confirm unless enabled
-    if (activeTab === 'penjemputan') return false;
-    if (activeTab === 'validasi') return false;
-    if (activeTab === 'siap_antar') return false;
+    if (activeTab === 'terlambat' && !(isLate(o, now) && o.status !== 'diambil')) return false;
+    if (activeTab === 'penjemputan' && !(o.status === 'menunggu' && isPickupOrder(o))) return false;
+    if (activeTab === 'siap_antar' && !(o.status === 'selesai' && isPickupOrder(o))) return false;
+    if (activeTab === 'konfirmasi' || activeTab === 'validasi' || activeTab === 'self_service') return false;
 
     // Search filter
     if (search.trim()) {
       const q = search.toLowerCase();
-      const codeMatch = o.code.toLowerCase().includes(q) || displayCode(o.code).toLowerCase().includes(q);
-      const nameMatch = o.customerName.toLowerCase().includes(q);
-      const phoneMatch = o.customerPhone.includes(q);
+      const codeMatch = String(o.code || '').toLowerCase().includes(q) || displayCode(o.code).toLowerCase().includes(q);
+      const nameMatch = String(o.customerName || '').toLowerCase().includes(q);
+      const phoneMatch = String(o.customerPhone ?? '').includes(q);
       const itemMatch = `${o.itemType} ${o.brand} ${o.model}`.toLowerCase().includes(q);
       return codeMatch || nameMatch || phoneMatch || itemMatch;
     }
@@ -334,6 +354,41 @@ export const OrdersListPage: React.FC = () => {
           }}
         >
           Siap Antar
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleSelectTab('terlambat')}
+          style={{
+            padding: '7px 14px',
+            borderRadius: '999px',
+            border: activeTab === 'terlambat' ? 'none' : '1px solid #e2e8f0',
+            background: activeTab === 'terlambat' ? '#001b3a' : '#ffffff',
+            color: activeTab === 'terlambat' ? '#ffffff' : '#475569',
+            fontSize: '0.82rem',
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          Terlambat
+          {lateOrders.length > 0 && (
+            <span
+              style={{
+                background: activeTab === 'terlambat' ? '#bf2f3b' : '#fee2e2',
+                color: activeTab === 'terlambat' ? '#ffffff' : '#b91c1c',
+                fontSize: '0.72rem',
+                borderRadius: '999px',
+                padding: '1px 6px',
+              }}
+            >
+              {lateOrders.length}
+            </span>
+          )}
         </button>
 
         <button

@@ -37,6 +37,10 @@ export const DashboardPage: React.FC = () => {
   const dryingOrders = (orders || []).filter((o) => o.status === 'pengeringan');
   const finishingOrders = (orders || []).filter((o) => o.status === 'finishing');
   const waitingOrders = (orders || []).filter((o) => o.status === 'menunggu');
+  const isPickupOrder = (notes?: string) =>
+    Boolean(notes && (notes.includes('Antar-Jemput') || notes.includes('Antar Jemput')));
+  const pickupWaitingOrders = waitingOrders.filter((o) => isPickupOrder(o.internalNotes));
+  const deliveryReadyOrders = completedOrders.filter((o) => isPickupOrder(o.internalNotes));
 
   // Financial aggregates for Bilas KEUANGAN tab (Screenshot 1)
   const { totalOmset, totalPaid, totalUnpaid, totalProducts } = useMemo(() => {
@@ -161,7 +165,7 @@ export const DashboardPage: React.FC = () => {
             </Link>
 
             <Link
-              to="/admin/orders"
+              to="/admin/orders?tab=semua"
               className="bilas-liquid-tx-item"
               title="Total Pesanan"
             >
@@ -198,7 +202,7 @@ export const DashboardPage: React.FC = () => {
             >
               <div className="bilas-grid-6-icon-wrap" style={{ background: '#f0f4f9', borderRadius: '14px' }}>
                 <SiluetPickupIcon size={26} color="#001b3a" />
-                <span className="bilas-grid-6-badge">0</span>
+                <span className="bilas-grid-6-badge">{pickupWaitingOrders.length}</span>
               </div>
               <span className="bilas-grid-6-title">Penjemputan</span>
             </Link>
@@ -246,7 +250,7 @@ export const DashboardPage: React.FC = () => {
             >
               <div className="bilas-grid-6-icon-wrap" style={{ background: '#f0f4f9', borderRadius: '14px' }}>
                 <SiluetDeliveryIcon size={26} color="#001b3a" />
-                <span className="bilas-grid-6-badge">0</span>
+                <span className="bilas-grid-6-badge">{deliveryReadyOrders.length}</span>
               </div>
               <span className="bilas-grid-6-title">Siap Antar</span>
             </Link>

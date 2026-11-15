@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
+import type { OrderInput } from '../../data/repo';
 import { SEED_SERVICES } from '../../data/seed';
 import type { Order, ServiceCategory } from '../../data/types';
 import { InvoiceModal } from '../common/InvoiceModal';
@@ -70,11 +71,13 @@ const CATEGORIES = [
 export const OrderFormPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { id: editOrderId } = useParams<{ id?: string }>();
   const { showToast } = useToast();
 
-  const customerId = searchParams.get('customerId') || null;
-  const initialCustName = searchParams.get('name') || 'ojan';
-  const initialCustPhone = searchParams.get('phone') || '+6285972535329';
+  const [custId, setCustId] = useState<string | null>(() => searchParams.get('customerId') || null);
+  const [custName, setCustName] = useState(() => searchParams.get('name') || 'Pelanggan Umum');
+  const [custPhone, setCustPhone] = useState(() => searchParams.get('phone') || '-');
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
   const { data: dbServices } = useAsync(() => repo.listServices(false), []);
   const { data: settings } = useAsync(() => repo.getSettings(), []);
@@ -234,6 +237,47 @@ export const OrderFormPage: React.FC = () => {
     }
   }, [totalQty, pickupOption]);
 
+  // Load existing order when editing
+  useEffect(() => {
+    if (!editOrderId) return;
+    let active = true;
+    void repo.getOrder(editOrderId).then((ord) => {
+      if (!active || !ord) return;
+      setEditingOrder(ord);
+      setCustId(ord.customerId || null);
+      setCustName(ord.customerName || 'Pelanggan Umum');
+      setCustPhone(ord.customerPhone || '-');
+      setGeneralShoeName(ord.brand === 'Sepatu Pelanggan' ? '' : (ord.brand || ''));
+      setExtraNotes(ord.conditionNotes === 'Kondisi standar' ? '' : (ord.conditionNotes || ''));
+      const parfumFromNotes = ord.internalNotes?.match(/Parfum:\s*([^|]+)/i)?.[1]?.trim();
+      setSelectedParfum(ord.fragranceName || parfumFromNotes || 'Tanpa Parfum');
+      if (ord.estimateSource === 'manual') setIsPriority(true);
+      if (ord.internalNotes?.includes('Gratis')) setPickupOption('free_pickup_min2');
+      else if (ord.internalNotes?.includes('10.000')) setPickupOption('pickup_10k');
+      else if (ord.internalNotes?.includes('20.000')) setPickupOption('pickup_20k');
+      if (ord.services && ord.services.length > 0) {
+        setSelectedItems(
+          ord.services.map((s, idx) => ({
+            id: `edit-${idx}-${s.serviceId || idx}`,
+            serviceId: s.serviceId || `svc-${idx}`,
+            category: CAT_MAP[s.category] || 'Main Services',
+            rawCategory: s.category,
+            name: s.name,
+            price: s.priceMin || s.price,
+            durationDays: s.durationMinDays || 2,
+            expressHours: s.expressHours ?? null,
+            qty: s.priceMin > 0 ? Math.max(1, Math.round(s.price / s.priceMin)) : 1,
+            itemBrand: ord.items?.[idx]?.brand || ord.brand || '',
+            notes: ord.items?.[idx]?.conditionNotes || '',
+          })),
+        );
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [editOrderId]);
+
   const activeDelivery = DELIVERY_OPTIONS.find((d) => d.key === pickupOption) || DELIVERY_OPTIONS[0];
 
   const totalAmount = useMemo(() => {
@@ -276,11 +320,11 @@ export const OrderFormPage: React.FC = () => {
       const firstItem = selectedItems[0];
       const primaryShoeName = generalShoeName.trim() || selectedItems.find((s) => s.itemBrand)?.itemBrand || 'Sepatu Pelanggan';
 
-      const created = await repo.createOrder({
+      const payload: OrderInput = {
         customer: {
-          id: customerId,
-          name: initialCustName,
-          phone: initialCustPhone,
+          id: custId,
+          name: custName,
+          phone: custPhone,
         },
         items: selectedItems.map((s, idx) => ({
           id: `item-${idx + 1}`,
@@ -312,7 +356,8 @@ export const OrderFormPage: React.FC = () => {
         services: serviceLines,
         products: [],
         fragranceId: null,
-        receivedAt: now.toISOString(),
+        fragranceName: selectedParfum,
+        receivedAt: editingOrder ? editingOrder.receivedAt : now.toISOString(),
         estimate: {
           earliestAt: estDate.toISOString(),
           estimatedAt: estDate.toISOString(),
@@ -320,14 +365,25 @@ export const OrderFormPage: React.FC = () => {
           autoAt: estDate.toISOString(),
           reason: isPriority ? 'Pesanan Prioritas Pelanggan' : 'Standar pengerjaan',
         },
-        payment: {
-          method: 'tunai',
-          status: 'belum_lunas',
-          paidAt: null,
-          confirmed: false,
-        },
+        payment: editingOrder
+          ? {
+              method: editingOrder.payment.method,
+              status: editingOrder.payment.status,
+              paidAt: editingOrder.payment.paidAt,
+              confirmed: editingOrder.payment.status === 'lunas',
+            }
+          : {
+              method: 'tunai',
+              status: 'belum_lunas',
+              paidAt: null,
+              confirmed: false,
+            },
         internalNotes: `Parfum: ${selectedParfum} | Layanan: ${activeDelivery.title}`,
-      });
+      };
+
+      const created = editOrderId
+        ? await repo.updateOrder(editOrderId, payload)
+        : await repo.createOrder(payload);
 
       setCreatedOrder(created);
       setSuccessModalOpen(true);
@@ -414,8 +470,10 @@ export const OrderFormPage: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                if (customerId) {
-                  navigate(`/admin/customers?selectedId=${customerId}`);
+                if (editOrderId) {
+                  navigate(`/admin/orders/${editOrderId}`);
+                } else if (custId) {
+                  navigate(`/admin/customers?selectedId=${custId}`);
                 } else {
                   navigate('/admin/orders');
                 }
@@ -433,7 +491,7 @@ export const OrderFormPage: React.FC = () => {
               ←
             </button>
             <h1 style={{ margin: 0, fontSize: '1.24rem', fontWeight: 800, color: '#0f172a' }}>
-              Pilih Layanan
+              {editOrderId ? 'Edit Pesanan' : 'Pilih Layanan'}
             </h1>
           </div>
 
@@ -847,10 +905,10 @@ export const OrderFormPage: React.FC = () => {
             }}
           >
             <strong style={{ display: 'block', fontSize: '0.98rem', color: '#0f172a' }}>
-              {initialCustName}
+              {custName}
             </strong>
             <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
-              {initialCustPhone}
+              {custPhone === '-' ? 'Tanpa Nomor Telepon' : custPhone}
             </span>
           </div>
 
@@ -1362,7 +1420,7 @@ export const OrderFormPage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              {submitting ? 'Memproses...' : 'Buat Transaksi'}
+              {submitting ? 'Memproses...' : editOrderId ? 'Simpan Perubahan' : 'Buat Transaksi'}
             </button>
           </div>
         </div>

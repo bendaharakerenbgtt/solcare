@@ -24,6 +24,19 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[] = []) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
+  useEffect(() => {
+    const handleSheetSync = () => {
+      void fnRef.current()
+        .then((res) => {
+          setData(res);
+          setError(null);
+        })
+        .catch(() => {});
+    };
+    window.addEventListener('solecare:sheet-synced', handleSheetSync);
+    return () => window.removeEventListener('solecare:sheet-synced', handleSheetSync);
+  }, []);
+
   return { data, error, loading, reload, setData };
 }
 
