@@ -54,8 +54,8 @@ export const AnnouncementsPage: React.FC = () => {
   }, [list, filter]);
 
   return (
-    <div className="public-container" style={{ paddingBottom: '32px' }}>
-      <div className="stack" style={{ gap: '14px' }}>
+    <div className="public-container" style={{ paddingBottom: '48px' }}>
+      <div className="stack" style={{ gap: '16px' }}>
         {/* Tombol Kembali ke Beranda */}
         <div>
           <Link
@@ -68,7 +68,11 @@ export const AnnouncementsPage: React.FC = () => {
               fontWeight: 700,
               color: '#001b3a',
               textDecoration: 'none',
-              padding: '6px 0',
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
+              padding: '6px 14px',
+              borderRadius: '10px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
             }}
           >
             ← Kembali ke Beranda
@@ -76,8 +80,8 @@ export const AnnouncementsPage: React.FC = () => {
         </div>
 
         {/* Title Header Bersih & Ringkas */}
-        <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: '1.28rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#0f172a' }}>
+        <div style={{ marginTop: '2px' }}>
+          <h1 style={{ margin: '0 0 6px', fontSize: '1.3rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#0f172a' }}>
             Pengumuman &amp; Promo
           </h1>
           <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b', lineHeight: 1.5 }}>

@@ -4104,6 +4104,13 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   padding: 20px 0 40px;
 }
 
+.public-container {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
 .public-hero-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
