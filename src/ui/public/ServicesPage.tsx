@@ -15,7 +15,6 @@ import {
   TrashIcon,
   TruckIcon,
   CheckIcon,
-  CashIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   SneakerIllustration,
@@ -327,7 +326,7 @@ export const ServicesPage: React.FC = () => {
       `Pilihan Parfum: ${selectedParfum}`,
       ...(generalShoeName.trim() ? [`Merk/Barang: ${generalShoeName.trim()}`] : []),
       ...(extraNotes.trim() ? [`Catatan Tambahan: ${extraNotes.trim()}`] : []),
-      `Estimasi Total: Rp ${totalAmount.toLocaleString('id-ID')} (Pembayaran Tunai)`,
+      `Estimasi Total: Rp ${totalAmount.toLocaleString('id-ID')}`,
     ];
     return lines.join('\n');
   };
@@ -620,16 +619,15 @@ export const ServicesPage: React.FC = () => {
             </div>
           )}
 
-          {/* Price Disclaimer & Cash Policy */}
+          {/* Price Disclaimer */}
           <div
             className="public-card"
             style={{ background: '#f0f4f9', borderColor: '#cbd5e1', fontSize: '0.8rem', color: '#001b3a' }}
           >
-            <strong style={{ display: 'block', marginBottom: '4px' }}>Catatan Harga &amp; Pembayaran</strong>
+            <strong style={{ display: 'block', marginBottom: '4px' }}>Catatan Harga</strong>
             <p style={{ margin: 0, lineHeight: 1.45, color: '#334155' }}>
               {settings?.priceDisclaimer ||
-                'Harga merupakan referensi. Harga akhir dapat berubah berdasarkan kondisi barang setelah pengecekan di toko.'}{' '}
-              Pembayaran dilakukan secara <strong>Tunai (Cash)</strong> saat pengantaran atau pengambilan.
+                'Harga merupakan referensi. Harga akhir dapat berubah berdasarkan kondisi barang setelah pengecekan di toko.'}
             </p>
           </div>
         </div>
@@ -968,7 +966,7 @@ export const ServicesPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 5. Catatan Tambahan & Info Cash */}
+          {/* 5. Catatan Tambahan */}
           <div className="public-card">
             <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 800, color: '#0f172a', marginBottom: '6px' }}>
               Catatan Tambahan (Opsional)
@@ -984,13 +982,8 @@ export const ServicesPage: React.FC = () => {
                 borderRadius: '10px',
                 padding: '10px 12px',
                 fontSize: '0.86rem',
-                marginBottom: '10px',
               }}
             />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem', color: '#475569' }}>
-              <CashIcon size={16} color="#001b3a" />
-              <span>Pembayaran <strong>Tunai (Cash)</strong> di workshop atau saat kurir tiba.</span>
-            </div>
           </div>
         </div>
       )}

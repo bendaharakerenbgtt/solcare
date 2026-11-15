@@ -13,7 +13,6 @@ import {
   TagIcon,
   TrashIcon,
   SearchIcon,
-  CashIcon,
   CheckIcon,
   CloseIcon,
   PlusIcon,
@@ -1475,8 +1474,7 @@ export const OrderFormPage: React.FC = () => {
                 <span>Lihat Detail Transaksi</span>
               </button>
 
-              {/* 2. Bayar Tunai Sekarang */}
-
+              {/* 2. Tandai Sudah Lunas */}
               <button
                 type="button"
                 onClick={async () => {
@@ -1487,8 +1485,8 @@ export const OrderFormPage: React.FC = () => {
                     confirmed: true,
                   });
                   showToast({
-                    title: 'Pembayaran Berhasil',
-                    message: 'Pembayaran TUNAI berhasil dicatat LUNAS!',
+                    title: 'Status Diperbarui',
+                    message: 'Pesanan berhasil dicatat LUNAS!',
                     type: 'success',
                   });
                   navigate(`/admin/orders/${createdOrder.id}`);
@@ -1508,8 +1506,8 @@ export const OrderFormPage: React.FC = () => {
                   cursor: 'pointer',
                 }}
               >
-                <CashIcon size={20} color="#15803d" />
-                <span>Bayar Tunai Sekarang</span>
+                <CheckIcon size={20} color="#15803d" />
+                <span>Tandai Lunas Sekarang</span>
               </button>
             </div>
           </div>

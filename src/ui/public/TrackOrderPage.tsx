@@ -13,7 +13,6 @@ import {
   CheckIcon,
   ClockIcon,
   DocumentIcon,
-  CashIcon,
   SneakerIllustration,
   BagIllustration,
   CapIllustration,
@@ -543,12 +542,6 @@ export const TrackOrderPage: React.FC = () => {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-                  <span style={{ color: '#64748b' }}>Metode Pembayaran</span>
-                  <strong style={{ color: '#0f172a', textTransform: 'uppercase' }}>
-                    {order.paymentMethod === 'tunai' ? 'TUNAI (CASH)' : order.paymentMethod}
-                  </strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
                   <span style={{ color: '#64748b' }}>Info Pengantaran</span>
                   <strong style={{ color: '#0f172a', textAlign: 'right' }}>
                     Drop-off / Antar Jemput via CS
@@ -591,7 +584,7 @@ export const TrackOrderPage: React.FC = () => {
                       color: '#ffffff',
                     }}
                   >
-                    {isLunas ? '✓ LUNAS' : 'BELUM LUNAS • BAYAR TUNAI'}
+                    {isLunas ? '✓ LUNAS' : 'BELUM LUNAS'}
                   </span>
                 </div>
               </div>
@@ -796,13 +789,9 @@ export const TrackOrderPage: React.FC = () => {
             <strong style={{ fontSize: '0.92rem', color: '#0f172a', display: 'block', marginBottom: '6px' }}>
               Informasi Tambahan
             </strong>
-            <p style={{ margin: '0 0 10px', fontSize: '0.82rem', color: '#475569', lineHeight: 1.45 }}>
+            <p style={{ margin: 0, fontSize: '0.82rem', color: '#475569', lineHeight: 1.45 }}>
               {conditionNotesList.length > 0 ? conditionNotesList.join(' • ') : 'Kondisi standar pengerjaan Solecare.'}
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f8fafc', padding: '8px 10px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.78rem', color: '#001b3a' }}>
-              <CashIcon size={16} color="#001b3a" />
-              <span>Pembayaran dilakukan secara <strong>Tunai (Cash)</strong> saat pengambilan / pengantaran.</span>
-            </div>
           </div>
 
           {/* 9. Histori Pesanan Accordion (Mirrors OrderDetailPage) */}
@@ -1015,7 +1004,7 @@ export const TrackOrderPage: React.FC = () => {
                       color: isLunas ? '#15803d' : '#b91c1c',
                     }}
                   >
-                    {isLunas ? 'LUNAS' : 'BELUM LUNAS (TUNAI)'}
+                    {isLunas ? 'LUNAS' : 'BELUM LUNAS'}
                   </span>
                 </div>
               </div>

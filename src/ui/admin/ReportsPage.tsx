@@ -249,11 +249,11 @@ export const ReportsPage: React.FC = () => {
             <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
               <div className="bilas-finance-breakdown-table">
                 <div className="bilas-finance-breakdown-row">
-                  <span>Metode Pembayaran Tunai (Cash)</span>
-                  <strong>{rupiah(realRevenue)} (100%)</strong>
+                  <span>Pendapatan Lunas</span>
+                  <strong>{rupiah(realRevenue)}</strong>
                 </div>
                 <div className="bilas-finance-breakdown-row">
-                  <span>Piutang Belum Lunas</span>
+                  <span>Belum Lunas</span>
                   <strong style={{ color: '#b91c1c' }}>{rupiah(pendingRevenue)}</strong>
                 </div>
               </div>

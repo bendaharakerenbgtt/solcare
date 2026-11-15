@@ -305,7 +305,7 @@ export const HomePage: React.FC = () => {
                     Daftar Harga Layanan (Pricelist)
                   </h2>
                   <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                    Informasi tarif resmi pengerjaan Soleful Soaks • Pembayaran tunai (Cash Only)
+                    Informasi tarif resmi pengerjaan Soleful Soaks
                   </span>
                 </div>
                 <span

@@ -229,19 +229,12 @@ export const InvoiceReceipt: React.FC<InvoiceReceiptProps> = ({
       {/* Dashed Line Divider */}
       {renderDivider()}
 
-      {/* 4. Total and Payment Method */}
+      {/* 4. Total */}
       <div style={{ margin: '6px 0', fontSize: '0.80rem', lineHeight: 1.5, color: textColor }}>
         <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
           <span style={{ fontWeight: 700 }}>Total Harga</span>
           <span style={{ fontWeight: 700 }}>:</span>
           <span style={{ fontWeight: 800, fontSize: '0.90rem' }}>{formatCurrency(order.total)}</span>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '110px 10px 1fr' }}>
-          <span>Pembayaran</span>
-          <span>:</span>
-          <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>
-            TUNAI / CASH
-          </span>
         </div>
       </div>
 

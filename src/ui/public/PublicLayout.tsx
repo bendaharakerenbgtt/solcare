@@ -205,7 +205,7 @@ export const PublicLayout: React.FC = () => {
 
           <div className="footer-bottom-row small" style={{ color: '#94a3b8', borderTop: '1px solid #1e293b', paddingTop: '16px' }}>
             <div>© {new Date().getFullYear()} Soleful Soaks! Shoes Care. All rights reserved.</div>
-            <div>Layanan Drop-off &amp; Antar Jemput • Pembayaran Tunai (Cash Only)</div>
+            <div>Layanan Drop-off &amp; Antar Jemput Resmi Soleful Soaks</div>
           </div>
         </div>
       </footer>

@@ -4,7 +4,6 @@ import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import { whatsappLink } from '../../lib/format';
 import {
-  CashIcon,
   ClockIcon,
   PhoneIcon,
   StoreIcon,
@@ -235,26 +234,7 @@ export const ContactPage: React.FC = () => {
               </div>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-              <div
-                style={{
-                  width: '34px',
-                  height: '34px',
-                  borderRadius: '10px',
-                  background: '#f0f4f9',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <CashIcon size={17} color="#001b3a" />
-              </div>
-              <div>
-                <span style={{ fontSize: '0.74rem', color: '#64748b', display: 'block' }}>Metode Pembayaran</span>
-                <strong style={{ fontSize: '0.86rem', color: '#0f172a' }}>Tunai (Cash Only)</strong>
-              </div>
-            </div>
+
           </div>
         </div>
 

@@ -13,7 +13,6 @@ import {
   PencilIcon,
   CheckIcon,
   CloseIcon,
-  CashIcon,
   ClockIcon,
   DocumentIcon,
   SneakerIllustration,
@@ -190,7 +189,7 @@ export const OrderDetailPage: React.FC = () => {
       setPayModalOpen(false);
       showToast({
         title: 'Pembayaran Berhasil',
-        message: `Pembayaran TUNAI berhasil dicatat LUNAS!`,
+        message: `Pesanan berhasil dicatat LUNAS!`,
         type: 'success',
       });
       await loadData();
@@ -1004,7 +1003,7 @@ export const OrderDetailPage: React.FC = () => {
             </div>
 
             <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '0 0 16px 0' }}>
-              Konfirmasi penerimaan pembayaran tunai (cash) untuk melunasi tagihan sebesar <strong>{rupiah(order.total)}</strong>:
+              Konfirmasi pelunasan tagihan pesanan sebesar <strong>{rupiah(order.total)}</strong>:
             </p>
 
             <div className="stack" style={{ gap: '10px' }}>
@@ -1027,8 +1026,8 @@ export const OrderDetailPage: React.FC = () => {
                   boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)',
                 }}
               >
-                <CashIcon size={20} color="#ffffff" />
-                <span>Terima Pembayaran Tunai (Lunas)</span>
+                <CheckIcon size={20} color="#ffffff" />
+                <span>Tandai Lunas</span>
               </button>
             </div>
           </div>
