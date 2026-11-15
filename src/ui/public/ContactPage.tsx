@@ -9,6 +9,7 @@ import {
   StoreIcon,
   TruckIcon,
   WhatsAppIcon,
+  InstagramIcon,
 } from '../common/Icons';
 
 const DELIVERY_RULES = [
@@ -55,13 +56,40 @@ export const ContactPage: React.FC = () => {
 
   const workshopAddress = settings?.address?.trim() || 'Jl. Mampang Prapatan XV No.32 (Konfirmasi via WhatsApp CS)';
 
+  const igUrl =
+    settings?.instagramUrl?.trim() ||
+    'https://www.instagram.com/soleful.soaks?obrf=MXRsZWc0OTFwanB1bA==';
+
   return (
     <div className="public-container">
       <div className="stack" style={{ gap: '14px' }}>
+        {/* Tombol Kembali ke Beranda */}
+        <div>
+          <Link
+            to="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.84rem',
+              fontWeight: 700,
+              color: '#001b3a',
+              textDecoration: 'none',
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
+              padding: '6px 14px',
+              borderRadius: '10px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+            }}
+          >
+            ← Kembali ke Beranda
+          </Link>
+        </div>
+
         {/* Header */}
         <div style={{ marginTop: '2px' }}>
           <h1 style={{ margin: 0, fontSize: '1.24rem', fontWeight: 800, color: '#0f172a' }}>
-            Kontak &amp; Lokasi Workshop
+            Kontak &amp; Lokasi
           </h1>
           <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
             Konsultasi kondisi noda, drop-off, dan penjemputan langsung
@@ -70,38 +98,22 @@ export const ContactPage: React.FC = () => {
 
         {/* 1. Navy Gradient Outlet Hero Card */}
         <div className="public-navy-banner">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-            <img
-              src="/solecare_logo.jpg"
-              alt="Soleful Soaks Logo"
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '12px',
-                objectFit: 'cover',
-                border: '2px solid rgba(255,255,255,0.25)',
-                flexShrink: 0,
-              }}
-            />
-            <div style={{ minWidth: 0 }}>
-              <strong style={{ fontSize: '1.08rem', color: '#ffffff', display: 'block' }}>
-                {settings?.businessName || 'Soleful Soaks! Shoes Care'}
-              </strong>
-              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.82)', display: 'block' }}>
-                {settings?.tagline || 'Perawatan & pembersihan sepatu profesional'}
-              </span>
-            </div>
+          <div style={{ marginBottom: '14px' }}>
+            <strong style={{ fontSize: '1.15rem', color: '#ffffff', display: 'block' }}>
+              {settings?.businessName || 'Soleful Soaks! Shoes Care'}
+            </strong>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.82)', display: 'block', marginTop: '2px' }}>
+              {settings?.tagline || 'Perawatan & pembersihan sepatu profesional'}
+            </span>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
             {waUrl ? (
               <a
                 href={waUrl}
                 target="_blank"
                 rel="noreferrer"
                 style={{
-                  flex: 1,
-                  minWidth: '170px',
                   background: '#16a34a',
                   color: '#ffffff',
                   borderRadius: '12px',
@@ -117,12 +129,11 @@ export const ContactPage: React.FC = () => {
                 }}
               >
                 <WhatsAppIcon size={17} color="#ffffff" />
-                <span>Chat WhatsApp CS</span>
+                <span>WhatsApp CS</span>
               </a>
             ) : (
               <div
                 style={{
-                  flex: 1,
                   background: 'rgba(255,255,255,0.14)',
                   border: '1px solid rgba(255,255,255,0.28)',
                   borderRadius: '10px',
@@ -131,42 +142,42 @@ export const ContactPage: React.FC = () => {
                   color: '#ffffff',
                 }}
               >
-                Nomor WhatsApp CS dapat diatur oleh admin di Pengaturan Toko.
+                WhatsApp CS
               </div>
             )}
 
-            {settings?.instagramUrl && (
-              <a
-                href={settings.instagramUrl}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  background: 'rgba(255,255,255,0.16)',
-                  border: '1px solid rgba(255,255,255,0.35)',
-                  color: '#ffffff',
-                  borderRadius: '12px',
-                  padding: '10px 14px',
-                  fontSize: '0.82rem',
-                  fontWeight: 700,
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                Instagram ↗
-              </a>
-            )}
+            <a
+              href={igUrl}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+                color: '#ffffff',
+                borderRadius: '12px',
+                padding: '10px 14px',
+                fontSize: '0.84rem',
+                fontWeight: 800,
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '7px',
+                boxShadow: '0 4px 12px rgba(220, 39, 67, 0.35)',
+              }}
+            >
+              <InstagramIcon size={17} color="#ffffff" />
+              <span>Instagram</span>
+            </a>
           </div>
         </div>
 
-        {/* 2. Lokasi Workshop, Jam Operasional & Pembayaran Card */}
+        {/* 2. Lokasi, Jam Operasional & Embedded Google Maps */}
         <div className="public-card">
           <strong style={{ fontSize: '0.94rem', color: '#0f172a', display: 'block', marginBottom: '12px' }}>
-            Informasi Workshop &amp; Operasional
+            Informasi Outlet &amp; Operasional
           </strong>
 
-          <div className="stack" style={{ gap: '12px' }}>
+          <div className="stack" style={{ gap: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
               <div
                 style={{
@@ -182,9 +193,61 @@ export const ContactPage: React.FC = () => {
               >
                 <StoreIcon size={17} color="#001b3a" />
               </div>
-              <div>
-                <span style={{ fontSize: '0.74rem', color: '#64748b', display: 'block' }}>Alamat Workshop</span>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontSize: '0.74rem', color: '#64748b', display: 'block' }}>Alamat Toko</span>
                 <strong style={{ fontSize: '0.86rem', color: '#0f172a', lineHeight: 1.4 }}>{workshopAddress}</strong>
+              </div>
+            </div>
+
+            {/* Embedded Google Maps View (Denah Lokasi) */}
+            <div
+              style={{
+                borderRadius: '12px',
+                overflow: 'hidden',
+                border: '1px solid #e2e8f0',
+                background: '#f8fafc',
+                position: 'relative',
+              }}
+            >
+              <iframe
+                title="Peta Lokasi Soleful Soaks"
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(workshopAddress)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                width="100%"
+                height="190"
+                style={{ border: 0, display: 'block' }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+              <div
+                style={{
+                  padding: '8px 12px',
+                  background: '#ffffff',
+                  borderTop: '1px solid #e2e8f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '8px',
+                }}
+              >
+                <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                  Buka denah di Google Maps
+                </span>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(workshopAddress)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    color: '#001b3a',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  Buka Maps ↗
+                </a>
               </div>
             </div>
 
@@ -233,8 +296,6 @@ export const ContactPage: React.FC = () => {
                 </div>
               </div>
             )}
-
-
           </div>
         </div>
 

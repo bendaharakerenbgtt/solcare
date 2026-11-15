@@ -92,7 +92,7 @@ export function defaultSettings(now: string): Settings {
     tagline: 'Jasa perawatan & pembersihan sepatu, tas, topi, dan helm',
     address: '',
     whatsappNumber: '',
-    instagramUrl: '',
+    instagramUrl: 'https://www.instagram.com/soleful.soaks?obrf=MXRsZWc0OTFwanB1bA==',
     whatsappTemplate: 'Halo Soleful Soaks!, saya ingin bertanya tentang pesanan dengan kode {kode}.',
     dailyCapacity: 8.5,
     // ASUMSI: jam kerja untuk perhitungan estimasi. Belum diberikan mitra.

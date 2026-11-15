@@ -27,6 +27,7 @@ export const SettingsPage: React.FC = () => {
   // Outlet form
   const [businessName, setBusinessName] = useState('');
   const [phone, setPhone] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
   const [address, setAddress] = useState('');
   const [openTime, setOpenTime] = useState('09:00');
   const [closeTime, setCloseTime] = useState('18:00');
@@ -36,6 +37,7 @@ export const SettingsPage: React.FC = () => {
     if (currentSettings) {
       setBusinessName(currentSettings.businessName || 'Soleful Soaks! Shoes Care');
       setPhone(currentSettings.whatsappNumber || '081292928699');
+      setInstagramUrl(currentSettings.instagramUrl || 'https://www.instagram.com/soleful.soaks?obrf=MXRsZWc0OTFwanB1bA==');
       setAddress(currentSettings.address || 'Mampang Prapatan, Jakarta Selatan');
       setOpenTime(currentSettings.openTime || '09:00');
       setCloseTime(currentSettings.closeTime || '18:00');
@@ -50,6 +52,7 @@ export const SettingsPage: React.FC = () => {
       await repo.updateSettings({
         businessName,
         whatsappNumber: phone,
+        instagramUrl,
         address,
         openTime,
         closeTime,
@@ -315,6 +318,15 @@ export const SettingsPage: React.FC = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     required
+                  />
+                </label>
+                <label className="field">
+                  <span>Link Instagram Toko</span>
+                  <input
+                    type="url"
+                    placeholder="https://www.instagram.com/soleful.soaks"
+                    value={instagramUrl}
+                    onChange={(e) => setInstagramUrl(e.target.value)}
                   />
                 </label>
                 <label className="field">

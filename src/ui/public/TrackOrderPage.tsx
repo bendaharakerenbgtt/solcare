@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { repo } from '../../data';
 import type { OrderStatus, PublicOrderView, ServiceCategory } from '../../data/types';
 import { displayCode, rupiah } from '../../lib/format';
@@ -219,6 +219,29 @@ export const TrackOrderPage: React.FC = () => {
 
   return (
     <div className="public-container" style={{ maxWidth: '480px', paddingBottom: '40px' }}>
+      {/* Tombol Kembali ke Beranda */}
+      <div style={{ marginBottom: '14px' }}>
+        <Link
+          to="/"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '0.84rem',
+            fontWeight: 700,
+            color: '#001b3a',
+            textDecoration: 'none',
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            padding: '6px 14px',
+            borderRadius: '10px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          }}
+        >
+          ← Kembali ke Beranda
+        </Link>
+      </div>
+
       {/* ======================================================== */}
       {/* 1. SEARCH & DEMO KODE BAR                                */}
       {/* ======================================================== */}
