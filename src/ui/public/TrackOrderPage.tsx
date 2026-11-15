@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { repo } from '../../data';
 import type { OrderStatus, PublicOrderView, ServiceCategory } from '../../data/types';
-import { displayCode, rupiah, whatsappLink } from '../../lib/format';
+import { displayCode, rupiah } from '../../lib/format';
 import { useAsync } from '../hooks';
 import { InvoiceModal } from '../common/InvoiceModal';
 import { ModalPortal } from '../common/ModalPortal';
@@ -12,7 +12,6 @@ import {
   TruckIcon,
   CheckIcon,
   ClockIcon,
-  DocumentIcon,
   SneakerIllustration,
   BagIllustration,
   CapIllustration,
@@ -206,17 +205,6 @@ export const TrackOrderPage: React.FC = () => {
     void doTrack(demoCode, '');
   };
 
-  const waUrl =
-    settings?.whatsappNumber && order
-      ? whatsappLink(
-          settings.whatsappNumber,
-          (settings.whatsappTemplate || 'Halo CS Soleful Soaks!, tanya pesanan {kode}').replace(
-            '{kode}',
-            displayCode(order.code)
-          )
-        )
-      : null;
-
   const isLunas = order?.paymentStatus === 'lunas';
   const currentRank = order ? STAGE_ORDER[order.status] : 1;
   const isOverdue =
@@ -235,38 +223,10 @@ export const TrackOrderPage: React.FC = () => {
       {/* 1. SEARCH & DEMO KODE BAR                                */}
       {/* ======================================================== */}
       <div className="public-card" style={{ marginBottom: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
-              Cek Status Pesanan
-            </h1>
-            <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
-              Masukkan kode tanda terima (mis. SS-7K3QX-9MPRA)
-            </span>
-          </div>
-          {order && (
-            <button
-              type="button"
-              onClick={() => setInvoiceOpen(true)}
-              title="Lihat & Unduh Nota PDF"
-              style={{
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                borderRadius: '10px',
-                padding: '6px 10px',
-                cursor: 'pointer',
-                color: '#001b3a',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                fontSize: '0.74rem',
-                fontWeight: 700,
-              }}
-            >
-              <DocumentIcon size={16} color="#001b3a" />
-              <span>Nota PDF</span>
-            </button>
-          )}
+        <div style={{ marginBottom: '10px' }}>
+          <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#0f172a' }}>
+            Cek Status Pesanan
+          </h1>
         </div>
 
         <form onSubmit={handleSubmit} className="stack" style={{ gap: '8px' }}>
@@ -419,15 +379,12 @@ export const TrackOrderPage: React.FC = () => {
       {/* ======================================================== */}
       {order && (
         <div className="stack" style={{ gap: '10px' }}>
-          {/* 2. Status Headline & TRX Code */}
+          {/* 2. Status Headline & Waktu Masuk */}
           <div style={{ padding: '6px 4px 2px' }}>
             <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 800, color: '#0f172a' }}>
               {BILAS_STAGE_LABEL[order.status] || 'Antrian'}
             </h2>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px', gap: '8px', flexWrap: 'wrap' }}>
-              <strong className="mono" style={{ fontSize: '0.9rem', color: '#0f172a', letterSpacing: '-0.2px' }}>
-                TRX/{displayCode(order.code)}
-              </strong>
+            <div style={{ marginTop: '6px' }}>
               <span className="price" style={{ fontSize: '0.8rem', fontWeight: 600, color: '#bf2f3b' }}>
                 Masuk: {formatBilasDateTime(order.receivedAt)}
               </span>
@@ -438,9 +395,6 @@ export const TrackOrderPage: React.FC = () => {
           <div
             className="public-card"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
               padding: '12px 14px',
             }}
           >
@@ -462,36 +416,6 @@ export const TrackOrderPage: React.FC = () => {
                 </span>
               </div>
             </div>
-
-            {waUrl && (
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noreferrer"
-                title="Tanya CS via WhatsApp"
-                aria-label="Tanya CS via WhatsApp"
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: '#f1f5f9',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  textDecoration: 'none',
-                  flexShrink: 0,
-                }}
-              >
-                <img
-                  src="/bilas_icons/img_whatsapp.webp"
-                  alt="WhatsApp"
-                  style={{ width: '20px', height: '20px' }}
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-              </a>
-            )}
           </div>
 
           {/* 4. Informasi Antar/Jemput & Pembayaran Accordion */}
@@ -557,7 +481,7 @@ export const TrackOrderPage: React.FC = () => {
                     lineHeight: 1.45,
                   }}
                 >
-                  Jika ingin menjadwalkan pengantaran setelah status <strong>Siap Ambil</strong>, hubungi CS kami lewat tombol WhatsApp di atas.
+                  Jika ingin menjadwalkan pengantaran setelah status <strong>Siap Ambil</strong>, silakan hubungi CS Soleful Soaks.
                 </div>
               </div>
             )}
