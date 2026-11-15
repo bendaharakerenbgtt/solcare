@@ -28,6 +28,8 @@ export const SettingsPage: React.FC = () => {
   const [businessName, setBusinessName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [openTime, setOpenTime] = useState('09:00');
+  const [closeTime, setCloseTime] = useState('18:00');
   const [dailyCapacity, setDailyCapacity] = useState(8.5);
 
   const openOutletModal = () => {
@@ -35,6 +37,8 @@ export const SettingsPage: React.FC = () => {
       setBusinessName(currentSettings.businessName || 'Soleful Soaks! Shoes Care');
       setPhone(currentSettings.whatsappNumber || '081292928699');
       setAddress(currentSettings.address || 'Mampang Prapatan, Jakarta Selatan');
+      setOpenTime(currentSettings.openTime || '09:00');
+      setCloseTime(currentSettings.closeTime || '18:00');
       setDailyCapacity(currentSettings.dailyCapacity || 8.5);
     }
     setOutletModalOpen(true);
@@ -47,11 +51,13 @@ export const SettingsPage: React.FC = () => {
         businessName,
         whatsappNumber: phone,
         address,
+        openTime,
+        closeTime,
         dailyCapacity: Number(dailyCapacity) || 8.5,
       });
       setOutletModalOpen(false);
       await reload();
-      alert('Pengaturan outlet berhasil disimpan!');
+      alert('Pengaturan outlet & jam operasional berhasil disimpan!');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal menyimpan');
     }
@@ -319,6 +325,26 @@ export const SettingsPage: React.FC = () => {
                     rows={2}
                   />
                 </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <label className="field">
+                    <span>Jam Buka Toko</span>
+                    <input
+                      type="time"
+                      value={openTime}
+                      onChange={(e) => setOpenTime(e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Jam Tutup Toko</span>
+                    <input
+                      type="time"
+                      value={closeTime}
+                      onChange={(e) => setCloseTime(e.target.value)}
+                      required
+                    />
+                  </label>
+                </div>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
                   <button type="button" className="btn secondary" style={{ flex: 1 }} onClick={() => setOutletModalOpen(false)}>
                     Batal

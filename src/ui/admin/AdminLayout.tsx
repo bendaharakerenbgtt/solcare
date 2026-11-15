@@ -62,19 +62,18 @@ export const AdminLayout: React.FC = () => {
             </Link>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              type="button"
+            <Link
+              to="/admin/announcements"
               className="mobile-header-icon-btn"
-              title="Notifikasi"
-              onClick={() => alert('Tidak ada notifikasi baru')}
-              aria-label="Notifikasi"
-              style={{ background: 'transparent', border: 'none', padding: '6px', cursor: 'pointer' }}
+              title="Kelola Pengumuman"
+              aria-label="Kelola Pengumuman Toko"
+              style={{ background: 'transparent', border: 'none', padding: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#001b3a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
               </svg>
-            </button>
+            </Link>
           </div>
         </div>
       )}
