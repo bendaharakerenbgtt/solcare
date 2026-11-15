@@ -41,6 +41,15 @@ const BILAS_STAGE_LABEL: Record<OrderStatus, string> = {
   diambil: 'Selesai (Diambil)',
 };
 
+const NEXT_STAGE_ACTION_LABEL: Record<OrderStatus, string> = {
+  menunggu: 'SELESAIKAN ANTRIAN (MULAI CUCI)',
+  pencucian: 'SELESAIKAN CUCI (MULAI KERING)',
+  pengeringan: 'SELESAIKAN KERING (MULAI FINISHING)',
+  finishing: 'SELESAIKAN QC (SIAP DIAMBIL)',
+  selesai: 'SELESAIKAN (SUDAH DIAMBIL)',
+  diambil: 'PESANAN SELESAI',
+};
+
 export const OrderDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -889,9 +898,11 @@ export const OrderDetailPage: React.FC = () => {
             border: 'none',
             color: '#ffffff',
             boxShadow: '0 4px 12px rgba(0, 27, 58, 0.25)',
+            fontSize: '0.82rem',
+            letterSpacing: '-0.2px',
           }}
         >
-          {updatingStatus ? 'Menyimpan...' : order.status === 'diambil' ? 'PESANAN SELESAI' : 'SELESAIKAN PROSES'}
+          {updatingStatus ? 'Menyimpan...' : NEXT_STAGE_ACTION_LABEL[order.status] || 'SELESAIKAN PROSES'}
         </button>
       </div>
 

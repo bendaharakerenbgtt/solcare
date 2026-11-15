@@ -28,7 +28,8 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
     setDownloading(true);
     setDownloadSuccess(false);
     try {
-      const filename = `Nota-SolefulSoaks-${order.code}-${theme === 'color' ? 'Warna' : 'Hitam'}`;
+      const safeCustomerName = customerName ? customerName.replace(/[^a-zA-Z0-9_-]/g, '_') : 'Customer';
+      const filename = `Nota-SolefulSoaks-${safeCustomerName}`;
       await downloadReceiptPDF(receiptRef.current, filename);
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 3000);
