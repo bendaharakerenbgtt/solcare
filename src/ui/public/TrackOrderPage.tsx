@@ -199,12 +199,6 @@ export const TrackOrderPage: React.FC = () => {
     void doTrack(cleaned, phoneSuffix);
   };
 
-  const triggerDemoTrack = (demoCode: string) => {
-    setCode(demoCode);
-    setSearchParams({ code: demoCode });
-    void doTrack(demoCode, '');
-  };
-
   const isLunas = order?.paymentStatus === 'lunas';
   const currentRank = order ? STAGE_ORDER[order.status] : 1;
   const isOverdue =
@@ -338,41 +332,6 @@ export const TrackOrderPage: React.FC = () => {
             />
           )}
         </form>
-
-        {/* Demo Chips */}
-        <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #e2e8f0' }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>
-            Kode demo siap coba:
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {[
-              { code: 'SS-7K3QX-9MPRA', label: 'Jordan 1' },
-              { code: 'SS-28YBN-4VCFW', label: 'Chuck 70' },
-              { code: 'SS-5MDPE-73KZ6', label: 'Tas Kanken' },
-            ].map((demo) => {
-              const active = cleanTrackingInput(code).toUpperCase() === demo.code;
-              return (
-                <button
-                  key={demo.code}
-                  type="button"
-                  onClick={() => triggerDemoTrack(demo.code)}
-                  style={{
-                    background: active ? '#fee2e2' : '#f1f5f9',
-                    color: active ? '#bf2f3b' : '#334155',
-                    border: active ? '1px solid #fecaca' : '1px solid #e2e8f0',
-                    borderRadius: '999px',
-                    padding: '4px 10px',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {demo.label} ({demo.code})
-                </button>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
       {/* ======================================================== */}
@@ -394,7 +353,7 @@ export const TrackOrderPage: React.FC = () => {
             Pantau Sepatu Anda Secara Real-time
           </strong>
           <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: 1.5 }}>
-            Masukkan kode pesanan dari nota Anda atau ketuk salah satu kode demo di atas untuk melihat progres cuci, estimasi selesai, dan rincian tagihan.
+            Masukkan kode pesanan dari nota Anda di atas untuk melihat progres cuci, estimasi selesai, dan rincian tagihan.
           </p>
         </div>
       )}
