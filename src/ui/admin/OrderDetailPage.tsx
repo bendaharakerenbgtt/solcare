@@ -6,6 +6,7 @@ import { rupiah, displayCode, whatsappLink } from '../../lib/format';
 import { toLocalInput, fromLocalInput } from '../hooks';
 import { InvoiceModal } from '../common/InvoiceModal';
 import { ModalPortal } from '../common/ModalPortal';
+import { useToast } from '../common/Toast';
 import {
   PhoneIcon,
   TruckIcon,
@@ -44,6 +45,7 @@ export const OrderDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -177,10 +179,18 @@ export const OrderDetailPage: React.FC = () => {
         confirmed: true,
       });
       setPayModalOpen(false);
-      alert(`Pembayaran LUNAS via ${method.toUpperCase()} berhasil dicatat!`);
+      showToast({
+        title: 'Pembayaran Berhasil',
+        message: `Pembayaran TUNAI berhasil dicatat LUNAS!`,
+        type: 'success',
+      });
       await loadData();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Gagal mencatat pembayaran');
+      showToast({
+        title: 'Gagal',
+        message: e instanceof Error ? e.message : 'Gagal mencatat pembayaran',
+        type: 'error',
+      });
     }
   };
 
@@ -467,7 +477,11 @@ export const OrderDetailPage: React.FC = () => {
               type="button"
               onClick={() => {
                 if (isLunas) {
-                  alert('Tagihan ini sudah tercatat LUNAS.');
+                  showToast({
+                    title: 'Status Pembayaran',
+                    message: 'Tagihan pesanan ini sudah tercatat LUNAS.',
+                    type: 'info',
+                  });
                 } else {
                   setPayModalOpen(true);
                 }

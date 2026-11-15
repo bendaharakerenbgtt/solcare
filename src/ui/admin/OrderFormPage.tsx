@@ -6,6 +6,7 @@ import { SEED_SERVICES } from '../../data/seed';
 import type { Order, ServiceCategory } from '../../data/types';
 import { InvoiceModal } from '../common/InvoiceModal';
 import { ModalPortal } from '../common/ModalPortal';
+import { useToast } from '../common/Toast';
 import {
   TruckIcon,
   StarIcon,
@@ -70,6 +71,7 @@ const CATEGORIES = [
 export const OrderFormPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { showToast } = useToast();
 
   const customerId = searchParams.get('customerId') || null;
   const initialCustName = searchParams.get('name') || 'ojan';
@@ -1442,7 +1444,11 @@ export const OrderFormPage: React.FC = () => {
                     paidAt: new Date().toISOString(),
                     confirmed: true,
                   });
-                  alert('Pembayaran TUNAI berhasil dicatat LUNAS!');
+                  showToast({
+                    title: 'Pembayaran Berhasil',
+                    message: 'Pembayaran TUNAI berhasil dicatat LUNAS!',
+                    type: 'success',
+                  });
                   navigate(`/admin/orders/${createdOrder.id}`);
                 }}
                 style={{

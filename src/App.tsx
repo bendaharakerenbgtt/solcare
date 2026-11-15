@@ -24,11 +24,14 @@ import { RetentionPage } from './ui/admin/RetentionPage';
 import { SettingsPage } from './ui/admin/SettingsPage';
 import { StaffAdminPage } from './ui/admin/StaffAdminPage';
 
+import { ToastProvider } from './ui/common/Toast';
+
 export const App: React.FC = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+      <ToastProvider>
+        <BrowserRouter>
+          <Routes>
           {/* Public Website Routes */}
           <Route path="/" element={<PublicLayout />}>
             <Route index element={<HomePage />} />
@@ -63,6 +66,7 @@ export const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 };
