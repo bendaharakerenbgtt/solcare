@@ -342,6 +342,7 @@ export const HomePage: React.FC = () => {
                   <button
                     key={tab.id}
                     type="button"
+                    aria-pressed={active}
                     onClick={() => setSelectedCat(tab.id)}
                     className="activity-filter-btn"
                     style={{
@@ -358,70 +359,86 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* Grid Kartu Harga (Hanya Informasi, Tidak Bisa Dipilih) */}
-            <div className="grid grid-2" style={{ gap: '10px' }}>
-              {filteredServices.map((svc) => (
-                <article
-                  key={svc.id}
-                  className="public-service-card"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '12px',
-                    padding: '12px 14px',
-                    background: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '14px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                    <div
-                      style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '12px',
-                        background: '#f8fafc',
-                        border: '1px solid #e2e8f0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                      aria-hidden="true"
-                    >
-                      {renderServiceIcon(svc.category, svc.name)}
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                      <h3
+            {filteredServices.length === 0 ? (
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px dashed #cbd5e1',
+                  borderRadius: '14px',
+                  padding: '24px',
+                  textAlign: 'center',
+                  color: '#64748b',
+                  fontSize: '0.86rem',
+                }}
+              >
+                Belum ada layanan pada kategori ini. Silakan pilih tab kategori lain atau hubungi CS kami.
+              </div>
+            ) : (
+              <div className="grid grid-2" style={{ gap: '10px' }}>
+                {filteredServices.map((svc) => (
+                  <article
+                    key={svc.id}
+                    className="public-service-card"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                      padding: '12px 14px',
+                      background: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '14px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                      <div
                         style={{
-                          margin: 0,
-                          fontSize: '0.88rem',
-                          fontWeight: 700,
-                          color: '#0f172a',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '12px',
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
                         }}
+                        aria-hidden="true"
                       >
-                        {svc.name}
-                      </h3>
-                      <span style={{ fontSize: '0.73rem', color: '#64748b', display: 'block' }}>
-                        {durationLabel(svc) || '2 Hari'} • {svc.description}
+                        {renderServiceIcon(svc.category, svc.name)}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <h3
+                          style={{
+                            margin: 0,
+                            fontSize: '0.88rem',
+                            fontWeight: 700,
+                            color: '#0f172a',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {svc.name}
+                        </h3>
+                        <span style={{ fontSize: '0.73rem', color: '#64748b', display: 'block' }}>
+                          {durationLabel(svc) || '2 Hari'} • {svc.description}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <strong className="price" style={{ fontSize: '0.92rem', color: '#bf2f3b', display: 'block', fontVariantNumeric: 'tabular-nums' }}>
+                        {priceLabel(svc)}
+                      </strong>
+                      <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
+                        per pasang/unit
                       </span>
                     </div>
-                  </div>
-
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <strong className="price" style={{ fontSize: '0.92rem', color: '#bf2f3b', display: 'block', fontVariantNumeric: 'tabular-nums' }}>
-                      {priceLabel(svc)}
-                    </strong>
-                    <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
-                      per pasang/unit
-                    </span>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  </article>
+                ))}
+              </div>
+            )}
 
             <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px dashed #e2e8f0', fontSize: '0.75rem', color: '#64748b' }}>
               * Catatan: Harga akhir dapat disesuaikan di workshop bila terdapat tingkat kesulitan atau noda membandel khusus.
