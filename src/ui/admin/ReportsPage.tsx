@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
@@ -7,25 +7,40 @@ import { isLate } from '../../lib/estimation';
 
 export const ReportsPage: React.FC = () => {
   const { user } = useAuth();
-  const { data: orders } = useAsync(() => repo.listOrders(), []);
+  const { data: rawOrders } = useAsync(() => repo.listOrders(), []);
   const [expandedSection, setExpandedSection] = useState<string | null>('ringkasan');
+  const [timeFilter, setTimeFilter] = useState<'semua' | 'minggu' | 'bulan'>('semua');
 
   const now = new Date();
 
+  // Filter orders by time period: Semua, 7 Hari Terakhir (Mingguan), 30 Hari Terakhir (Bulanan)
+  const orders = useMemo(() => {
+    if (!rawOrders) return [];
+    if (timeFilter === 'semua') return rawOrders;
+
+    const days = timeFilter === 'minggu' ? 7 : 30;
+    const cutoff = new Date(now.getTime() - days * 24 * 3600 * 1000);
+
+    return rawOrders.filter((o) => {
+      const orderDate = new Date(o.receivedAt);
+      return orderDate >= cutoff;
+    });
+  }, [rawOrders, timeFilter]);
+
   // Statistics calculation
-  const totalOrders = (orders || []).length;
-  const paidOrders = (orders || []).filter((o) => o.payment.status === 'lunas');
-  const unpaidOrders = (orders || []).filter((o) => o.payment.status === 'belum_lunas');
+  const totalOrders = orders.length;
+  const paidOrders = orders.filter((o) => o.payment.status === 'lunas');
+  const unpaidOrders = orders.filter((o) => o.payment.status === 'belum_lunas');
   const realRevenue = paidOrders.reduce((sum, o) => sum + o.total, 0);
   const pendingRevenue = unpaidOrders.reduce((sum, o) => sum + o.total, 0);
-  const totalOmzet = (orders || []).reduce((sum, o) => sum + o.total, 0);
+  const totalOmzet = orders.reduce((sum, o) => sum + o.total, 0);
 
   // Late orders
-  const lateOrders = (orders || []).filter((o) => isLate(o, now) && o.status !== 'diambil');
+  const lateOrders = orders.filter((o) => isLate(o, now) && o.status !== 'diambil');
 
   // Top services
   const serviceCount = new Map<string, { count: number; revenue: number }>();
-  (orders || []).forEach((o) => {
+  orders.forEach((o) => {
     o.services.forEach((s) => {
       const cur = serviceCount.get(s.name) || { count: 0, revenue: 0 };
       serviceCount.set(s.name, {
@@ -70,12 +85,82 @@ export const ReportsPage: React.FC = () => {
 
   return (
     <div className="stack" style={{ gap: '14px' }}>
-      {/* 1. Header Sapaan Persis Bilas: Hai, [Nama] \n Ini adalah laporan usaha laundry kamu */}
-      <div style={{ marginTop: '2px', marginBottom: '4px' }}>
+      {/* 1. Header Sapaan & Filter Periode */}
+      <div style={{ marginTop: '2px', marginBottom: '2px' }}>
         <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
           Hai, {user?.name || 'coba'}
         </h1>
         <span style={{ fontSize: '0.84rem', color: '#64748b' }}>Ini adalah laporan usaha laundry kamu</span>
+
+        {/* Filter Periode Pills: Semua, 1 Minggu (7 Hari), 1 Bulan (30 Hari) */}
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+            marginTop: '12px',
+            background: '#f1f5f9',
+            padding: '4px',
+            borderRadius: '12px',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setTimeFilter('semua')}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              borderRadius: '9px',
+              border: 'none',
+              background: timeFilter === 'semua' ? '#ffffff' : 'transparent',
+              color: timeFilter === 'semua' ? '#0f172a' : '#64748b',
+              fontWeight: timeFilter === 'semua' ? 800 : 600,
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+              boxShadow: timeFilter === 'semua' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            Semua
+          </button>
+          <button
+            type="button"
+            onClick={() => setTimeFilter('minggu')}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              borderRadius: '9px',
+              border: 'none',
+              background: timeFilter === 'minggu' ? '#bf2f3b' : 'transparent',
+              color: timeFilter === 'minggu' ? '#ffffff' : '#64748b',
+              fontWeight: timeFilter === 'minggu' ? 800 : 600,
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+              boxShadow: timeFilter === 'minggu' ? '0 2px 6px rgba(191, 47, 59, 0.3)' : 'none',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            1 Minggu
+          </button>
+          <button
+            type="button"
+            onClick={() => setTimeFilter('bulan')}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              borderRadius: '9px',
+              border: 'none',
+              background: timeFilter === 'bulan' ? '#bf2f3b' : 'transparent',
+              color: timeFilter === 'bulan' ? '#ffffff' : '#64748b',
+              fontWeight: timeFilter === 'bulan' ? 800 : 600,
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+              boxShadow: timeFilter === 'bulan' ? '0 2px 6px rgba(191, 47, 59, 0.3)' : 'none',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            1 Bulan
+          </button>
+        </div>
       </div>
 
       {/* 2. Top Card: Ringkasan Outlet (Persis Bilas Screenshot) */}
