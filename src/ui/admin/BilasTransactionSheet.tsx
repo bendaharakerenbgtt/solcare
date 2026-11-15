@@ -44,11 +44,15 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
       alert('Nama pelanggan wajib diisi');
       return;
     }
-    const finalPhone = noPhone ? '-' : newCustPhone.trim();
-    if (!noPhone && !finalPhone) {
-      alert('Nomor WhatsApp wajib diisi atau centang Tanpa nomor telepon');
+    const trimmedPhone = newCustPhone.trim();
+    const trimmedEmail = newCustEmail.trim();
+
+    // Validasi: Wajib isi salah satu (Nomor Telepon ATAU Email)
+    if (!noPhone && !trimmedPhone && !trimmedEmail) {
+      alert('Harap isi salah satu: Nomor Telepon atau Email pelanggan.');
       return;
     }
+    const finalPhone = noPhone || !trimmedPhone ? '-' : trimmedPhone;
 
     try {
       const fullNotes = [
@@ -320,11 +324,10 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
                 </div>
                 <input
                   type="tel"
-                  placeholder="81234567890"
+                  placeholder="81234567890 (atau isi email di bawah)"
                   value={newCustPhone}
                   onChange={(e) => setNewCustPhone(e.target.value)}
                   disabled={noPhone}
-                  required={!noPhone}
                   style={{
                     flex: 1,
                     borderRadius: '10px',
@@ -351,7 +354,7 @@ export const BilasTransactionSheet: React.FC<BilasTransactionSheetProps> = ({ is
             {/* 3. Email */}
             <label className="field">
               <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#334155' }}>
-                Email
+                Email (Opsional / jika tanpa No. HP)
               </span>
               <input
                 type="email"

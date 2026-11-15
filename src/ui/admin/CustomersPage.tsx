@@ -106,11 +106,15 @@ export const CustomersPage: React.FC = () => {
       alert('Nama pelanggan wajib diisi');
       return;
     }
-    const finalPhone = noPhone ? '-' : phone.trim();
-    if (!noPhone && !finalPhone) {
-      alert('Nomor telepon wajib diisi atau centang Tanpa nomor telepon');
+    const trimmedPhone = phone.trim();
+    const trimmedEmail = email.trim();
+
+    // Validasi: Wajib isi salah satu (Nomor Telepon ATAU Email)
+    if (!noPhone && !trimmedPhone && !trimmedEmail) {
+      alert('Harap isi salah satu: Nomor Telepon atau Email pelanggan.');
       return;
     }
+    const finalPhone = noPhone || !trimmedPhone ? '-' : trimmedPhone;
 
     try {
       const fullNotes = [
@@ -808,11 +812,10 @@ export const CustomersPage: React.FC = () => {
                   </div>
                   <input
                     type="tel"
-                    placeholder="81234567890"
+                    placeholder="81234567890 (atau isi email di bawah)"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     disabled={noPhone}
-                    required={!noPhone}
                   />
                 </div>
               </label>
@@ -827,7 +830,7 @@ export const CustomersPage: React.FC = () => {
               </label>
 
               <label className="field">
-                <span>Email</span>
+                <span>Email (Opsional / jika tanpa No. HP)</span>
                 <input
                   type="email"
                   placeholder="email@contoh.com"
