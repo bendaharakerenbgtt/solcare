@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
@@ -103,7 +103,8 @@ export const OrderFormPage: React.FC = () => {
   const [generalShoeName, setGeneralShoeName] = useState('');
 
   // Confirmation screen options (Image 7)
-  const [pickupOption, setPickupOption] = useState<'dropoff' | 'pickup'>('dropoff');
+  type DeliveryOptionKey = 'dropoff' | 'free_pickup_min2' | 'pickup_10k' | 'pickup_20k';
+  const [pickupOption, setPickupOption] = useState<DeliveryOptionKey>('dropoff');
   const [pickupDropdownOpen, setPickupDropdownOpen] = useState(false);
   const [isPriority, setIsPriority] = useState(false);
   const [priorityModalOpen, setPriorityModalOpen] = useState(false);
@@ -191,13 +192,56 @@ export const OrderFormPage: React.FC = () => {
     });
   };
 
+  // Delivery Options Configuration
+  const DELIVERY_OPTIONS: {
+    key: DeliveryOptionKey;
+    title: string;
+    sub?: string;
+    extraFee: number;
+    minShoes?: number;
+  }[] = [
+    {
+      key: 'dropoff',
+      title: 'Diantar Sendiri (Drop-off)',
+      extraFee: 0,
+    },
+    {
+      key: 'free_pickup_min2',
+      title: 'Free Antar Jemput (Maks. 3KM)',
+      sub: 'Khusus pesanan minimal 2 sepatu',
+      extraFee: 0,
+      minShoes: 2,
+    },
+    {
+      key: 'pickup_10k',
+      title: 'Antar Jemput (+Rp 10.000)',
+      sub: 'Maks. 3KM, 1 Sepatu',
+      extraFee: 10000,
+    },
+    {
+      key: 'pickup_20k',
+      title: 'Antar Jemput (+Rp 20.000)',
+      extraFee: 20000,
+    },
+  ];
+
   // Total quantity and total amount
   const totalQty = selectedItems.reduce((acc, it) => acc + it.qty, 0);
+
+  // Auto-fallback if currently selected delivery requires >= 2 shoes but totalQty < 2
+  useEffect(() => {
+    if (pickupOption === 'free_pickup_min2' && totalQty < 2) {
+      setPickupOption('dropoff');
+    }
+  }, [totalQty, pickupOption]);
+
+  const activeDelivery = DELIVERY_OPTIONS.find((d) => d.key === pickupOption) || DELIVERY_OPTIONS[0];
+
   const totalAmount = useMemo(() => {
     let sum = selectedItems.reduce((acc, it) => acc + it.price * it.qty, 0);
-    if (pickupOption === 'pickup') sum += 15000;
+    sum += activeDelivery.extraFee;
     return sum;
-  }, [selectedItems, pickupOption]);
+  }, [selectedItems, activeDelivery]);
 
   // Handle final order creation (Image 5)
   const handleCreateTransaction = async () => {
@@ -283,7 +327,7 @@ export const OrderFormPage: React.FC = () => {
           paidAt: null,
           confirmed: false,
         },
-        internalNotes: `Parfum: ${selectedParfum} | Layanan: ${pickupOption === 'pickup' ? 'Antar-Jemput' : 'Drop-off'}`,
+        internalNotes: `Parfum: ${selectedParfum} | Layanan: ${activeDelivery.title}`,
       });
 
       setCreatedOrder(created);
@@ -848,15 +892,22 @@ export const OrderFormPage: React.FC = () => {
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <span>
-                    {pickupOption === 'dropoff' ? 'Diantar Sendiri (Drop-off)' : 'Jemput ke Rumah (+Rp 15.000)'}
-                  </span>
+                  <div style={{ textAlign: 'left' }}>
+                    <div>{activeDelivery.title}</div>
+                    {activeDelivery.sub && (
+                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500, marginTop: '1px' }}>
+                        {activeDelivery.sub}
+                      </div>
+                    )}
+                  </div>
                   <span
                     style={{
                       display: 'flex',
                       transform: pickupDropdownOpen ? 'rotate(180deg)' : 'none',
                       transition: 'transform 0.2s ease',
                       color: '#64748b',
+                      marginLeft: '8px',
+                      flexShrink: 0,
                     }}
                   >
                     <ChevronDownIcon size={16} />
@@ -894,83 +945,74 @@ export const OrderFormPage: React.FC = () => {
                         gap: '4px',
                       }}
                     >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPickupOption('dropoff');
-                          setPickupDropdownOpen(false);
-                        }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '10px 12px',
-                          borderRadius: '10px',
-                          border: 'none',
-                          background: pickupOption === 'dropoff' ? '#fee2e2' : 'transparent',
-                          color: pickupOption === 'dropoff' ? '#9e242e' : '#334155',
-                          fontSize: '0.86rem',
-                          fontWeight: pickupOption === 'dropoff' ? 700 : 500,
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                        }}
-                      >
-                        <span>Diantar Sendiri (Drop-off)</span>
-                        {pickupOption === 'dropoff' && (
-                          <span
-                            style={{
-                              width: '16px',
-                              height: '16px',
-                              borderRadius: '50%',
-                              background: '#bf2f3b',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <CheckIcon size={10} color="#ffffff" />
-                          </span>
-                        )}
-                      </button>
+                      {DELIVERY_OPTIONS.map((opt) => {
+                        const isSelected = pickupOption === opt.key;
+                        const isDisabled = opt.minShoes ? totalQty < opt.minShoes : false;
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPickupOption('pickup');
-                          setPickupDropdownOpen(false);
-                        }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '10px 12px',
-                          borderRadius: '10px',
-                          border: 'none',
-                          background: pickupOption === 'pickup' ? '#fee2e2' : 'transparent',
-                          color: pickupOption === 'pickup' ? '#9e242e' : '#334155',
-                          fontSize: '0.86rem',
-                          fontWeight: pickupOption === 'pickup' ? 700 : 500,
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                        }}
-                      >
-                        <span>Jemput ke Rumah (+Rp 15.000)</span>
-                        {pickupOption === 'pickup' && (
-                          <span
+                        return (
+                          <button
+                            key={opt.key}
+                            type="button"
+                            disabled={isDisabled}
+                            onClick={() => {
+                              if (!isDisabled) {
+                                setPickupOption(opt.key);
+                                setPickupDropdownOpen(false);
+                              }
+                            }}
                             style={{
-                              width: '16px',
-                              height: '16px',
-                              borderRadius: '50%',
-                              background: '#bf2f3b',
                               display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'center',
+                              justifyContent: 'space-between',
+                              padding: '10px 12px',
+                              borderRadius: '10px',
+                              border: 'none',
+                              background: isSelected ? '#fee2e2' : isDisabled ? '#f8fafc' : 'transparent',
+                              color: isSelected ? '#9e242e' : isDisabled ? '#94a3b8' : '#334155',
+                              fontSize: '0.86rem',
+                              fontWeight: isSelected ? 700 : 500,
+                              cursor: isDisabled ? 'not-allowed' : 'pointer',
+                              textAlign: 'left',
+                              opacity: isDisabled ? 0.65 : 1,
+                              transition: 'all 0.15s ease',
                             }}
                           >
-                            <CheckIcon size={10} color="#ffffff" />
-                          </span>
-                        )}
-                      </button>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span>{opt.title}</span>
+                                {isDisabled && (
+                                  <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: '#e2e8f0', color: '#64748b', fontWeight: 600 }}>
+                                    Min. 2 Sepatu
+                                  </span>
+                                )}
+                              </div>
+                              {opt.sub && (
+                                <div style={{ fontSize: '0.74rem', color: isSelected ? '#b91c1c' : '#64748b', marginTop: '2px' }}>
+                                  {opt.sub}
+                                </div>
+                              )}
+                            </div>
+
+                            {isSelected && (
+                              <span
+                                style={{
+                                  width: '16px',
+                                  height: '16px',
+                                  borderRadius: '50%',
+                                  background: '#bf2f3b',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0,
+                                  marginLeft: '8px',
+                                }}
+                              >
+                                <CheckIcon size={10} color="#ffffff" />
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </>
                 )}
