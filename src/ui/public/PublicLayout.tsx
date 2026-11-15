@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import { whatsappLink } from '../../lib/format';
-import { SearchIcon, UserIcon, WhatsAppIcon } from '../common/Icons';
+import { WhatsAppIcon, UserIcon } from '../common/Icons';
 
 export const PublicLayout: React.FC = () => {
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: settings } = useAsync(() => repo.getSettings(), []);
   const { data: announcements } = useAsync(() => repo.listPublicAnnouncements(), []);
 
@@ -17,7 +18,6 @@ export const PublicLayout: React.FC = () => {
   const importantBanner = (announcements || []).find((a) => a.important) || null;
 
   const isHome = location.pathname === '/';
-  const isServices = location.pathname.startsWith('/layanan');
   const isTrack = location.pathname.startsWith('/cek-pesanan');
   const isAnnouncements = location.pathname.startsWith('/pengumuman');
   const isContact = location.pathname.startsWith('/kontak');
@@ -26,14 +26,16 @@ export const PublicLayout: React.FC = () => {
     ? `${settings.openTime}–${settings.closeTime}`
     : '09:00–18:00';
 
+  const closeMenu = () => setMobileMenuOpen(false);
+
   return (
     <div className="public-app-shell">
-      {/* Announcement Banner Alert (only when an important announcement is active) */}
+      {/* 1. Banner Info Penting jika ada */}
       {importantBanner && (
         <Link to="/pengumuman" className="public-top-banner-alert">
           <span
             style={{
-              background: 'rgba(255,255,255,0.2)',
+              background: 'rgba(255,255,255,0.22)',
               padding: '2px 8px',
               borderRadius: '999px',
               fontSize: '0.68rem',
@@ -42,7 +44,7 @@ export const PublicLayout: React.FC = () => {
               flexShrink: 0,
             }}
           >
-            INFO PENTING
+            INFO TOKO
           </span>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {importantBanner.title}
@@ -51,111 +53,23 @@ export const PublicLayout: React.FC = () => {
         </Link>
       )}
 
-      {/* Mobile Top App Bar (Mirrors AdminLayout.admin-mobile-bar) */}
-      <header className="public-mobile-bar">
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <img
-            src="/logo-color.jpg"
-            alt="Solecare Logo"
-            style={{ width: '28px', height: '28px', borderRadius: '7px', objectFit: 'cover' }}
-          />
-          <span style={{ fontWeight: 800, fontSize: '1.28rem', color: '#001b3a', letterSpacing: '-0.03em' }}>
-            solecare
-          </span>
-        </Link>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '5px',
-              background: '#f0fdf4',
-              border: '1px solid #bbf7d0',
-              color: '#15803d',
-              fontSize: '0.72rem',
-              fontWeight: 700,
-              padding: '4px 9px',
-              borderRadius: '999px',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: '#16a34a',
-                display: 'inline-block',
-              }}
-            />
-            Buka {hoursBadge}
-          </span>
-
-          {waUrl && (
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noreferrer"
-              title="Chat WhatsApp CS"
-              aria-label="Chat WhatsApp Customer Service"
-              style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                background: '#f0fdf4',
-                border: '1px solid #dcfce7',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textDecoration: 'none',
-              }}
-            >
-              <WhatsAppIcon size={18} color="#16a34a" />
-            </a>
-          )}
-
-          <Link
-            to="/admin/login"
-            title="Staff Portal"
-            aria-label="Masuk Staff Portal"
-            style={{
-              width: '34px',
-              height: '34px',
-              borderRadius: '10px',
-              background: '#f1f5f9',
-              border: '1px solid #e2e8f0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#001b3a',
-              textDecoration: 'none',
-            }}
-          >
-            <UserIcon size={17} color="#001b3a" />
-          </Link>
-        </div>
-      </header>
-
-      {/* Desktop Header */}
-      <header className="site-header public-desktop-header">
-        <div className="container">
-          <Link to="/" className="brand">
+      {/* 2. Header Web Biasa (Navbar atas dengan brand & navigasi simpel) */}
+      <header className="public-simple-header">
+        <div className="public-nav-container">
+          <Link to="/" className="brand" onClick={closeMenu}>
             <div className="brand-mark">
               <img src="/solecare_logo.jpg" alt="Solecare Logo" />
             </div>
             <div>
               Soleful Soaks!
-              <small>Shoe Care &amp; Laundry</small>
+              <small>Shoes Care &amp; Laundry</small>
             </div>
           </Link>
 
-          <nav className="site-nav" aria-label="Navigasi Utama">
+          {/* Desktop Nav */}
+          <nav className="public-desktop-nav" aria-label="Navigasi Web">
             <Link to="/" className={isHome ? 'active' : ''}>
-              Beranda
-            </Link>
-            <Link to="/layanan" className={isServices ? 'active' : ''}>
-              Layanan &amp; Harga
+              Beranda &amp; Harga
             </Link>
             <Link to="/cek-pesanan" className={isTrack ? 'active' : ''}>
               Cek Pesanan
@@ -164,125 +78,137 @@ export const PublicLayout: React.FC = () => {
               Pengumuman
             </Link>
             <Link to="/kontak" className={isContact ? 'active' : ''}>
-              Kontak &amp; Lokasi
+              Kontak
             </Link>
-            <Link to="/admin/login" className="btn secondary sm staff-portal-btn">
-              Staff Portal
+            <Link to="/admin/login" className="btn secondary sm" style={{ marginLeft: '8px' }}>
+              Staff Login
             </Link>
           </nav>
+
+          {/* Mobile Right Controls: WA & Burger Toggle */}
+          <div className="public-mobile-actions">
+            {waUrl && (
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="public-mobile-wa-btn"
+                title="WhatsApp CS"
+                aria-label="WhatsApp CS"
+              >
+                <WhatsAppIcon size={18} color="#16a34a" />
+              </a>
+            )}
+            <button
+              type="button"
+              className="public-burger-btn"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Buka Menu"
+            >
+              {mobileMenuOpen ? '✕' : '☰'}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className="public-mobile-dropdown">
+            <Link to="/" className={isHome ? 'active' : ''} onClick={closeMenu}>
+              Beranda &amp; Pricelist
+            </Link>
+            <Link to="/cek-pesanan" className={isTrack ? 'active' : ''} onClick={closeMenu}>
+              Cek Status Pesanan
+            </Link>
+            <Link to="/pengumuman" className={isAnnouncements ? 'active' : ''} onClick={closeMenu}>
+              Pengumuman Toko
+            </Link>
+            <Link to="/kontak" className={isContact ? 'active' : ''} onClick={closeMenu}>
+              Kontak &amp; Lokasi
+            </Link>
+            <div style={{ paddingTop: '8px', borderTop: '1px solid #e2e8f0', marginTop: '4px' }}>
+              <Link to="/admin/login" className="btn secondary sm" style={{ width: '100%', justifyContent: 'center' }} onClick={closeMenu}>
+                <UserIcon size={15} color="#001b3a" /> Staff Portal
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
-      <main className="public-main">
+      {/* 3. Main Body */}
+      <main className="public-main" style={{ flex: 1 }}>
         <Outlet />
       </main>
 
-      {/* Desktop Footer (Hidden on mobile so bottom nav stays clean like Admin App) */}
-      <footer className="site-footer public-desktop-footer">
+      {/* 4. Footer Web Biasa (Tentang akun, hak cipta, dan navigasi) */}
+      <footer className="public-simple-footer">
         <div className="container">
-          <div className="grid grid-3" style={{ marginBottom: '24px' }}>
+          <div className="grid grid-3" style={{ marginBottom: '24px', gap: '24px' }}>
             <div>
-              <h3 style={{ color: '#fff', fontSize: '1.15rem', marginBottom: '8px' }}>
-                Soleful Soaks!
-              </h3>
-              <p className="small muted">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <img
+                  src="/solecare_logo.jpg"
+                  alt="Solecare Logo"
+                  style={{ width: '36px', height: '36px', borderRadius: '8px', objectFit: 'cover' }}
+                />
+                <div>
+                  <h3 style={{ color: '#ffffff', fontSize: '1.1rem', margin: 0 }}>
+                    Soleful Soaks!
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    Shoe Care &amp; Laundry
+                  </span>
+                </div>
+              </div>
+              <p className="small" style={{ color: '#cbd5e1', lineHeight: 1.5, margin: 0 }}>
                 {settings?.tagline || 'Jasa perawatan & pembersihan sepatu, tas, topi, dan helm profesional.'}
               </p>
               {settings?.address && (
-                <p className="small" style={{ marginTop: '8px', color: '#cbd5e1' }}>
+                <p className="small" style={{ marginTop: '8px', color: '#94a3b8' }}>
                   {settings.address}
                 </p>
               )}
             </div>
+
             <div>
-              <h4 style={{ color: '#fff', marginBottom: '12px' }}>Navigasi</h4>
-              <div className="stack small" style={{ gap: '6px' }}>
-                <Link to="/layanan">Layanan &amp; Harga</Link>
-                <Link to="/cek-pesanan">Lacak Status Pesanan</Link>
-                <Link to="/pengumuman">Pengumuman &amp; Promo</Link>
-                <Link to="/kontak">Hubungi Customer Service</Link>
+              <h4 style={{ color: '#ffffff', marginBottom: '12px', fontSize: '0.95rem' }}>Akses &amp; Layanan Publik</h4>
+              <div className="stack small" style={{ gap: '8px' }}>
+                <Link to="/" style={{ color: '#cbd5e1' }}>Beranda &amp; Daftar Harga</Link>
+                <Link to="/cek-pesanan" style={{ color: '#cbd5e1' }}>Cek Status Pesanan</Link>
+                <Link to="/pengumuman" style={{ color: '#cbd5e1' }}>Pengumuman &amp; Jadwal</Link>
+                <Link to="/kontak" style={{ color: '#cbd5e1' }}>Kontak &amp; Workshop</Link>
+                <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>
+                  * Web publik tidak memerlukan login akun. Cukup gunakan kode dari nota Anda.
+                </span>
               </div>
             </div>
+
             <div>
-              <h4 style={{ color: '#fff', marginBottom: '12px' }}>Hubungi Kami</h4>
-              <p className="small muted">
-                Drop-off langsung atau pesan layanan antar jemput area sekitar workshop.
+              <h4 style={{ color: '#ffffff', marginBottom: '12px', fontSize: '0.95rem' }}>Akun &amp; Pengelola</h4>
+              <p className="small" style={{ color: '#cbd5e1', margin: '0 0 12px', lineHeight: 1.5 }}>
+                Area khusus pegawai dan admin toko untuk kelola antrean dan transaksi.
               </p>
-              <div className="row" style={{ marginTop: '12px' }}>
+              <div className="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
+                <Link to="/admin/login" className="btn secondary sm" style={{ background: '#ffffff', color: '#001b3a' }}>
+                  Masuk Akun Staff ↗
+                </Link>
                 {waUrl && (
                   <a href={waUrl} target="_blank" rel="noreferrer" className="btn wa sm">
                     WhatsApp CS
                   </a>
                 )}
-                {settings?.instagramUrl && (
-                  <a
-                    href={settings.instagramUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn secondary sm"
-                  >
-                    Instagram
-                  </a>
-                )}
+              </div>
+              <div style={{ marginTop: '12px', fontSize: '0.75rem', color: '#94a3b8' }}>
+                Jam Buka: <strong style={{ color: '#ffffff' }}>{hoursBadge} WIB</strong>
               </div>
             </div>
           </div>
-          <div className="footer-bottom-row small muted">
+
+          <div className="footer-bottom-row small" style={{ color: '#94a3b8', borderTop: '1px solid #1e293b', paddingTop: '16px' }}>
             <div>© {new Date().getFullYear()} Soleful Soaks! Shoes Care. All rights reserved.</div>
-            <div>Drop-off &amp; Antar Jemput • Pembayaran Tunai (Cash Only)</div>
+            <div>Layanan Drop-off &amp; Antar Jemput • Pembayaran Tunai (Cash Only)</div>
           </div>
         </div>
       </footer>
-
-      {/* Bilas-Style Mobile Bottom Navigation Bar */}
-      <nav className="bilas-bottom-nav" aria-label="Menu Navigasi Bawah Pengunjung">
-        <Link to="/" className={`bilas-nav-item ${isHome ? 'active' : ''}`}>
-          <img
-            src={isHome ? '/bilas_icons/icon_menu_home.webp' : '/bilas_icons/icon_menu_home_disable.webp'}
-            alt=""
-            className="bilas-nav-icon"
-          />
-          <span className="bilas-nav-label">Beranda</span>
-        </Link>
-
-        <Link to="/layanan" className={`bilas-nav-item ${isServices ? 'active' : ''}`}>
-          <img
-            src={isServices ? '/bilas_icons/icon_menu_pesanan.webp' : '/bilas_icons/icon_menu_pesanan_disable.webp'}
-            alt=""
-            className="bilas-nav-icon"
-          />
-          <span className="bilas-nav-label">Layanan</span>
-        </Link>
-
-        <Link
-          to="/cek-pesanan"
-          className={`bilas-nav-fab ${isTrack ? 'active' : ''}`}
-          aria-label="Cek Status Pesanan"
-          title="Cek Status Pesanan"
-        >
-          <div className="bilas-nav-fab-circle">
-            <SearchIcon size={22} color="#ffffff" />
-          </div>
-        </Link>
-
-        <Link to="/pengumuman" className={`bilas-nav-item ${isAnnouncements ? 'active' : ''}`}>
-          <img
-            src={isAnnouncements ? '/bilas_icons/icon_menu_laporan.webp' : '/bilas_icons/icon_menu_laporan_disable.webp'}
-            alt=""
-            className="bilas-nav-icon"
-          />
-          <span className="bilas-nav-label">Info</span>
-        </Link>
-
-        <Link to="/kontak" className={`bilas-nav-item ${isContact ? 'active' : ''}`}>
-          <img
-            src={isContact ? '/bilas_icons/icon_menu_akun.webp' : '/bilas_icons/icon_menu_akun_disable.webp'}
-            alt=""
-            className="bilas-nav-icon"
-          />
-          <span className="bilas-nav-label">Kontak</span>
-        </Link>
-      </nav>
     </div>
   );
 };

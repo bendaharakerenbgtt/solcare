@@ -13,24 +13,16 @@ import type { ServiceCategory } from '../../data/types';
 import {
   SearchIcon,
   TruckIcon,
-  CashIcon,
-  ClockIcon,
-  ChevronRightIcon,
   SneakerIllustration,
   BagIllustration,
   CapIllustration,
   HelmetIllustration,
   SparklesIllustration,
-  SiluetQueueIcon,
-  SiluetProcessIcon,
-  SiluetPickupIcon,
-  SiluetReadyPickupIcon,
-  SiluetDeliveryIcon,
-  SiluetSelfServiceIcon,
   WhatsAppIcon,
+  StoreIcon,
 } from '../common/Icons';
 
-type CatalogItem = {
+type ServiceItem = {
   id: string;
   name: string;
   category: ServiceCategory;
@@ -46,7 +38,7 @@ type CatalogItem = {
 const DELIVERY_TIERS = [
   {
     title: 'Diantar Sendiri (Drop-off)',
-    sub: 'Langsung antar & konsultasi di workshop Solecare',
+    sub: 'Langsung antar & konsultasi gratis di toko',
     fee: 'Gratis',
     badgeBg: '#dcfce7',
     badgeColor: '#15803d',
@@ -61,24 +53,24 @@ const DELIVERY_TIERS = [
   {
     title: 'Antar Jemput (+Rp 10.000)',
     sub: 'Jarak maks. 3KM, khusus 1 pasang sepatu',
-    fee: '+Rp 10rb',
+    fee: '+Rp 10.000',
     badgeBg: '#fef2f2',
     badgeColor: '#bf2f3b',
   },
   {
     title: 'Antar Jemput (+Rp 20.000)',
-    sub: 'Jarak > 3KM / area jangkauan lanjutan',
-    fee: '+Rp 20rb',
+    sub: 'Jarak > 3KM / area luar radius utama',
+    fee: '+Rp 20.000',
     badgeBg: '#f0f4f9',
     badgeColor: '#001b3a',
   },
 ];
 
 const PARFUMS = [
-  { name: 'Vanilla Sweet Shoes', note: 'Manis hangat lembut' },
-  { name: 'Fresh Apple Mint', note: 'Segar dingin bersih' },
-  { name: 'Bubblegum Fresh', note: 'Ceria tahan lama' },
-  { name: 'Tanpa Parfum', note: 'Netral tanpa aroma' },
+  { name: 'Vanilla Sweet Shoes', note: 'Manis, lembut & hangat' },
+  { name: 'Fresh Apple Mint', note: 'Segar dingin & bersih' },
+  { name: 'Bubblegum Fresh', note: 'Aroma ceria & tahan lama' },
+  { name: 'Tanpa Parfum', note: 'Netral tanpa aroma tambahan' },
 ];
 
 function renderServiceIcon(category: ServiceCategory, svcName: string) {
@@ -98,22 +90,16 @@ function renderServiceIcon(category: ServiceCategory, svcName: string) {
   return <SneakerIllustration width={38} height={24} />;
 }
 
-function cleanTrackingInput(raw: string): string {
-  return raw.trim().replace(/^trx\s*\/\s*/i, '');
-}
-
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const [heroTab, setHeroTab] = useState<'CEK' | 'INFO'>('CEK');
   const [searchCode, setSearchCode] = useState('');
   const [selectedCat, setSelectedCat] = useState<ServiceCategory | 'all'>('all');
-  const [deliveryExpanded, setDeliveryExpanded] = useState(true);
 
   const { data: dbServices } = useAsync(() => repo.listServices(false), []);
   const { data: announcements } = useAsync(() => repo.listPublicAnnouncements(), []);
   const { data: settings } = useAsync(() => repo.getSettings(), []);
 
-  const services: CatalogItem[] = useMemo(() => {
+  const services: ServiceItem[] = useMemo(() => {
     const src = dbServices && dbServices.length > 0 ? dbServices : SEED_SERVICES;
     return src.map((s, idx) => ({
       id: 'id' in s && typeof s.id === 'string' ? s.id : `seed-${idx}`,
@@ -130,13 +116,13 @@ export const HomePage: React.FC = () => {
   }, [dbServices]);
 
   const filteredServices = useMemo(() => {
-    const base = selectedCat === 'all' ? services : services.filter((s) => s.category === selectedCat);
-    return base.slice(0, 6);
+    if (selectedCat === 'all') return services;
+    return services.filter((s) => s.category === selectedCat);
   }, [services, selectedCat]);
 
   const handleTrackSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleaned = cleanTrackingInput(searchCode);
+    const cleaned = searchCode.trim().replace(/^trx\s*\/\s*/i, '');
     if (cleaned) {
       navigate(`/cek-pesanan?code=${encodeURIComponent(cleaned)}`);
     } else {
@@ -148,659 +134,555 @@ export const HomePage: React.FC = () => {
     settings?.publicHoursText?.trim() ||
     `${settings?.openTime || '09:00'} - ${settings?.closeTime || '18:00'} WIB`;
 
-  const waPickupUrl = settings?.whatsappNumber
+  const waUrl = settings?.whatsappNumber
     ? whatsappLink(
         settings.whatsappNumber,
-        'Halo Soleful Soaks!, saya ingin konsultasi layanan & jadwalkan antar jemput sepatu.'
+        'Halo Soleful Soaks!, saya ingin konsultasi layanan & jadwal antar jemput sepatu.'
       )
     : null;
 
   return (
-    <div className="public-container home-desktop">
-      <div className="stack" style={{ gap: '14px' }}>
-        {/* 1. Greeting Header (Mirrors Admin DashboardPage) */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '10px',
-            marginTop: '2px',
-          }}
-        >
-          <div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: '1.25rem',
-                fontWeight: 800,
-                color: '#0f172a',
-                letterSpacing: '-0.02em',
-              }}
-            >
-              Hai, Sobat Solecare!
-            </h1>
-            <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
-              Perawatan sepatu, tas, topi &amp; helm profesional
-            </span>
-          </div>
-          <Link
-            to="/kontak"
-            style={{
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
-              borderRadius: '12px',
-              padding: '6px 10px',
-              textDecoration: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              flexShrink: 0,
-            }}
-          >
-            <ClockIcon size={14} color="#bf2f3b" />
-            <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#001b3a' }}>
-              {hoursText}
-            </span>
-          </Link>
-        </div>
+    <div className="public-page-wrapper">
+      <div className="container" style={{ maxWidth: '960px', padding: '0 16px' }}>
+        <div className="stack" style={{ gap: '24px' }}>
+          {/* ======================================================== */}
+          {/* 1. BAGIAN ATAS: INFORMASI TOKO & HERO                   */}
+          {/* ======================================================== */}
+          <section className="public-hero-card">
+            <div className="public-hero-grid">
+              <div>
+                <span className="public-badge-open">
+                  <span className="public-dot-pulse" /> Buka: {hoursText}
+                </span>
+                <h1 className="public-hero-heading">
+                  Soleful Soaks! <br />
+                  <span>Shoes Care &amp; Laundry</span>
+                </h1>
+                <p className="public-hero-desc">
+                  Perawatan mendalam, unyellowing, recolor hingga pembersihan harian untuk sepatu, tas, helm, dan topi dengan pengerjaan higienis dan wangi.
+                </p>
 
-        {/* 2. Top 2-Column Responsive Block (1-Col on HP, 2-Col on Desktop) */}
-        <div className="public-desktop-2col">
-          {/* LEFT COLUMN: Liquid Card + 6-Grid Quick Menu */}
-          <div className="stack" style={{ gap: '14px' }}>
-            {/* Bilas Signature Liquid Maroon Card */}
-            <div className="bilas-liquid-card" style={{ marginBottom: 0 }}>
-              <div className="bilas-liquid-tabs">
-                <button
-                  type="button"
-                  className={`bilas-liquid-tab ${heroTab === 'CEK' ? 'active' : ''}`}
-                  onClick={() => setHeroTab('CEK')}
-                >
-                  CEK PESANAN
-                </button>
-                <button
-                  type="button"
-                  className={`bilas-liquid-tab ${heroTab === 'INFO' ? 'active' : ''}`}
-                  onClick={() => setHeroTab('INFO')}
-                >
-                  INFO LAYANAN
-                </button>
+                <div className="row" style={{ gap: '10px', marginTop: '16px' }}>
+                  <a href="#pricelist" className="btn sm" style={{ background: '#bf2f3b' }}>
+                    Lihat Daftar Harga ↓
+                  </a>
+                  {waUrl && (
+                    <a
+                      href={waUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn secondary sm"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <WhatsAppIcon size={16} color="#15803d" /> Konsultasi WA
+                    </a>
+                  )}
+                </div>
               </div>
 
-              {heroTab === 'CEK' ? (
-                <div>
-                  <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', marginBottom: '10px', fontWeight: 500 }}>
-                    Masukkan kode dari nota penerimaan (tanpa login) untuk melihat progres real-time:
-                  </div>
+              {/* Box Cek Pesanan Langsung di Bagian Atas */}
+              <div className="public-track-box">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <SearchIcon size={20} color="#001b3a" />
+                  <strong style={{ fontSize: '1rem', color: '#001b3a' }}>Lacak Status Sepatu</strong>
+                </div>
+                <p className="small muted" style={{ margin: '0 0 14px' }}>
+                  Masukkan kode pesanan dari nota Anda untuk memantau progres cuci tanpa perlu login:
+                </p>
 
-                  <form
-                    onSubmit={handleTrackSubmit}
+                <form onSubmit={handleTrackSubmit} style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    placeholder="Contoh: SS-7K3QX-9MPRA"
+                    value={searchCode}
+                    onChange={(e) => setSearchCode(e.target.value)}
+                    className="mono"
+                    autoCapitalize="characters"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    aria-label="Kode Pesanan"
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      background: '#ffffff',
-                      borderRadius: '14px',
-                      padding: '5px 5px 5px 12px',
-                      boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
+                      border: '1.5px solid #cbd5e1',
+                      borderRadius: '10px',
+                      padding: '10px 12px',
+                      fontSize: '0.88rem',
+                      fontWeight: 700,
                     }}
+                  />
+                  <button
+                    type="submit"
+                    className="btn"
+                    style={{ background: '#001b3a', color: '#ffffff', borderRadius: '10px', padding: '10px 18px', whiteSpace: 'nowrap' }}
                   >
-                    <SearchIcon size={18} color="#94a3b8" style={{ flexShrink: 0 }} />
-                    <input
-                      type="text"
-                      placeholder="Contoh: SS-7K3QX-9MPRA"
-                      value={searchCode}
-                      onChange={(e) => setSearchCode(e.target.value)}
-                      className="mono"
-                      autoCapitalize="characters"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      aria-label="Kode Pesanan"
-                      style={{
-                        border: 'none',
-                        background: 'transparent',
-                        outline: 'none',
-                        padding: '6px 0',
-                        fontSize: '0.88rem',
-                        fontWeight: 700,
-                        color: '#0f172a',
-                        minWidth: 0,
-                      }}
-                    />
-                    <button
-                      type="submit"
-                      style={{
-                        background: '#001b3a',
-                        color: '#ffffff',
-                        border: 'none',
-                        borderRadius: '10px',
-                        padding: '9px 16px',
-                        fontSize: '0.82rem',
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                        flexShrink: 0,
-                      }}
-                    >
-                      Lacak
-                    </button>
-                  </form>
+                    Cek
+                  </button>
+                </form>
 
-                  {/* Demo Chips */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                      gap: '6px',
-                      marginTop: '12px',
-                    }}
-                  >
-                    <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
-                      Coba demo:
-                    </span>
+                <div style={{ marginTop: '12px', fontSize: '0.74rem', color: '#64748b' }}>
+                  Coba kode demo:
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
                     {[
                       { code: 'SS-7K3QX-9MPRA', label: 'Jordan 1' },
                       { code: 'SS-28YBN-4VCFW', label: 'Chuck 70' },
                       { code: 'SS-5MDPE-73KZ6', label: 'Tas Kanken' },
-                    ].map((demo) => (
+                    ].map((d) => (
                       <button
-                        key={demo.code}
+                        key={d.code}
                         type="button"
-                        onClick={() => navigate(`/cek-pesanan?code=${encodeURIComponent(demo.code)}`)}
+                        onClick={() => navigate(`/cek-pesanan?code=${d.code}`)}
                         style={{
-                          background: 'rgba(255,255,255,0.16)',
-                          border: '1px solid rgba(255,255,255,0.32)',
-                          color: '#ffffff',
-                          borderRadius: '999px',
-                          padding: '3px 10px',
+                          background: '#f1f5f9',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '6px',
+                          padding: '2px 8px',
                           fontSize: '0.72rem',
-                          fontWeight: 700,
+                          fontWeight: 600,
+                          color: '#001b3a',
                           cursor: 'pointer',
                         }}
                       >
-                        {demo.label} ({demo.code})
+                        {d.label}
                       </button>
                     ))}
                   </div>
                 </div>
-              ) : (
-                <div className="bilas-liquid-tx-carousel">
-                  <Link to="/layanan?cat=main" className="bilas-liquid-tx-item" style={{ textDecoration: 'none' }}>
-                    <div className="bilas-liquid-tx-circle">
-                      <ClockIcon size={18} color="#ffffff" />
-                    </div>
-                    <span className="bilas-liquid-tx-label">2–4 Hari</span>
-                    <span style={{ fontSize: '0.64rem', opacity: 0.8 }}>Reguler</span>
-                  </Link>
-
-                  <Link to="/layanan?cat=express" className="bilas-liquid-tx-item" style={{ textDecoration: 'none' }}>
-                    <div className="bilas-liquid-tx-circle">
-                      <SparklesIllustration size={18} color="#ffffff" />
-                    </div>
-                    <span className="bilas-liquid-tx-label">24 Jam</span>
-                    <span style={{ fontSize: '0.64rem', opacity: 0.8 }}>Express</span>
-                  </Link>
-
-                  <a href="#antar-jemput" className="bilas-liquid-tx-item" style={{ textDecoration: 'none' }}>
-                    <div className="bilas-liquid-tx-circle">
-                      <TruckIcon size={18} color="#ffffff" />
-                    </div>
-                    <span className="bilas-liquid-tx-label">Maks 3KM</span>
-                    <span style={{ fontSize: '0.64rem', opacity: 0.8 }}>Gratis ≥2</span>
-                  </a>
-
-                  <Link to="/layanan" className="bilas-liquid-tx-item" style={{ textDecoration: 'none' }}>
-                    <div className="bilas-liquid-tx-circle">
-                      <CashIcon size={18} color="#ffffff" />
-                    </div>
-                    <span className="bilas-liquid-tx-label">Tunai</span>
-                    <span style={{ fontSize: '0.64rem', opacity: 0.8 }}>Cash Only</span>
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* 6-Item Quick Menu Silhouette Grid (Mirrors Admin DashboardPage) */}
-            <div className="bilas-grid-6" style={{ marginBottom: 0 }}>
-              <Link to="/layanan?cat=main" className="bilas-grid-6-item" style={{ textDecoration: 'none' }}>
-                <div className="bilas-grid-6-icon-wrap" style={{ background: '#fdf2f2', borderRadius: '14px' }}>
-                  <SiluetQueueIcon size={26} color="#bf2f3b" />
-                </div>
-                <span className="bilas-grid-6-title">Main Clean</span>
-              </Link>
-
-              <Link to="/layanan?cat=express" className="bilas-grid-6-item" style={{ textDecoration: 'none' }}>
-                <div className="bilas-grid-6-icon-wrap" style={{ background: '#f0f4f9', borderRadius: '14px' }}>
-                  <SiluetProcessIcon size={26} color="#001b3a" />
-                </div>
-                <span className="bilas-grid-6-title">Express 24J</span>
-              </Link>
-
-              <Link to="/layanan?cat=additional" className="bilas-grid-6-item" style={{ textDecoration: 'none' }}>
-                <div className="bilas-grid-6-icon-wrap" style={{ background: '#fdf2f2', borderRadius: '14px' }}>
-                  <SiluetPickupIcon size={26} color="#bf2f3b" />
-                </div>
-                <span className="bilas-grid-6-title">Treatment</span>
-              </Link>
-
-              <Link to="/layanan?cat=other" className="bilas-grid-6-item" style={{ textDecoration: 'none' }}>
-                <div className="bilas-grid-6-icon-wrap" style={{ background: '#f0f4f9', borderRadius: '14px' }}>
-                  <SiluetReadyPickupIcon size={26} color="#001b3a" />
-                </div>
-                <span className="bilas-grid-6-title">Tas &amp; Helm</span>
-              </Link>
-
-              <a href="#antar-jemput" className="bilas-grid-6-item" style={{ textDecoration: 'none' }}>
-                <div className="bilas-grid-6-icon-wrap" style={{ background: '#fdf2f2', borderRadius: '14px' }}>
-                  <SiluetDeliveryIcon size={26} color="#bf2f3b" />
-                </div>
-                <span className="bilas-grid-6-title">Antar Jemput</span>
-              </a>
-
-              <Link to="/cek-pesanan" className="bilas-grid-6-item" style={{ textDecoration: 'none' }}>
-                <div className="bilas-grid-6-icon-wrap" style={{ background: '#f0f4f9', borderRadius: '14px' }}>
-                  <SiluetSelfServiceIcon size={26} color="#001b3a" />
-                </div>
-                <span className="bilas-grid-6-title">Cek Status</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* RIGHT COLUMN: 4-Tier Antar Jemput + Parfum + Announcements */}
-          <div className="stack" style={{ gap: '14px' }}>
-            {/* Layanan Antar Jemput 4-Tier Card */}
-            <div id="antar-jemput" className="public-card">
-              <button
-                type="button"
-                onClick={() => setDeliveryExpanded((prev) => !prev)}
-                aria-expanded={deliveryExpanded}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: 'transparent',
-                  border: 'none',
-                  padding: 0,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <TruckIcon size={20} color="#001b3a" />
-                  <div>
-                    <strong style={{ fontSize: '0.94rem', color: '#0f172a', display: 'block' }}>
-                      Layanan Antar Jemput
-                    </strong>
-                    <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                      4 pilihan pengantaran fleksibel &amp; transparan
-                    </span>
-                  </div>
-                </div>
-                <span
-                  style={{
-                    color: '#94a3b8',
-                    transform: deliveryExpanded ? 'rotate(180deg)' : 'none',
-                    transition: 'transform 0.2s',
-                    fontSize: '0.95rem',
-                  }}
-                >
-                  ▾
-                </span>
-              </button>
-
-              {deliveryExpanded && (
-                <div className="stack" style={{ gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
-                  {DELIVERY_TIERS.map((tier) => (
-                    <div
-                      key={tier.title}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '10px',
-                        padding: '9px 11px',
-                        background: '#f8fafc',
-                        borderRadius: '12px',
-                        border: '1px solid #e2e8f0',
-                      }}
-                    >
-                      <div style={{ minWidth: 0 }}>
-                        <strong style={{ fontSize: '0.84rem', color: '#0f172a', display: 'block' }}>
-                          {tier.title}
-                        </strong>
-                        <span style={{ fontSize: '0.73rem', color: '#64748b', display: 'block' }}>
-                          {tier.sub}
-                        </span>
-                      </div>
-                      <span
-                        style={{
-                          background: tier.badgeBg,
-                          color: tier.badgeColor,
-                          fontSize: '0.72rem',
-                          fontWeight: 800,
-                          padding: '3px 9px',
-                          borderRadius: '999px',
-                          whiteSpace: 'nowrap',
-                          flexShrink: 0,
-                        }}
-                      >
-                        {tier.fee}
-                      </span>
-                    </div>
-                  ))}
-
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                    <Link
-                      to="/layanan"
-                      style={{
-                        flex: 1,
-                        background: '#001b3a',
-                        color: '#ffffff',
-                        borderRadius: '12px',
-                        padding: '10px 12px',
-                        fontSize: '0.82rem',
-                        fontWeight: 700,
-                        textDecoration: 'none',
-                        textAlign: 'center',
-                      }}
-                    >
-                      Simulasi Biaya
-                    </Link>
-                    {waPickupUrl && (
-                      <a
-                        href={waPickupUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          flex: 1,
-                          background: '#16a34a',
-                          color: '#ffffff',
-                          borderRadius: '12px',
-                          padding: '10px 12px',
-                          fontSize: '0.82rem',
-                          fontWeight: 700,
-                          textDecoration: 'none',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px',
-                        }}
-                      >
-                        <WhatsAppIcon size={15} color="#ffffff" />
-                        <span>Pesan Jemput</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Parfum Gratis Preview */}
-            <div className="public-card">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <SparklesIllustration size={18} color="#bf2f3b" />
-                  <strong style={{ fontSize: '0.92rem', color: '#0f172a' }}>Pilihan Parfum Sepatu</strong>
-                </div>
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                    background: '#fef2f2',
-                    color: '#bf2f3b',
-                    padding: '2px 8px',
-                    borderRadius: '999px',
-                  }}
-                >
-                  Gratis Pilih
-                </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
-                {PARFUMS.map((p) => (
+            </div>
+          </section>
+
+          {/* ======================================================== */}
+          {/* PENGUMUMAN TOKO (BILA ADA)                               */}
+          {/* ======================================================== */}
+          {announcements && announcements.length > 0 && (
+            <section className="public-card" style={{ borderLeft: '4px solid #bf2f3b' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <strong style={{ fontSize: '0.96rem', color: '#0f172a' }}>
+                  Pengumuman &amp; Info Toko Terkini
+                </strong>
+                <Link to="/pengumuman" className="small" style={{ fontWeight: 700, color: '#bf2f3b' }}>
+                  Lihat Semua ({announcements.length}) →
+                </Link>
+              </div>
+              <div className="stack" style={{ gap: '8px' }}>
+                {announcements.slice(0, 2).map((a) => (
                   <div
-                    key={p.name}
+                    key={a.id}
                     style={{
-                      background: '#f8fafc',
-                      border: '1px solid #e2e8f0',
+                      background: a.important ? '#fffbeb' : '#f8fafc',
+                      border: a.important ? '1px solid #fde68a' : '1px solid #e2e8f0',
                       borderRadius: '10px',
-                      padding: '8px 10px',
+                      padding: '10px 12px',
                     }}
                   >
-                    <strong style={{ fontSize: '0.78rem', color: '#001b3a', display: 'block' }}>
-                      {p.name}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                      <span className="badge teal" style={{ fontSize: '0.7rem' }}>
+                        {ANNOUNCEMENT_CATEGORY_LABEL[a.category]}
+                      </span>
+                      <span className="xs muted">
+                        {new Date(a.publishAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                      </span>
+                    </div>
+                    <strong style={{ fontSize: '0.86rem', color: '#0f172a', display: 'block' }}>
+                      {a.title}
                     </strong>
-                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{p.note}</span>
+                    <p style={{ margin: 0, fontSize: '0.78rem', color: '#475569', lineHeight: 1.45 }}>
+                      {a.body}
+                    </p>
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
+            </section>
+          )}
 
-        {/* 3. Katalog Layanan Populer (Bilas Item Cards with SVG Illustrations) */}
-        <div className="public-card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', gap: '8px' }}>
-            <div>
-              <strong style={{ fontSize: '1rem', color: '#0f172a', display: 'block' }}>
-                Katalog Layanan Populer
-              </strong>
-              <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
-                Harga transparan • Pembayaran Tunai (Cash)
-              </span>
-            </div>
-            <Link
-              to="/layanan"
-              style={{
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                color: '#bf2f3b',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '2px',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Semua ({services.length}) <ChevronRightIcon size={15} color="#bf2f3b" />
-            </Link>
-          </div>
-
-          {/* Bilas Pill Category Tabs */}
-          <div className="orders-filter-grid" style={{ marginBottom: '12px' }}>
-            {[
-              { id: 'all' as const, label: `Semua (${services.length})` },
-              { id: 'main' as const, label: 'Main Services' },
-              { id: 'express' as const, label: 'Express' },
-              { id: 'additional' as const, label: 'Additional' },
-              { id: 'other' as const, label: 'Tas, Helm & Topi' },
-            ].map((tab) => {
-              const active = selectedCat === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setSelectedCat(tab.id)}
-                  className="activity-filter-btn"
-                  style={{
-                    background: active ? '#001b3a' : '#f8fafc',
-                    color: active ? '#ffffff' : '#475569',
-                    border: active ? '1px solid #001b3a' : '1px solid #e2e8f0',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Service Item Rows (Responsive 1-col on HP, 2-col on Desktop) */}
-          <div className="grid grid-2" style={{ gap: '10px' }}>
-            {filteredServices.map((svc) => (
-              <Link
-                key={svc.id}
-                to={`/layanan?highlight=${encodeURIComponent(svc.id)}&cat=${svc.category}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '10px',
-                  padding: '11px 12px',
-                  background: '#ffffff',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '14px',
-                  textDecoration: 'none',
-                  color: 'inherit',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '11px', minWidth: 0 }}>
-                  <div
-                    style={{
-                      width: '44px',
-                      height: '44px',
-                      borderRadius: '12px',
-                      background: '#f8fafc',
-                      border: '1px solid #e2e8f0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {renderServiceIcon(svc.category, svc.name)}
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <strong
-                      style={{
-                        display: 'block',
-                        fontSize: '0.88rem',
-                        color: '#0f172a',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {svc.name}
-                    </strong>
-                    <span style={{ fontSize: '0.73rem', color: '#64748b', display: 'block' }}>
-                      {durationLabel(svc) || '2 Hari'} • {svc.description}
-                    </span>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <strong className="price" style={{ fontSize: '0.88rem', color: '#bf2f3b', display: 'block' }}>
-                    {priceLabel(svc)}
-                  </strong>
-                  <span style={{ fontSize: '0.68rem', color: '#001b3a', fontWeight: 700 }}>
-                    Pilih →
+          {/* ======================================================== */}
+          {/* 2. DAFTAR PRICELIST HARGA (HANYA INFORMASI / TAMPILAN)   */}
+          {/* ======================================================== */}
+          <section id="pricelist" className="public-card">
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                <div>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 2px' }}>
+                    Daftar Harga Layanan (Pricelist)
+                  </h2>
+                  <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                    Informasi tarif resmi pengerjaan Soleful Soaks • Pembayaran tunai (Cash Only)
                   </span>
                 </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* 4. Alur Pengerjaan 4-Tahap Bilas (Matches OrderDetailPage 1-2-3-✓ bar) */}
-        <div className="public-card">
-          <div style={{ marginBottom: '12px' }}>
-            <strong style={{ fontSize: '0.96rem', color: '#0f172a', display: 'block' }}>
-              Alur Pengerjaan Real-time
-            </strong>
-            <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
-              Pantau 4 tahap pengerjaan lewat halaman Cek Pesanan tanpa login
-            </span>
-          </div>
-
-          <div
-            style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '12px',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-              gap: '8px',
-            }}
-          >
-            {[
-              { step: '1', bg: '#001b3a', title: 'Antrian', desc: 'Cek bahan & foto awal' },
-              { step: '2', bg: '#bf2f3b', title: 'Proses Cuci', desc: 'Sabun & sikat aman' },
-              { step: '3', bg: '#bf2f3b', title: 'Proses Kering', desc: 'Alami + UV higienis' },
-              { step: '✓', bg: '#16a34a', title: 'Siap Ambil', desc: 'QC, parfum & nota PDF' },
-            ].map((item) => (
-              <div key={item.title} style={{ textAlign: 'center' }}>
-                <div
+                <span
                   style={{
-                    width: '30px',
-                    height: '30px',
-                    borderRadius: '50%',
-                    background: item.bg,
-                    color: '#ffffff',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.8rem',
-                    fontWeight: 800,
-                    marginBottom: '6px',
+                    background: '#f0f4f9',
+                    color: '#001b3a',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    padding: '4px 10px',
+                    borderRadius: '999px',
                   }}
                 >
-                  {item.step}
-                </div>
-                <strong style={{ fontSize: '0.78rem', color: '#0f172a', display: 'block' }}>
-                  {item.title}
-                </strong>
-                <span style={{ fontSize: '0.68rem', color: '#64748b', lineHeight: 1.25, display: 'block' }}>
-                  {item.desc}
+                  Info Publik
                 </span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 5. Pengumuman Terbaru (if any) */}
-        {announcements && announcements.length > 0 && (
-          <div className="public-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="pulse-indicator" />
-                <strong style={{ fontSize: '0.94rem', color: '#0f172a' }}>Pengumuman Terbaru</strong>
-              </div>
-              <Link to="/pengumuman" style={{ fontSize: '0.78rem', fontWeight: 700, color: '#bf2f3b', textDecoration: 'none' }}>
-                Lihat Semua →
-              </Link>
             </div>
-            <div className="stack" style={{ gap: '8px' }}>
-              {announcements.slice(0, 2).map((a) => (
+
+            {/* Filter Tab Kategori */}
+            <div className="orders-filter-grid" style={{ marginBottom: '14px' }}>
+              {[
+                { id: 'all' as const, label: `Semua (${services.length})` },
+                { id: 'main' as const, label: 'Main Services' },
+                { id: 'express' as const, label: 'Express' },
+                { id: 'additional' as const, label: 'Treatment & Repaint' },
+                { id: 'other' as const, label: 'Tas, Helm & Topi' },
+              ].map((tab) => {
+                const active = selectedCat === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setSelectedCat(tab.id)}
+                    className="activity-filter-btn"
+                    style={{
+                      background: active ? '#001b3a' : '#ffffff',
+                      color: active ? '#ffffff' : '#475569',
+                      border: active ? '1px solid #001b3a' : '1px solid #e2e8f0',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Grid Kartu Harga (Hanya Informasi, Tidak Bisa Dipilih) */}
+            <div className="grid grid-2" style={{ gap: '10px' }}>
+              {filteredServices.map((svc) => (
                 <div
-                  key={a.id}
+                  key={svc.id}
                   style={{
-                    padding: '10px 12px',
-                    borderRadius: '12px',
-                    background: a.important ? '#fef2f2' : '#f8fafc',
-                    border: a.important ? '1px solid #fecaca' : '1px solid #e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    padding: '12px 14px',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '14px',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span className={`badge ${a.important ? 'primary' : 'teal'}`} style={{ fontSize: '0.7rem' }}>
-                      {ANNOUNCEMENT_CATEGORY_LABEL[a.category]}
-                    </span>
-                    <span className="xs muted">
-                      {new Date(a.publishAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                    <div
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '12px',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {renderServiceIcon(svc.category, svc.name)}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <strong
+                        style={{
+                          display: 'block',
+                          fontSize: '0.88rem',
+                          color: '#0f172a',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {svc.name}
+                      </strong>
+                      <span style={{ fontSize: '0.73rem', color: '#64748b', display: 'block' }}>
+                        {durationLabel(svc) || '2 Hari'} • {svc.description}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <strong className="price" style={{ fontSize: '0.92rem', color: '#bf2f3b', display: 'block' }}>
+                      {priceLabel(svc)}
+                    </strong>
+                    <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
+                      per pasang/unit
                     </span>
                   </div>
-                  <strong style={{ fontSize: '0.86rem', color: '#0f172a', display: 'block', marginBottom: '2px' }}>
-                    {a.title}
-                  </strong>
-                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#475569', lineHeight: 1.45 }}>
-                    {a.body}
-                  </p>
                 </div>
               ))}
             </div>
-          </div>
-        )}
+
+            <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px dashed #e2e8f0', fontSize: '0.75rem', color: '#64748b' }}>
+              * Catatan: Harga akhir dapat disesuaikan di workshop bila terdapat tingkat kesulitan atau noda membandel khusus.
+            </div>
+          </section>
+
+          {/* ======================================================== */}
+          {/* TOMBOL LACAK / CEK STATUS PESANAN (SESUAI REQUEST)       */}
+          {/* ======================================================== */}
+          <section
+            style={{
+              background: 'linear-gradient(135deg, #001b3a 0%, #0a2548 100%)',
+              borderRadius: '18px',
+              padding: '20px',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+              flexWrap: 'wrap',
+              boxShadow: '0 8px 24px rgba(0, 27, 58, 0.18)',
+            }}
+          >
+            <div>
+              <strong style={{ fontSize: '1.05rem', display: 'block', marginBottom: '2px' }}>
+                Sudah Cuci Sepatu di Soleful Soaks?
+              </strong>
+              <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.82)' }}>
+                Cek status pengerjaan, estimasi selesai, dan unduh nota resmi PDF secara online.
+              </span>
+            </div>
+
+            <Link
+              to="/cek-pesanan"
+              style={{
+                background: '#bf2f3b',
+                color: '#ffffff',
+                borderRadius: '12px',
+                padding: '11px 22px',
+                fontSize: '0.88rem',
+                fontWeight: 800,
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 14px rgba(191, 47, 59, 0.35)',
+              }}
+            >
+              <SearchIcon size={18} color="#ffffff" />
+              <span>Cek Pesanan Sekarang</span>
+            </Link>
+          </section>
+
+          {/* ======================================================== */}
+          {/* 3. LAYANAN JEMPUT & KETENTUAN (TAMPILAN INFORMASI)       */}
+          {/* ======================================================== */}
+          <section className="public-card">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <TruckIcon size={20} color="#001b3a" />
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', color: '#0f172a' }}>
+                  Ketentuan Layanan Antar Jemput
+                </h3>
+                <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                  Pilihan fleksibel bagi Anda yang tidak sempat datang ke workshop
+                </span>
+              </div>
+            </div>
+
+            <div className="stack" style={{ gap: '8px' }}>
+              {DELIVERY_TIERS.map((tier) => (
+                <div
+                  key={tier.title}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    padding: '10px 12px',
+                    background: '#f8fafc',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: '0.86rem', color: '#0f172a', display: 'block' }}>
+                      {tier.title}
+                    </strong>
+                    <span style={{ fontSize: '0.74rem', color: '#64748b' }}>{tier.sub}</span>
+                  </div>
+                  <span
+                    style={{
+                      background: tier.badgeBg,
+                      color: tier.badgeColor,
+                      fontSize: '0.74rem',
+                      fontWeight: 800,
+                      padding: '3px 10px',
+                      borderRadius: '999px',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {tier.fee}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {waUrl && (
+              <div style={{ marginTop: '12px', textAlign: 'right' }}>
+                <a
+                  href={waUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="small"
+                  style={{ color: '#15803d', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <WhatsAppIcon size={14} color="#15803d" /> Hubungi CS untuk jadwal penjemputan →
+                </a>
+              </div>
+            )}
+          </section>
+
+          {/* ======================================================== */}
+          {/* 4. PILIHAN PARFUM (ADA LOGONYA / IKON VISUAL)            */}
+          {/* ======================================================== */}
+          <section className="public-card">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <SparklesIllustration size={22} color="#bf2f3b" />
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.05rem', color: '#0f172a' }}>
+                    Pilihan Parfum Sepatu (Gratis)
+                  </h3>
+                  <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                    Setiap pengerjaan cuci sepatu sudah termasuk semprotan parfum higienis
+                  </span>
+                </div>
+              </div>
+              <span
+                style={{
+                  background: '#fef2f2',
+                  color: '#bf2f3b',
+                  fontSize: '0.7rem',
+                  fontWeight: 800,
+                  padding: '3px 8px',
+                  borderRadius: '999px',
+                }}
+              >
+                Complimentary
+              </span>
+            </div>
+
+            <div className="grid grid-2" style={{ gap: '10px' }}>
+              {PARFUMS.map((p, idx) => (
+                <div
+                  key={p.name}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '10px 12px',
+                    background: '#f8fafc',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1rem',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {idx === 0 ? '🍦' : idx === 1 ? '🍏' : idx === 2 ? '🍬' : '✨'}
+                  </div>
+                  <div>
+                    <strong style={{ fontSize: '0.86rem', color: '#001b3a', display: 'block' }}>
+                      {p.name}
+                    </strong>
+                    <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{p.note}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ======================================================== */}
+          {/* 5. TERSEDIA JUGA LAYANAN (TAS, TOPI, HELM, REPAINT, DLL) */}
+          {/* ======================================================== */}
+          <section className="public-card">
+            <h3 style={{ margin: '0 0 4px', fontSize: '1.05rem', color: '#0f172a' }}>
+              Tersedia Juga Layanan Khusus
+            </h3>
+            <p className="small muted" style={{ margin: '0 0 14px' }}>
+              Kami juga melayani barang-barang selain sepatu dengan teknik dan sabun yang disesuaikan:
+            </p>
+
+            <div className="grid grid-4" style={{ gap: '10px' }}>
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                <div style={{ margin: '0 auto 6px', display: 'flex', justifyContent: 'center' }}>
+                  <BagIllustration size={26} color="#001b3a" />
+                </div>
+                <strong style={{ fontSize: '0.84rem', color: '#0f172a', display: 'block' }}>Cuci Tas</strong>
+                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Ransel, slingbag, tote</span>
+              </div>
+
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                <div style={{ margin: '0 auto 6px', display: 'flex', justifyContent: 'center' }}>
+                  <CapIllustration size={26} color="#001b3a" />
+                </div>
+                <strong style={{ fontSize: '0.84rem', color: '#0f172a', display: 'block' }}>Cuci Topi</strong>
+                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Snapback, baseball cap</span>
+              </div>
+
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                <div style={{ margin: '0 auto 6px', display: 'flex', justifyContent: 'center' }}>
+                  <HelmetIllustration size={26} color="#001b3a" />
+                </div>
+                <strong style={{ fontSize: '0.84rem', color: '#0f172a', display: 'block' }}>Cuci Helm</strong>
+                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Busa dalam &amp; visor</span>
+              </div>
+
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                <div style={{ margin: '0 auto 6px', display: 'flex', justifyContent: 'center' }}>
+                  <SparklesIllustration size={26} color="#bf2f3b" />
+                </div>
+                <strong style={{ fontSize: '0.84rem', color: '#0f172a', display: 'block' }}>Repaint &amp; Reglue</strong>
+                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Restorasi warna &amp; lem</span>
+              </div>
+            </div>
+          </section>
+
+          {/* ======================================================== */}
+          {/* 6. KONTAK & LOKASI SINGKAT                               */}
+          {/* ======================================================== */}
+          <section className="public-card" style={{ background: '#f8fafc' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <StoreIcon size={20} color="#001b3a" />
+                <div>
+                  <strong style={{ fontSize: '0.92rem', color: '#0f172a', display: 'block' }}>
+                    Lokasi Workshop Soleful Soaks
+                  </strong>
+                  <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
+                    {settings?.address || 'Jl. Mampang Prapatan XV No.32 (Konfirmasi via CS)'}
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Link to="/kontak" className="btn secondary sm">
+                  Detail Kontak
+                </Link>
+                {waUrl && (
+                  <a href={waUrl} target="_blank" rel="noreferrer" className="btn wa sm">
+                    Chat WhatsApp
+                  </a>
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );
