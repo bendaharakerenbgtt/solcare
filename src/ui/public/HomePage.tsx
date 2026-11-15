@@ -430,21 +430,6 @@ export const HomePage: React.FC = () => {
                   Geser ke samping untuk melihat pilihan pencucian terpopuler
                 </span>
               </div>
-
-              <Link
-                to="/layanan"
-                className="btn secondary sm"
-                style={{
-                  fontWeight: 700,
-                  fontSize: '0.78rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  borderRadius: '10px',
-                }}
-              >
-                Lihat Semua ({services.length}) →
-              </Link>
             </div>
 
             {/* Shopee-style Horizontal Scroll Rail */}
@@ -504,7 +489,7 @@ export const HomePage: React.FC = () => {
               ))}
             </div>
 
-            {/* Banner Ajakan ke Halaman Penuh */}
+            {/* Satu Tombol Utama ke Katalog Lengkap di Bawah Preview */}
             <div
               style={{
                 marginTop: '12px',
@@ -524,17 +509,21 @@ export const HomePage: React.FC = () => {
               </span>
               <Link
                 to="/layanan"
+                className="btn sm"
                 style={{
-                  color: '#bf2f3b',
-                  fontWeight: 800,
+                  background: '#001b3a',
+                  color: '#ffffff',
+                  fontWeight: 700,
                   fontSize: '0.82rem',
                   textDecoration: 'none',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: '6px',
+                  borderRadius: '10px',
+                  padding: '8px 16px',
                 }}
               >
-                Buka Katalog Lengkap →
+                Lihat Semua Layanan ({services.length}) →
               </Link>
             </div>
           </section>
