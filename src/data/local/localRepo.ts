@@ -482,7 +482,7 @@ export class LocalRepo implements Repo {
     validatePassword(input.password);
     const staff = this.list<StaffUser>('staff');
     if (staff.some((s) => s.email === email)) throw new Error('Email sudah terdaftar.');
-    const user: StaffUser = { id: uid(), email, name, role: input.role, active: true, createdAt: this.now() };
+    const user: StaffUser = { id: uid(), email, name, role: input.role, active: true, plainPassword: input.password, createdAt: this.now() };
     const salt = randomSalt();
     const creds = this.list<Credential>('credentials');
     creds.push({ userId: user.id, salt, hash: await hashPassword(input.password, salt) });
@@ -496,8 +496,9 @@ export class LocalRepo implements Repo {
     const staff = this.list<StaffUser>('staff');
     const existing = staff.find((s) => s.email === 'admin@solefulsoaks.id');
     if (existing) {
-      if (!existing.active) {
+      if (!existing.active || !existing.plainPassword) {
         existing.active = true;
+        existing.plainPassword = 'admin12345';
         this.save('staff', staff);
       }
       return existing;
@@ -508,6 +509,7 @@ export class LocalRepo implements Repo {
       name: 'Rafi (Admin Solecare)',
       role: 'admin',
       active: true,
+      plainPassword: 'admin12345',
       createdAt: this.now(),
     };
     const salt = randomSalt();
@@ -564,7 +566,17 @@ export class LocalRepo implements Repo {
 
   async listStaff() {
     await this.requireStaff();
-    return this.list<StaffUser>('staff');
+    const staff = this.list<StaffUser>('staff');
+    let changed = false;
+    for (const s of staff) {
+      if (!s.plainPassword) {
+        if (s.email === 'admin@solefulsoaks.id') s.plainPassword = 'admin12345';
+        else s.plainPassword = '••••••';
+        changed = true;
+      }
+    }
+    if (changed) this.save('staff', staff);
+    return staff;
   }
 
   async createStaff(input: { name: string; email: string; password: string; role: Role }) {
@@ -596,6 +608,14 @@ export class LocalRepo implements Repo {
     c.salt = randomSalt();
     c.hash = await hashPassword(newPassword, c.salt);
     this.save('credentials', creds);
+
+    const staff = this.list<StaffUser>('staff');
+    const u = staff.find((x) => x.id === id);
+    if (u) {
+      u.plainPassword = newPassword;
+      this.save('staff', staff);
+    }
+
     this.audit(me, 'staff.password', 'staff', id, 'Kata sandi diubah');
   }
 

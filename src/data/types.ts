@@ -15,6 +15,8 @@ export interface StaffUser {
   /** MVP: admin & staff have identical permissions. Kept for future separation. */
   role: Role;
   active: boolean;
+  /** Password teks biasa (hanya tersimpan lokal agar admin mudah melihat saat lupa) */
+  plainPassword?: string;
   createdAt: ISODateTime;
 }
 

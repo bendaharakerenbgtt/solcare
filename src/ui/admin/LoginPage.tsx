@@ -3,7 +3,7 @@ import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 
 export const LoginPage: React.FC = () => {
-  const { user, needsSetup, signIn, setupFirstAdmin, quickDemoLogin } = useAuth();
+  const { user, needsSetup, signIn, setupFirstAdmin } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,28 +32,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleQuickLogin = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      await quickDemoLogin();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login demo gagal');
-      setEmail('admin@solefulsoaks.id');
-      setPassword('admin12345');
-      if (needsSetup) setName('Rafi (Admin Solecare)');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fillTemplate = () => {
-    setEmail('admin@solefulsoaks.id');
-    setPassword('admin12345');
-    if (needsSetup) setName('Rafi (Admin Solecare)');
-    setError(null);
-  };
-
   return (
     <div className="auth-wrap">
       <div className="card auth-card">
@@ -74,43 +52,6 @@ export const LoginPage: React.FC = () => {
             {error}
           </div>
         )}
-
-        {/* Highlighted 1-Click Fast Login for Mitra / Staff */}
-        <div style={{ marginBottom: '20px', padding: '12px', background: '#f0f4f9', border: '1px solid #cbd5e1', borderRadius: '10px' }}>
-          <div className="xs" style={{ color: '#001b3a', fontWeight: 700, marginBottom: '8px' }}>
-            Akses Cepat Uji Coba Mitra / Staff:
-          </div>
-          <button
-            type="button"
-            className="btn"
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '10px 14px',
-              fontSize: '0.88rem',
-              fontWeight: 700,
-              background: '#001b3a',
-              color: '#ffffff',
-              border: 'none',
-              boxShadow: '0 2px 6px rgba(0, 27, 58, 0.25)',
-              cursor: 'pointer',
-            }}
-            onClick={handleQuickLogin}
-          >
-            {loading ? 'Menghubungkan...' : 'Masuk Instan 1-Klik'}
-          </button>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-            <span className="mono xs muted" style={{ fontSize: '0.72rem' }}>admin@solefulsoaks.id</span>
-            <button
-              type="button"
-              className="btn text xs"
-              style={{ padding: '2px 6px', fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 600 }}
-              onClick={fillTemplate}
-            >
-              Isi ke Form
-            </button>
-          </div>
-        </div>
 
         <form onSubmit={handleLogin} className="stack">
           {needsSetup && (

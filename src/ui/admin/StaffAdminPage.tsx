@@ -22,6 +22,11 @@ export const StaffAdminPage: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
+  const [visiblePwId, setVisiblePwId] = useState<string | null>(null);
+
+  const togglePasswordVisibility = (id: string) => {
+    setVisiblePwId((prev) => (prev === id ? null : id));
+  };
 
   const handleCopy = (text: string, id: string) => {
     void navigator.clipboard.writeText(text);
@@ -131,82 +136,136 @@ export const StaffAdminPage: React.FC = () => {
                     <tr>
                       <th>Nama Pegawai</th>
                       <th>Email (Akun Login)</th>
+                      <th>Password Aktif</th>
                       <th>Role</th>
                       <th>Status</th>
-                      <th>Dibuat Pada</th>
-                      <th className="right">Aksi &amp; Password</th>
+                      <th className="right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((s) => (
-                      <tr key={s.id}>
-                        <td>
-                          <strong>{s.name}</strong>
-                          {s.id === currentUser?.id && (
-                            <span className="xs teal" style={{ marginLeft: '6px' }}>
-                              (Anda)
+                    {filtered.map((s) => {
+                      const isPwVisible = visiblePwId === s.id;
+                      const pwDisplay = s.plainPassword || 'admin12345';
+
+                      return (
+                        <tr key={s.id}>
+                          <td>
+                            <strong style={{ fontSize: '0.94rem', color: '#0f172a' }}>{s.name}</strong>
+                            {s.id === currentUser?.id && (
+                              <span className="badge teal" style={{ marginLeft: '6px', fontSize: '0.65rem' }}>
+                                Anda
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              <strong className="mono" style={{ color: '#001b3a', fontSize: '0.84rem' }}>{s.email}</strong>
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(s.email, s.id)}
+                                title="Salin email login"
+                                style={{
+                                  background: '#f1f5f9',
+                                  border: '1px solid #cbd5e1',
+                                  borderRadius: '6px',
+                                  padding: '2px 6px',
+                                  fontSize: '0.68rem',
+                                  cursor: 'pointer',
+                                  color: '#475569',
+                                }}
+                              >
+                                {copiedEmail === s.id ? '✓ Tersalin' : 'Salin'}
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              <span
+                                className="mono"
+                                style={{
+                                  background: isPwVisible ? '#fef3c7' : '#f1f5f9',
+                                  border: isPwVisible ? '1px solid #fde68a' : '1px solid #e2e8f0',
+                                  color: isPwVisible ? '#92400e' : '#334155',
+                                  padding: '2px 8px',
+                                  borderRadius: '6px',
+                                  fontSize: '0.84rem',
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {isPwVisible ? pwDisplay : '••••••••'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => togglePasswordVisibility(s.id)}
+                                title={isPwVisible ? 'Sembunyikan password' : 'Lihat password'}
+                                style={{
+                                  background: 'transparent',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem',
+                                  padding: '2px 4px',
+                                }}
+                              >
+                                {isPwVisible ? '🙈' : '👁️'}
+                              </button>
+                              {isPwVisible && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopy(pwDisplay, `pw-${s.id}`)}
+                                  title="Salin password"
+                                  style={{
+                                    background: '#ffffff',
+                                    border: '1px solid #cbd5e1',
+                                    borderRadius: '6px',
+                                    padding: '2px 6px',
+                                    fontSize: '0.68rem',
+                                    cursor: 'pointer',
+                                    color: '#475569',
+                                  }}
+                                >
+                                  {copiedEmail === `pw-${s.id}` ? '✓' : 'Salin'}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <span className="badge teal" style={{ textTransform: 'uppercase', fontSize: '0.72rem' }}>
+                              {s.role}
                             </span>
-                          )}
-                        </td>
-                        <td>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            <strong className="mono" style={{ color: '#001b3a', fontSize: '0.84rem' }}>{s.email}</strong>
+                          </td>
+                          <td>
+                            <span className={`badge ${s.active ? 'ok' : 'danger'}`}>
+                              {s.active ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                          </td>
+                          <td className="right">
                             <button
                               type="button"
-                              onClick={() => handleCopy(s.email, s.id)}
-                              title="Salin email login"
-                              style={{
-                                background: '#f1f5f9',
-                                border: '1px solid #cbd5e1',
-                                borderRadius: '6px',
-                                padding: '2px 6px',
-                                fontSize: '0.68rem',
-                                cursor: 'pointer',
-                                color: '#475569',
+                              className="btn sm"
+                              style={{ background: '#001b3a', color: '#ffffff' }}
+                              onClick={() => {
+                                setPwdTarget(s);
+                                setPwdModalOpen(true);
+                                setNewPassword('');
+                                setShowPassword(false);
                               }}
                             >
-                              {copiedEmail === s.id ? '✓ Tersalin' : 'Salin'}
+                              🔑 Ganti Password
                             </button>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="badge teal" style={{ textTransform: 'uppercase' }}>
-                            {s.role}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`badge ${s.active ? 'ok' : 'danger'}`}>
-                            {s.active ? 'Aktif' : 'Nonaktif'}
-                          </span>
-                        </td>
-                        <td className="small muted">{fmtDateTime(s.createdAt)}</td>
-                        <td className="right">
-                          <button
-                            type="button"
-                            className="btn sm"
-                            style={{ background: '#001b3a', color: '#ffffff' }}
-                            onClick={() => {
-                              setPwdTarget(s);
-                              setPwdModalOpen(true);
-                              setNewPassword('');
-                              setShowPassword(false);
-                            }}
-                          >
-                            🔑 Ubah Password
-                          </button>
-                          {s.id !== currentUser?.id && (
-                            <button
-                              type="button"
-                              className={`btn ${s.active ? 'danger' : 'secondary'} sm`}
-                              style={{ marginLeft: '6px' }}
-                              onClick={() => void handleToggleActive(s)}
-                            >
-                              {s.active ? 'Nonaktifkan' : 'Aktifkan'}
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                            {s.id !== currentUser?.id && (
+                              <button
+                                type="button"
+                                className={`btn ${s.active ? 'danger' : 'secondary'} sm`}
+                                style={{ marginLeft: '6px' }}
+                                onClick={() => void handleToggleActive(s)}
+                              >
+                                {s.active ? 'Nonaktifkan' : 'Aktifkan'}
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -214,96 +273,164 @@ export const StaffAdminPage: React.FC = () => {
 
             {/* Mobile Card View (Touch-friendly responsive) */}
             <div className="mobile-only-cards">
-              {filtered.map((s) => (
-                <div key={s.id} className="staff-mobile-card" style={{ border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px', background: '#ffffff', marginBottom: '10px' }}>
-                  <div className="service-card-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <div>
-                      <strong className="service-card-name" style={{ fontSize: '1rem', color: '#0f172a' }}>{s.name}</strong>
-                      {s.id === currentUser?.id && (
-                        <span className="badge teal" style={{ marginLeft: '6px', fontSize: '0.68rem' }}>
-                          Akun Anda
+              {filtered.map((s) => {
+                const isPwVisible = visiblePwId === s.id;
+                const pwDisplay = s.plainPassword || 'admin12345';
+
+                return (
+                  <div key={s.id} className="staff-mobile-card" style={{ border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px', background: '#ffffff', marginBottom: '12px' }}>
+                    <div className="service-card-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <div>
+                        <strong className="service-card-name" style={{ fontSize: '1.02rem', color: '#0f172a' }}>{s.name}</strong>
+                        {s.id === currentUser?.id && (
+                          <span className="badge teal" style={{ marginLeft: '6px', fontSize: '0.68rem' }}>
+                            Akun Anda
+                          </span>
+                        )}
+                      </div>
+                      <span className={`badge ${s.active ? 'ok' : 'danger'}`}>
+                        {s.active ? 'Aktif' : 'Nonaktif'}
+                      </span>
+                    </div>
+
+                    {/* Info Akun Login & Password Kotak */}
+                    <div
+                      style={{
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '10px',
+                        padding: '12px',
+                        margin: '8px 0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                      }}
+                    >
+                      {/* Baris Email */}
+                      <div>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginBottom: '2px' }}>
+                          Email Login:
                         </span>
-                      )}
-                    </div>
-                    <span className={`badge ${s.active ? 'ok' : 'danger'}`}>
-                      {s.active ? 'Aktif' : 'Nonaktif'}
-                    </span>
-                  </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                          <strong className="mono" style={{ fontSize: '0.86rem', color: '#001b3a', wordBreak: 'break-all' }}>
+                            {s.email}
+                          </strong>
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(s.email, s.id)}
+                            style={{
+                              background: '#ffffff',
+                              border: '1px solid #cbd5e1',
+                              borderRadius: '6px',
+                              padding: '3px 8px',
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              color: '#334155',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {copiedEmail === s.id ? '✓ Tersalin' : 'Salin'}
+                          </button>
+                        </div>
+                      </div>
 
-                  {/* Info Akun Login */}
-                  <div
-                    style={{
-                      background: '#f8fafc',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '10px',
-                      padding: '10px 12px',
-                      margin: '8px 0',
-                    }}
-                  >
-                    <div style={{ fontSize: '0.72rem', color: '#64748b', marginBottom: '2px' }}>
-                      Akun Login (Email):
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                      <strong className="mono" style={{ fontSize: '0.86rem', color: '#001b3a', wordBreak: 'break-all' }}>
-                        {s.email}
-                      </strong>
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(s.email, s.id)}
-                        style={{
-                          background: '#ffffff',
-                          border: '1px solid #cbd5e1',
-                          borderRadius: '6px',
-                          padding: '3px 8px',
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          color: '#334155',
-                          flexShrink: 0,
-                        }}
-                      >
-                        {copiedEmail === s.id ? '✓ Tersalin' : 'Salin'}
-                      </button>
+                      {/* Baris Password */}
+                      <div style={{ paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginBottom: '2px' }}>
+                          Password Login:
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                          <span
+                            className="mono"
+                            style={{
+                              background: isPwVisible ? '#fef3c7' : '#e2e8f0',
+                              color: isPwVisible ? '#92400e' : '#334155',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontSize: '0.84rem',
+                              fontWeight: 700,
+                              wordBreak: 'break-all',
+                            }}
+                          >
+                            {isPwVisible ? pwDisplay : '••••••••'}
+                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <button
+                              type="button"
+                              onClick={() => togglePasswordVisibility(s.id)}
+                              style={{
+                                background: '#ffffff',
+                                border: '1px solid #cbd5e1',
+                                borderRadius: '6px',
+                                padding: '3px 8px',
+                                fontSize: '0.72rem',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {isPwVisible ? '🙈 Tutup' : '👁️ Lihat'}
+                            </button>
+                            {isPwVisible && (
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(pwDisplay, `pw-${s.id}`)}
+                                style={{
+                                  background: '#ffffff',
+                                  border: '1px solid #cbd5e1',
+                                  borderRadius: '6px',
+                                  padding: '3px 8px',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                  color: '#334155',
+                                }}
+                              >
+                                {copiedEmail === `pw-${s.id}` ? '✓' : 'Salin'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginTop: '4px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
+                        <span className="badge teal" style={{ textTransform: 'uppercase', fontSize: '0.68rem' }}>
+                          Role: {s.role === 'admin' ? 'Administrator' : 'Staff Operasional'}
+                        </span>
+                        <span className="xs muted">
+                          {fmtDateTime(s.createdAt)}
+                        </span>
+                      </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
-                      <span className="badge teal" style={{ textTransform: 'uppercase', fontSize: '0.68rem' }}>
-                        Hak Akses: {s.role === 'admin' ? 'Administrator' : 'Staff Operasional'}
-                      </span>
-                      <span className="xs muted">
-                        Dibuat: {fmtDateTime(s.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="service-card-footer" style={{ marginTop: '10px' }}>
-                    <div className="service-card-actions" style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        type="button"
-                        className="btn sm"
-                        style={{ flex: 1, background: '#001b3a', color: '#ffffff', justifyContent: 'center' }}
-                        onClick={() => {
-                          setPwdTarget(s);
-                          setPwdModalOpen(true);
-                          setNewPassword('');
-                          setShowPassword(false);
-                        }}
-                      >
-                        🔑 Ubah Password
-                      </button>
-                      {s.id !== currentUser?.id && (
+                    <div className="service-card-footer" style={{ marginTop: '10px' }}>
+                      <div className="service-card-actions" style={{ display: 'flex', gap: '8px' }}>
                         <button
                           type="button"
-                          className={`btn ${s.active ? 'danger' : 'secondary'} sm`}
-                          onClick={() => void handleToggleActive(s)}
+                          className="btn sm"
+                          style={{ flex: 1, background: '#001b3a', color: '#ffffff', justifyContent: 'center' }}
+                          onClick={() => {
+                            setPwdTarget(s);
+                            setPwdModalOpen(true);
+                            setNewPassword('');
+                            setShowPassword(false);
+                          }}
                         >
-                          {s.active ? 'Nonaktifkan' : 'Aktifkan'}
+                          🔑 Ganti Password
                         </button>
-                      )}
+                        {s.id !== currentUser?.id && (
+                          <button
+                            type="button"
+                            className={`btn ${s.active ? 'danger' : 'secondary'} sm`}
+                            onClick={() => void handleToggleActive(s)}
+                          >
+                            {s.active ? 'Nonaktifkan' : 'Aktifkan'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </>
         )}
