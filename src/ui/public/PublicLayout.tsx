@@ -135,8 +135,31 @@ export const PublicLayout: React.FC = () => {
               <p className="small" style={{ color: '#cbd5e1', lineHeight: 1.5, margin: 0 }}>
                 {settings?.tagline || 'Jasa perawatan & pembersihan sepatu, tas, topi, dan helm profesional.'}
               </p>
+              {/* Slogan Aesthetic */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  marginTop: '12px',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, monospace',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  color: '#f8fafc',
+                }}
+              >
+                <span>&ldquo;LET US CLEAN UR</span>
+                <span style={{ textDecoration: 'line-through', opacity: 0.5 }}>SOUL</span>
+                <span style={{ color: '#f87171', fontWeight: 800 }}>SOLE</span>
+                <span>&rdquo;</span>
+              </div>
               {settings?.address && (
-                <p className="small" style={{ marginTop: '8px', color: '#94a3b8' }}>
+                <p className="small" style={{ marginTop: '10px', color: '#94a3b8' }}>
                   {settings.address}
                 </p>
               )}
