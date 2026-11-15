@@ -3914,3 +3914,139 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
     max-height: calc(100dvh - 48px);
   }
 }
+
+/* ---------- Public Visitor App-Style Bilas/Solecare Layout ---------- */
+.public-app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+.public-mobile-bar {
+  display: none;
+}
+
+.public-main {
+  flex: 1;
+  width: 100%;
+}
+
+.public-container {
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 14px 16px 28px;
+}
+
+.public-container.home-desktop {
+  max-width: 540px;
+}
+
+.public-desktop-2col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 860px) {
+  .public-container.home-desktop {
+    max-width: 940px;
+    padding: 24px 20px 44px;
+  }
+  .public-desktop-2col {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 18px;
+    align-items: start;
+  }
+}
+
+.public-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 14px 16px;
+  box-shadow: 0 1px 4px rgba(0, 27, 58, 0.03);
+}
+
+.public-navy-banner {
+  background: linear-gradient(135deg, #001b3a 0%, #0a2548 100%);
+  border-radius: 18px;
+  padding: 16px 18px;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 27, 58, 0.24);
+}
+
+.public-top-banner-alert {
+  background: linear-gradient(90deg, #001b3a 0%, #bf2f3b 100%);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none !important;
+  text-align: center;
+}
+.public-top-banner-alert:hover {
+  filter: brightness(1.06);
+}
+
+.public-services-sticky-bar {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 516px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 26px rgba(0, 27, 58, 0.16);
+  z-index: 44;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bilas-nav-fab.active .bilas-nav-fab-circle {
+  background: var(--primary);
+  box-shadow: 0 4px 14px rgba(191, 47, 59, 0.42);
+}
+
+@media (max-width: 900px) {
+  .public-desktop-header,
+  .public-desktop-footer {
+    display: none !important;
+  }
+
+  .public-mobile-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: max(10px, env(safe-area-inset-top, 10px)) 16px 10px;
+    background: #ffffff;
+    color: #0f172a;
+    position: sticky;
+    top: 0;
+    z-index: 45;
+    border-bottom: 1px solid #f1f5f9;
+    box-shadow: 0 2px 8px rgba(0, 27, 58, 0.04);
+  }
+
+  .public-main {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .public-services-sticky-bar {
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  }
+}
