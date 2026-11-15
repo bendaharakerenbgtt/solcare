@@ -15,7 +15,6 @@ export const TrackOrderPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [order, setOrder] = useState<PublicOrderView | null>(null);
-  const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   const { data: settings } = useAsync(() => repo.getSettings(), []);
@@ -25,16 +24,11 @@ export const TrackOrderPage: React.FC = () => {
     setLoading(true);
     setErrorMsg(null);
     setOrder(null);
-    setSelectedPhotoUrl(null);
 
     try {
       const res = await repo.trackOrder(searchTarget.trim(), suffixTarget.trim());
       if (res.ok) {
         setOrder(res.order);
-        // auto-load first available photo if present
-        if (res.order.photos.length > 0 && res.order.photos[0].available) {
-          void loadPhoto(res.order.code, res.order.photos[0].id, suffixTarget.trim());
-        }
       } else {
         setErrorMsg(res.message);
       }
@@ -57,15 +51,6 @@ export const TrackOrderPage: React.FC = () => {
     void doTrack(code, phoneSuffix);
   };
 
-  const loadPhoto = async (orderCode: string, photoId: string, suffix: string) => {
-    try {
-      const url = await repo.publicPhotoUrl(orderCode, photoId, suffix);
-      setSelectedPhotoUrl(url);
-    } catch {
-      setSelectedPhotoUrl(null);
-    }
-  };
-
   const waUrl = settings?.whatsappNumber && order
     ? whatsappLink(
         settings.whatsappNumber,
@@ -82,7 +67,7 @@ export const TrackOrderPage: React.FC = () => {
         <div className="eyebrow">Pelacakan Real-time</div>
         <h2>Cek Status Pesanan Saya</h2>
         <p className="muted">
-          Pantau progres pencucian, estimasi selesai, rincian biaya, dan dokumentasi foto sepatu Anda.
+          Pantau progres pencucian, estimasi selesai, rincian biaya, dan status pesanan sepatu Anda.
         </p>
       </div>
 
@@ -336,27 +321,6 @@ export const TrackOrderPage: React.FC = () => {
               </button>
             </div>
           </div>
-
-          {/* Foto Dokumentasi Kolase */}
-          {order.photos && order.photos.length > 0 && (
-            <div className="card">
-              <h3 style={{ marginBottom: '12px' }}>Dokumentasi Foto Pengerjaan (Kolase 2×2)</h3>
-              <p className="small muted" style={{ marginBottom: '16px' }}>
-                Foto dokumentasi pengerjaan sebelum dan sesudah perawatan. Disimpan otomatis sesuai kebijakan privasi kami.
-              </p>
-              {selectedPhotoUrl ? (
-                <div style={{ textAlign: 'center', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
-                  <img
-                    src={selectedPhotoUrl}
-                    alt="Dokumentasi Kolase"
-                    style={{ margin: '0 auto', maxHeight: '550px', width: 'auto' }}
-                  />
-                </div>
-              ) : (
-                <div className="empty">Foto dokumentasi telah kedaluwarsa atau belum diunggah.</div>
-              )}
-            </div>
-          )}
 
           {/* WhatsApp CS Assistance */}
           {waUrl && (

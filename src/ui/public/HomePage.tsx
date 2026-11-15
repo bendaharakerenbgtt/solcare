@@ -129,7 +129,7 @@ export const HomePage: React.FC = () => {
             </div>
             <div>
               <h4 style={{ margin: '0 0 4px', fontSize: '1.05rem', color: 'var(--ink)' }}>Cek Pesanan Saya</h4>
-              <p className="small muted" style={{ margin: 0 }}>Pantau timeline cuci, foto kolase & estimasi</p>
+              <p className="small muted" style={{ margin: 0 }}>Pantau timeline cuci & estimasi selesai</p>
             </div>
           </Link>
 
@@ -324,7 +324,7 @@ export const HomePage: React.FC = () => {
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '10px' }}>03</div>
               <h3>3. Selesai & Ambil</h3>
               <p className="small muted">
-                Dapatkan notifikasi selesai, lihat foto dokumentasi kolase hasil pembersihan, dan ambil sepatu wangi siap pakai!
+                Dapatkan notifikasi selesai, pantau status pengerjaan, dan ambil sepatu wangi siap pakai!
               </p>
             </div>
           </div>

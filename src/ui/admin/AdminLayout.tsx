@@ -193,13 +193,6 @@ export const AdminLayout: React.FC = () => {
               Pengumuman Web
             </Link>
             <Link
-              to="/admin/retention"
-              className={location.pathname === '/admin/retention' ? 'active' : ''}
-              onClick={closeSidebar}
-            >
-              Retensi Foto
-            </Link>
-            <Link
               to="/admin/settings"
               className={location.pathname === '/admin/settings' ? 'active' : ''}
               onClick={closeSidebar}
