@@ -30,26 +30,20 @@ export const PublicLayout: React.FC = () => {
 
   return (
     <div className="public-app-shell">
-      {/* 1. Banner Info Penting jika ada */}
+      {/* 1. Banner Info Penting Marquee (Teks Berjalan) jika ada */}
       {importantBanner && (
-        <Link to="/pengumuman" className="public-top-banner-alert">
-          <span
-            style={{
-              background: 'rgba(255,255,255,0.22)',
-              padding: '2px 8px',
-              borderRadius: '999px',
-              fontSize: '0.68rem',
-              fontWeight: 800,
-              letterSpacing: '0.04em',
-              flexShrink: 0,
-            }}
-          >
+        <Link to="/pengumuman" className="public-top-banner-alert" title="Klik untuk lihat detail pengumuman">
+          <span className="public-top-banner-badge">
             INFO TOKO
           </span>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {importantBanner.title}
-          </span>
-          <span aria-hidden="true">→</span>
+          <div className="public-marquee-wrap">
+            <div className="public-marquee-track">
+              <span>{importantBanner.title} {importantBanner.body ? `— ${importantBanner.body}` : ''}</span>
+              <span className="public-marquee-spacer">✦</span>
+              <span>{importantBanner.title} {importantBanner.body ? `— ${importantBanner.body}` : ''}</span>
+            </div>
+          </div>
+          <span aria-hidden="true" style={{ opacity: 0.85, flexShrink: 0, fontSize: '0.8rem', paddingLeft: '4px' }}>→</span>
         </Link>
       )}
 

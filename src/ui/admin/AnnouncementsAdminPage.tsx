@@ -252,16 +252,16 @@ export const AnnouncementsAdminPage: React.FC = () => {
 
       {modalOpen && (
         <ModalPortal>
-        <div className="modal-backdrop">
-          <div className="modal">
-            <header>
+        <div className="modal-backdrop" onClick={() => setModalOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100dvh - 32px)' }}>
+            <header style={{ flexShrink: 0 }}>
               <h3>{editing ? 'Edit Pengumuman' : 'Buat Pengumuman'}</h3>
               <button type="button" className="x" onClick={() => setModalOpen(false)}>
                 ✕
               </button>
             </header>
-            <form onSubmit={handleSave}>
-              <div className="body stack" style={{ gap: '14px' }}>
+            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flex: 1 }}>
+              <div className="body stack" style={{ gap: '14px', flex: 1, overflowY: 'auto' }}>
                 <label className="field">
                   <span>Judul Pengumuman *</span>
                   <input
@@ -336,11 +336,11 @@ export const AnnouncementsAdminPage: React.FC = () => {
                   </label>
                 </div>
               </div>
-              <footer>
+              <footer style={{ flexShrink: 0, background: '#ffffff', borderTop: '1px solid #e2e8f0', zIndex: 10, padding: '12px 16px' }}>
                 <button type="button" className="btn secondary" onClick={() => setModalOpen(false)}>
                   Batal
                 </button>
-                <button type="submit" className="btn">
+                <button type="submit" className="btn" style={{ background: '#bf2f3b', color: '#ffffff' }}>
                   Simpan Pengumuman
                 </button>
               </footer>
