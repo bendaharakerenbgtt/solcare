@@ -69,8 +69,16 @@ export class SheetsRepo extends LocalRepo implements Repo {
         const { orders, services, staff, announcements, settings } = json.data;
 
         if (Array.isArray(orders) && orders.length > 0) {
-          // Merge or replace orders
-          (this as unknown as { save: (k: string, v: unknown) => void }).save('orders', orders);
+          // Parse orders: jika ada _rawJson gunakan itu, jika tidak gunakan objek langsung
+          const parsedOrders = orders.map((o: Record<string, unknown>) => {
+            if (o._rawJson && typeof o._rawJson === 'string') {
+              try {
+                return JSON.parse(o._rawJson) as Order;
+              } catch (e) {}
+            }
+            return o as unknown as Order;
+          });
+          (this as unknown as { save: (k: string, v: unknown) => void }).save('orders', parsedOrders);
         }
         if (Array.isArray(services) && services.length > 0) {
           (this as unknown as { save: (k: string, v: unknown) => void }).save('services', services);
@@ -118,29 +126,56 @@ export class SheetsRepo extends LocalRepo implements Repo {
   }
 
   // -----------------------------------------------------------------
+  // HELPER: Format Order agar kolom di Spreadsheet rapi & manusiawi
+  // -----------------------------------------------------------------
+  private formatOrderForSheet(order: Order) {
+    const serviceNames = (order.services || []).map((s) => s.name).join(', ') || '-';
+    const paymentStatus = order.payment ? `${order.payment.status.toUpperCase()} (${order.payment.method})` : 'BELUM BAYAR';
+
+    return {
+      'No Resi': order.code,
+      'Nama Pelanggan': order.customerName || '-',
+      'No WhatsApp': order.customerPhone || '-',
+      'Total Biaya': order.total || 0,
+      'Status Pengerjaan': order.status,
+      'Status Pembayaran': paymentStatus,
+      'Layanan': serviceNames,
+      'Merek Sepatu': order.brand || '-',
+      'Model Sepatu': order.model || '-',
+      'Kondisi Sepatu': order.conditionNotes || '-',
+      'Catatan Kasir': order.internalNotes || '-',
+      'Tanggal Masuk': order.createdAt ? new Date(order.createdAt).toLocaleString('id-ID') : '-',
+      'Estimasi Selesai': order.estimatedAt ? new Date(order.estimatedAt).toLocaleString('id-ID') : '-',
+      // Kolom sistem (disimpan di belakang untuk sinkronisasi internal)
+      '_id': order.id,
+      '_rawJson': JSON.stringify(order)
+    };
+  }
+
+  // -----------------------------------------------------------------
   // OVERRIDES: Orders
   // -----------------------------------------------------------------
   override async createOrder(input: OrderInput): Promise<Order> {
     const order = await super.createOrder(input);
-    void this.callScript({ action: 'saveOrder', order });
+    void this.callScript({ action: 'saveOrder', order: this.formatOrderForSheet(order), code: order.code });
     return order;
   }
 
   override async updateOrder(id: ID, input: OrderInput): Promise<Order> {
     const order = await super.updateOrder(id, input);
-    void this.callScript({ action: 'saveOrder', order });
+    void this.callScript({ action: 'saveOrder', order: this.formatOrderForSheet(order), code: order.code });
     return order;
   }
 
   override async updateStatus(id: ID, to: OrderStatus, note: string): Promise<Order> {
     const order = await super.updateStatus(id, to, note);
-    void this.callScript({ action: 'saveOrder', order });
+    void this.callScript({ action: 'saveOrder', order: this.formatOrderForSheet(order), code: order.code });
     return order;
   }
 
   override async recordPayment(id: ID, input: PaymentInput & { total?: number }): Promise<Order> {
     const order = await super.recordPayment(id, input);
-    void this.callScript({ action: 'saveOrder', order });
+    void this.callScript({ action: 'saveOrder', order: this.formatOrderForSheet(order), code: order.code });
     return order;
   }
 
