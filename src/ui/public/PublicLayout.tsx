@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import { whatsappLink } from '../../lib/format';
-import { WhatsAppIcon, UserIcon } from '../common/Icons';
+import { UserIcon } from '../common/Icons';
 
 export const PublicLayout: React.FC = () => {
   const location = useLocation();
@@ -85,20 +85,8 @@ export const PublicLayout: React.FC = () => {
             </Link>
           </nav>
 
-          {/* Mobile Right Controls: WA & Burger Toggle */}
+          {/* Mobile Right Controls: Burger Toggle Only */}
           <div className="public-mobile-actions">
-            {waUrl && (
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="public-mobile-wa-btn"
-                title="WhatsApp CS"
-                aria-label="WhatsApp CS"
-              >
-                <WhatsAppIcon size={18} color="#16a34a" />
-              </a>
-            )}
             <button
               type="button"
               className="public-burger-btn"
