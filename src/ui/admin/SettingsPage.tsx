@@ -11,8 +11,6 @@ import {
   CashIcon,
   BanIcon,
   ChatIcon,
-  SettingsIcon,
-  CreditCardIcon,
   LogoutIcon,
   CloseIcon,
 } from '../common/Icons';
@@ -25,8 +23,6 @@ export const SettingsPage: React.FC = () => {
 
   const [outletModalOpen, setOutletModalOpen] = useState(false);
   const [waModalOpen, setWaModalOpen] = useState(false);
-  const [machineryModalOpen, setMachineryModalOpen] = useState(false);
-  const [merchantModalOpen, setMerchantModalOpen] = useState(false);
 
   // Outlet form
   const [businessName, setBusinessName] = useState('');
@@ -255,51 +251,7 @@ export const SettingsPage: React.FC = () => {
           <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
         </div>
 
-        {/* 8. Kelola Mesin dan Modul */}
-        <div
-          onClick={() => setMachineryModalOpen(true)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '14px 18px',
-            borderBottom: '1px solid #f1f5f9',
-            cursor: 'pointer',
-            color: '#0f172a',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#f0f4f9' }}>
-              <SettingsIcon size={18} color="#001b3a" />
-            </span>
-            <strong style={{ fontSize: '0.92rem' }}>Kelola Mesin dan Modul</strong>
-          </div>
-          <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
-        </div>
-
-        {/* 9. Merchant Bilas / Solecare */}
-        <div
-          onClick={() => setMerchantModalOpen(true)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '14px 18px',
-            borderBottom: '1px solid #f1f5f9',
-            cursor: 'pointer',
-            color: '#0f172a',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: '#f0f4f9' }}>
-              <CreditCardIcon size={18} color="#001b3a" />
-            </span>
-            <strong style={{ fontSize: '0.92rem' }}>Merchant Solecare</strong>
-          </div>
-          <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>›</span>
-        </div>
-
-        {/* 10. Keluar Akun */}
+        {/* 8. Keluar Akun */}
         <div
           onClick={() => {
             if (confirm('Keluar dari sesi admin?')) {
@@ -408,78 +360,6 @@ export const SettingsPage: React.FC = () => {
                 >
                   Buka Pelanggan Saya
                 </Link>
-              </div>
-            </div>
-          </div>
-        </ModalPortal>
-      )}
-
-      {/* Modal: Kelola Mesin dan Modul */}
-      {machineryModalOpen && (
-        <ModalPortal>
-          <div className="modal-backdrop" onClick={() => setMachineryModalOpen(false)} style={{ zIndex: 9000 }}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', width: '92%', margin: '0 auto', padding: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
-                <h2 style={{ fontSize: '1.08rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>Kelola Mesin & Rak</h2>
-                <button
-                  type="button"
-                  onClick={() => setMachineryModalOpen(false)}
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
-                >
-                  <CloseIcon size={18} color="#64748b" />
-                </button>
-              </div>
-              <div style={{ padding: '18px 20px' }} className="stack">
-                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '12px 14px', borderRadius: '12px' }}>
-                  <strong style={{ color: '#0f172a', display: 'block', marginBottom: '2px' }}>Rak Sepatu Utama</strong>
-                  <div className="small muted">Status: Terhubung & Optimal</div>
-                </div>
-                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '12px 14px', borderRadius: '12px' }}>
-                  <strong style={{ color: '#0f172a', display: 'block', marginBottom: '2px' }}>Mesin Pengering Sepatu UV</strong>
-                  <div className="small muted">Status: Aktif</div>
-                </div>
-                <button
-                  type="button"
-                  className="btn secondary"
-                  style={{ marginTop: '4px', width: '100%', justifyContent: 'center' }}
-                  onClick={() => setMachineryModalOpen(false)}
-                >
-                  Tutup
-                </button>
-              </div>
-            </div>
-          </div>
-        </ModalPortal>
-      )}
-
-      {/* Modal: Merchant Solecare */}
-      {merchantModalOpen && (
-        <ModalPortal>
-          <div className="modal-backdrop" onClick={() => setMerchantModalOpen(false)} style={{ zIndex: 9000 }}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', width: '92%', margin: '0 auto', padding: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
-                <h2 style={{ fontSize: '1.08rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>Merchant Solecare</h2>
-                <button
-                  type="button"
-                  onClick={() => setMerchantModalOpen(false)}
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
-                >
-                  <CloseIcon size={18} color="#64748b" />
-                </button>
-              </div>
-              <div style={{ padding: '18px 20px' }} className="stack">
-                <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '14px', borderRadius: '12px', color: '#166534' }}>
-                  <strong style={{ display: 'block', marginBottom: '4px' }}>Pembayaran Tunai (Cash) Aktif</strong>
-                  <div className="small" style={{ lineHeight: 1.45 }}>Seluruh transaksi kasir dicatat langsung sebagai pembayaran Tunai (Cash).</div>
-                </div>
-                <button
-                  type="button"
-                  className="btn secondary"
-                  style={{ marginTop: '4px', width: '100%', justifyContent: 'center' }}
-                  onClick={() => setMerchantModalOpen(false)}
-                >
-                  Tutup
-                </button>
               </div>
             </div>
           </div>
