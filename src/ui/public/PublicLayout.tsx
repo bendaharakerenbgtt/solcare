@@ -121,76 +121,78 @@ export const PublicLayout: React.FC = () => {
         <Outlet />
       </main>
 
-      {/* 4. Footer Web Biasa (Tentang akun, hak cipta, dan navigasi) */}
-      <footer className="public-simple-footer">
-        <div className="container">
-          <div className="grid grid-3" style={{ marginBottom: '24px', gap: '24px' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <img
-                  src="/solecare_logo.jpg"
-                  alt="Solecare Logo"
-                  style={{ width: '36px', height: '36px', borderRadius: '8px', objectFit: 'cover' }}
-                />
-                <div>
-                  <h3 style={{ color: '#ffffff', fontSize: '1.1rem', margin: 0 }}>
-                    Soleful Soaks!
-                  </h3>
-                  <span style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                    Shoe Care &amp; Laundry
+      {/* 4. Footer Web Biasa (Tentang akun, hak cipta, dan navigasi) - disembunyikan di halaman pengumuman */}
+      {!isAnnouncements && (
+        <footer className="public-simple-footer">
+          <div className="container">
+            <div className="grid grid-3" style={{ marginBottom: '24px', gap: '24px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <img
+                    src="/solecare_logo.jpg"
+                    alt="Solecare Logo"
+                    style={{ width: '36px', height: '36px', borderRadius: '8px', objectFit: 'cover' }}
+                  />
+                  <div>
+                    <h3 style={{ color: '#ffffff', fontSize: '1.1rem', margin: 0 }}>
+                      Soleful Soaks!
+                    </h3>
+                    <span style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      Shoe Care &amp; Laundry
+                    </span>
+                  </div>
+                </div>
+                <p className="small" style={{ color: '#cbd5e1', lineHeight: 1.5, margin: 0 }}>
+                  {settings?.tagline || 'Jasa perawatan & pembersihan sepatu, tas, topi, dan helm profesional.'}
+                </p>
+                {settings?.address && (
+                  <p className="small" style={{ marginTop: '8px', color: '#94a3b8' }}>
+                    {settings.address}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <h4 style={{ color: '#ffffff', marginBottom: '12px', fontSize: '0.95rem' }}>Akses &amp; Layanan Publik</h4>
+                <div className="stack small" style={{ gap: '8px' }}>
+                  <Link to="/" style={{ color: '#cbd5e1' }}>Beranda &amp; Daftar Harga</Link>
+                  <Link to="/cek-pesanan" style={{ color: '#cbd5e1' }}>Cek Status Pesanan</Link>
+                  <Link to="/pengumuman" style={{ color: '#cbd5e1' }}>Pengumuman &amp; Jadwal</Link>
+                  <Link to="/kontak" style={{ color: '#cbd5e1' }}>Kontak &amp; Workshop</Link>
+                  <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>
+                    * Web publik tidak memerlukan login akun. Cukup gunakan kode dari nota Anda.
                   </span>
                 </div>
               </div>
-              <p className="small" style={{ color: '#cbd5e1', lineHeight: 1.5, margin: 0 }}>
-                {settings?.tagline || 'Jasa perawatan & pembersihan sepatu, tas, topi, dan helm profesional.'}
-              </p>
-              {settings?.address && (
-                <p className="small" style={{ marginTop: '8px', color: '#94a3b8' }}>
-                  {settings.address}
+
+              <div>
+                <h4 style={{ color: '#ffffff', marginBottom: '12px', fontSize: '0.95rem' }}>Akun &amp; Pengelola</h4>
+                <p className="small" style={{ color: '#cbd5e1', margin: '0 0 12px', lineHeight: 1.5 }}>
+                  Area khusus pegawai dan admin toko untuk kelola antrean dan transaksi.
                 </p>
-              )}
-            </div>
-
-            <div>
-              <h4 style={{ color: '#ffffff', marginBottom: '12px', fontSize: '0.95rem' }}>Akses &amp; Layanan Publik</h4>
-              <div className="stack small" style={{ gap: '8px' }}>
-                <Link to="/" style={{ color: '#cbd5e1' }}>Beranda &amp; Daftar Harga</Link>
-                <Link to="/cek-pesanan" style={{ color: '#cbd5e1' }}>Cek Status Pesanan</Link>
-                <Link to="/pengumuman" style={{ color: '#cbd5e1' }}>Pengumuman &amp; Jadwal</Link>
-                <Link to="/kontak" style={{ color: '#cbd5e1' }}>Kontak &amp; Workshop</Link>
-                <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>
-                  * Web publik tidak memerlukan login akun. Cukup gunakan kode dari nota Anda.
-                </span>
+                <div className="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
+                  <Link to="/admin/login" className="btn secondary sm" style={{ background: '#ffffff', color: '#001b3a' }}>
+                    Masuk Akun Staff ↗
+                  </Link>
+                  {waUrl && (
+                    <a href={waUrl} target="_blank" rel="noreferrer" className="btn wa sm">
+                      WhatsApp CS
+                    </a>
+                  )}
+                </div>
+                <div style={{ marginTop: '12px', fontSize: '0.75rem', color: '#94a3b8' }}>
+                  Jam Buka: <strong style={{ color: '#ffffff' }}>{hoursBadge} WIB</strong>
+                </div>
               </div>
             </div>
 
-            <div>
-              <h4 style={{ color: '#ffffff', marginBottom: '12px', fontSize: '0.95rem' }}>Akun &amp; Pengelola</h4>
-              <p className="small" style={{ color: '#cbd5e1', margin: '0 0 12px', lineHeight: 1.5 }}>
-                Area khusus pegawai dan admin toko untuk kelola antrean dan transaksi.
-              </p>
-              <div className="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
-                <Link to="/admin/login" className="btn secondary sm" style={{ background: '#ffffff', color: '#001b3a' }}>
-                  Masuk Akun Staff ↗
-                </Link>
-                {waUrl && (
-                  <a href={waUrl} target="_blank" rel="noreferrer" className="btn wa sm">
-                    WhatsApp CS
-                  </a>
-                )}
-              </div>
-              <div style={{ marginTop: '12px', fontSize: '0.75rem', color: '#94a3b8' }}>
-                Jam Buka: <strong style={{ color: '#ffffff' }}>{hoursBadge} WIB</strong>
-              </div>
+            <div className="footer-bottom-row small" style={{ color: '#94a3b8', borderTop: '1px solid #1e293b', paddingTop: '16px' }}>
+              <div>© {new Date().getFullYear()} Soleful Soaks! Shoes Care. All rights reserved.</div>
+              <div>Layanan Drop-off &amp; Antar Jemput Resmi Soleful Soaks</div>
             </div>
           </div>
-
-          <div className="footer-bottom-row small" style={{ color: '#94a3b8', borderTop: '1px solid #1e293b', paddingTop: '16px' }}>
-            <div>© {new Date().getFullYear()} Soleful Soaks! Shoes Care. All rights reserved.</div>
-            <div>Layanan Drop-off &amp; Antar Jemput Resmi Soleful Soaks</div>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 };

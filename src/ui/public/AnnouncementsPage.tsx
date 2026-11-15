@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import { getAnnouncementCategoryLabel, fmtDateTime } from '../../lib/format';
@@ -53,27 +54,34 @@ export const AnnouncementsPage: React.FC = () => {
   }, [list, filter]);
 
   return (
-    <div className="public-container">
-      <div className="stack" style={{ gap: '16px' }}>
-        {/* Header Banner */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #001b3a 0%, #082d5a 100%)',
-            borderRadius: '16px',
-            padding: '20px 18px',
-            color: '#ffffff',
-            boxShadow: '0 4px 16px rgba(0, 27, 58, 0.08)',
-          }}
-        >
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.12)', padding: '3px 10px', borderRadius: '999px', fontSize: '0.72rem', fontWeight: 600, marginBottom: '10px' }}>
-            <span>📢</span>
-            <span>Pusat Informasi Workshop</span>
-          </div>
-          <h1 style={{ margin: '0 0 6px', fontSize: '1.3rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff' }}>
+    <div className="public-container" style={{ paddingBottom: '32px' }}>
+      <div className="stack" style={{ gap: '14px' }}>
+        {/* Tombol Kembali ke Beranda */}
+        <div>
+          <Link
+            to="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.84rem',
+              fontWeight: 700,
+              color: '#001b3a',
+              textDecoration: 'none',
+              padding: '6px 0',
+            }}
+          >
+            ← Kembali ke Beranda
+          </Link>
+        </div>
+
+        {/* Title Header Bersih & Ringkas */}
+        <div>
+          <h1 style={{ margin: '0 0 4px', fontSize: '1.28rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#0f172a' }}>
             Pengumuman &amp; Promo
           </h1>
-          <p style={{ margin: 0, fontSize: '0.82rem', color: '#cbd5e1', lineHeight: 1.5 }}>
-            Update resmi jam buka workshop, promo aktif, hari libur nasional, dan kabar operasional Soleful Soaks.
+          <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b', lineHeight: 1.5 }}>
+            Update resmi seputar operasional, jam buka, dan promo workshop.
           </p>
         </div>
 

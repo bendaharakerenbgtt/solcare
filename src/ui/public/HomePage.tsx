@@ -4,7 +4,6 @@ import { useAsync } from '../hooks';
 import { repo } from '../../data';
 import { SEED_SERVICES } from '../../data/seed';
 import {
-  getAnnouncementCategoryLabel,
   durationLabel,
   priceLabel,
   whatsappLink,
@@ -335,36 +334,47 @@ export const HomePage: React.FC = () => {
           {/* 2. PENGUMUMAN TERKINI (JIKA ADA)                         */}
           {/* ======================================================== */}
           {announcements && announcements.length > 0 && (
-            <section className="public-card" style={{ borderLeft: '4px solid #bf2f3b' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <strong style={{ fontSize: '0.94rem', color: '#0f172a' }}>
-                  Pengumuman Toko
-                </strong>
-                <Link to="/pengumuman" className="small" style={{ color: '#bf2f3b', fontWeight: 700, textDecoration: 'none' }}>
+            <Link
+              to="/pengumuman"
+              className="public-card"
+              style={{
+                display: 'block',
+                textDecoration: 'none',
+                borderLeft: '4px solid #bf2f3b',
+                padding: '12px 14px',
+                transition: 'transform 0.1s ease',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '0.85rem' }}>📢</span>
+                  <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>
+                    Pengumuman Toko
+                  </strong>
+                </div>
+                <span className="small" style={{ color: '#bf2f3b', fontWeight: 700 }}>
                   Lihat Semua →
-                </Link>
+                </span>
               </div>
-              <div className="stack" style={{ gap: '8px' }}>
+              <div className="stack" style={{ gap: '6px' }}>
                 {announcements.slice(0, 2).map((a) => (
-                  <div key={a.id} style={{ fontSize: '0.82rem', color: '#334155', lineHeight: 1.45 }}>
-                    <span
-                      style={{
-                        fontSize: '0.68rem',
-                        fontWeight: 800,
-                        background: '#f1f5f9',
-                        color: '#475569',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        marginRight: '6px',
-                      }}
-                    >
-                      {getAnnouncementCategoryLabel(a.category)}
-                    </span>
-                    <strong>{a.title}</strong> — {a.body}
+                  <div
+                    key={a.id}
+                    style={{
+                      fontSize: '0.8rem',
+                      color: '#334155',
+                      lineHeight: 1.4,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    <strong style={{ color: '#0f172a' }}>{a.title}</strong>
+                    {a.body && <span style={{ color: '#64748b' }}> — {a.body}</span>}
                   </div>
                 ))}
               </div>
-            </section>
+            </Link>
           )}
 
           {/* ======================================================== */}
