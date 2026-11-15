@@ -58,11 +58,10 @@ export const PublicLayout: React.FC = () => {
         <div className="public-nav-container">
           <Link to="/" className="brand" onClick={closeMenu}>
             <div className="brand-mark">
-              <img src="/solecare_logo.jpg" alt="Logo Soleful Soaks Shoes Care" width="36" height="36" />
+              <img src="/solecare_logo.jpg" alt="Logo Soleful Soaks" width="36" height="36" />
             </div>
             <div>
               Soleful Soaks!
-              <small>Shoes Care &amp; Laundry</small>
             </div>
           </Link>
 

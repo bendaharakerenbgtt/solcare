@@ -20,6 +20,7 @@ import {
   SparklesIllustration,
   WhatsAppIcon,
   StoreIcon,
+  PerfumeBottleIllustration,
 } from '../common/Icons';
 
 type ServiceItem = {
@@ -67,10 +68,55 @@ const DELIVERY_TIERS = [
 ];
 
 const PARFUMS = [
-  { name: 'Vanilla Milk', note: 'Manis lembut & tahan lama' },
-  { name: 'Apple Mint', note: 'Segar dingin & fruity' },
-  { name: 'Bubblegum', note: 'Manis permen karet ceria' },
-  { name: 'Tanpa Parfum', note: 'Original bersih tanpa aroma' },
+  {
+    name: 'Vanilla Milk',
+    note: 'Manis lembut & tahan lama',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z" />
+        <path d="M19 12a7 7 0 0 0-14 0" />
+        <path d="M12 3v2" />
+        <path d="M12 8c.5-1 1.5-1 2 0" />
+      </svg>
+    ),
+    bg: '#fef3c7',
+  },
+  {
+    name: 'Apple Mint',
+    note: 'Segar dingin & fruity',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 20.94c1.88-1.12 3.14-2.73 3.68-4.59.56-1.92.36-3.88-.51-5.63A7.99 7.99 0 0 0 4.1 6.54c-1.74 2.89-1.94 6.33-.51 9.4 1.43 3.06 4.3 5 8.41 5Z" />
+        <path d="M12 3c1 2 2 3.5 3 4" />
+        <path d="M9 13c1.5 1 3.5 1 5 0" />
+      </svg>
+    ),
+    bg: '#dcfce7',
+  },
+  {
+    name: 'Bubblegum',
+    note: 'Manis permen ceria',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#db2777" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="7" />
+        <path d="M12 5v-3" />
+        <path d="M9 10a3 3 0 0 1 3-3" />
+        <circle cx="17.5" cy="8.5" r="2.5" />
+      </svg>
+    ),
+    bg: '#fce7f3',
+  },
+  {
+    name: 'Tanpa Parfum',
+    note: 'Original bersih netral',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="9" />
+        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+      </svg>
+    ),
+    bg: '#f1f5f9',
+  },
 ];
 
 function checkStoreOpen(openTimeStr?: string, closeTimeStr?: string): { isOpen: boolean; label: string } {
@@ -121,14 +167,13 @@ export const HomePage: React.FC = () => {
     }));
   }, [dbServices]);
 
-  // Featured 4 preview services for homepage
+  // Featured popular preview items
   const previewServices = useMemo(() => {
-    // Pick the most popular essentials
-    const prioritized = ['Basic Clean', 'Deep Clean', 'Heavy Clean', 'Unyellowing'];
+    const prioritized = ['Basic Clean', 'Deep Clean', 'Heavy Clean', 'Unyellowing', 'Fast Clean', 'Repaint'];
     const matched = services.filter((s) =>
       prioritized.some((p) => s.name.toLowerCase().includes(p.toLowerCase()))
     );
-    return matched.length >= 4 ? matched.slice(0, 4) : services.slice(0, 4);
+    return matched.length >= 4 ? matched.slice(0, 6) : services.slice(0, 6);
   }, [services]);
 
   const handleTrackSubmit = (e: React.FormEvent) => {
@@ -171,12 +216,12 @@ export const HomePage: React.FC = () => {
         <div className="stack" style={{ gap: '22px' }}>
 
           {/* ======================================================== */}
-          {/* 1. HERO CARD DENGAN TYPOGRAPHY SLOGAN & STATUS BUKA RAPI */}
+          {/* 1. HERO CARD BERSIH: TANPA TOMBOL ATAS, SLOGAN TIPOGRAFI */}
           {/* ======================================================== */}
           <section className="public-hero-card">
             <div className="public-hero-grid">
               <div>
-                <h1 className="public-hero-heading">
+                <h1 className="public-hero-heading" style={{ marginBottom: '6px' }}>
                   Soleful Soaks! <br />
                   <span>Shoes Care &amp; Laundry</span>
                 </h1>
@@ -185,12 +230,12 @@ export const HomePage: React.FC = () => {
                 <div
                   style={{
                     display: 'inline-block',
-                    margin: '6px 0 12px',
+                    margin: '4px 0 12px',
                     padding: '4px 10px',
                     background: '#f8fafc',
                     borderRadius: '8px',
                     border: '1px dashed #cbd5e1',
-                    fontSize: '0.88rem',
+                    fontSize: '0.86rem',
                     fontWeight: 800,
                     letterSpacing: '0.04em',
                     color: '#0f172a',
@@ -204,7 +249,7 @@ export const HomePage: React.FC = () => {
                   Perawatan mendalam, unyellowing, recolor hingga pembersihan harian untuk sepatu, tas, helm, dan topi dengan pengerjaan higienis dan wangi.
                 </p>
 
-                {/* Status Buka/Tutup Rapi di Bawah Deskripsi (Bukan mengambang di atas card) */}
+                {/* Status Buka/Tutup Rapi di Bawah Deskripsi */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
                   <span
                     style={{
@@ -219,36 +264,19 @@ export const HomePage: React.FC = () => {
                     {storeStatus.label}
                   </span>
                 </div>
-
-                <div className="row" style={{ gap: '10px', marginTop: '16px' }}>
-                  <a href="#pricelist" className="btn sm" style={{ background: '#bf2f3b' }}>
-                    Lihat Cuplikan Harga ↓
-                  </a>
-                  {waUrl && (
-                    <a
-                      href={waUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn secondary sm"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                    >
-                      <WhatsAppIcon size={16} color="#15803d" /> Konsultasi WA
-                    </a>
-                  )}
-                </div>
               </div>
 
-              {/* Box Cek Pesanan Bersih di Atas (Tanpa Chip Demo) */}
+              {/* Box Cek Pesanan Proporsional & Konsisten */}
               <div className="public-track-box">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <SearchIcon size={20} color="#001b3a" />
-                  <strong style={{ fontSize: '1rem', color: '#001b3a' }}>Lacak Status Sepatu</strong>
+                  <SearchIcon size={18} color="#001b3a" />
+                  <strong style={{ fontSize: '0.94rem', color: '#001b3a' }}>Lacak Status Sepatu</strong>
                 </div>
-                <p className="small muted" style={{ margin: '0 0 14px', lineHeight: 1.45 }}>
-                  Masukkan kode pesanan dari nota Anda untuk memantau progres cuci tanpa perlu login:
+                <p className="small muted" style={{ margin: '0 0 12px', lineHeight: 1.45, fontSize: '0.78rem' }}>
+                  Masukkan kode pesanan dari nota untuk memantau progres cuci:
                 </p>
 
-                <form onSubmit={handleTrackSubmit} style={{ display: 'flex', gap: '8px' }}>
+                <form onSubmit={handleTrackSubmit} style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
                   <input
                     type="text"
                     id="track-order-input"
@@ -265,24 +293,39 @@ export const HomePage: React.FC = () => {
                     style={{
                       border: '1.5px solid #cbd5e1',
                       borderRadius: '10px',
-                      padding: '10px 12px',
-                      fontSize: '0.88rem',
+                      padding: '8px 12px',
+                      fontSize: '0.84rem',
                       fontWeight: 700,
                       flex: 1,
                       minWidth: 0,
+                      height: '40px',
+                      boxSizing: 'border-box',
                     }}
                   />
                   <button
                     type="submit"
                     className="btn"
-                    style={{ background: '#001b3a', color: '#ffffff', borderRadius: '10px', padding: '10px 18px', whiteSpace: 'nowrap' }}
+                    style={{
+                      background: '#001b3a',
+                      color: '#ffffff',
+                      borderRadius: '10px',
+                      padding: '0 16px',
+                      fontSize: '0.84rem',
+                      fontWeight: 700,
+                      whiteSpace: 'nowrap',
+                      height: '40px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
                   >
-                    Cek Pesanan
+                    Lacak
                   </button>
                 </form>
 
-                <div style={{ marginTop: '10px', fontSize: '0.74rem', color: '#64748b' }}>
-                  Belum punya kode? Kunjungi workshop kami atau minta kurir jemput sepatu Anda.
+                <div style={{ marginTop: '8px', fontSize: '0.72rem', color: '#64748b' }}>
+                  Belum punya kode? Kunjungi workshop atau kirim sepatu via antar-jemput.
                 </div>
               </div>
             </div>
@@ -375,16 +418,16 @@ export const HomePage: React.FC = () => {
           </section>
 
           {/* ======================================================== */}
-          {/* 4. PREVIEW HARGA POPULER & TOMBOL LIHAT FULL PRICELIST   */}
+          {/* 4. PREVIEW LAYANAN POPULER DENGAN SHOPEE-STYLE SCROLL    */}
           {/* ======================================================== */}
           <section id="pricelist" className="public-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
               <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 2px' }}>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', margin: '0 0 2px' }}>
                   Layanan Terfavorit
                 </h2>
-                <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                  Beberapa pilihan pencucian paling sering dipilih pelanggan kami
+                <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
+                  Geser ke samping untuk melihat pilihan pencucian terpopuler
                 </span>
               </div>
 
@@ -393,87 +436,79 @@ export const HomePage: React.FC = () => {
                 className="btn secondary sm"
                 style={{
                   fontWeight: 700,
-                  fontSize: '0.8rem',
+                  fontSize: '0.78rem',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px',
+                  borderRadius: '10px',
                 }}
               >
-                Lihat Seluruh Layanan ({services.length}) →
+                Lihat Semua ({services.length}) →
               </Link>
             </div>
 
-            {/* Grid 4 Layanan Paling Populer (Ringkas & Menarik) */}
-            <div className="grid grid-2" style={{ gap: '10px' }}>
+            {/* Shopee-style Horizontal Scroll Rail */}
+            <div className="public-services-scroll-rail">
               {previewServices.map((svc) => (
                 <article
                   key={svc.id}
-                  className="public-service-card"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '12px',
-                    padding: '12px 14px',
-                    background: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '14px',
-                  }}
+                  className="public-service-card-horizontal"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                  <div>
                     <div
                       style={{
-                        width: '42px',
-                        height: '42px',
+                        width: '100%',
+                        height: '76px',
                         borderRadius: '12px',
                         background: '#f8fafc',
                         border: '1px solid #e2e8f0',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        flexShrink: 0,
+                        marginBottom: '10px',
                       }}
                       aria-hidden="true"
                     >
                       {renderServiceIcon(svc.category, svc.name)}
                     </div>
-                    <div style={{ minWidth: 0 }}>
-                      <h3
-                        style={{
-                          margin: 0,
-                          fontSize: '0.88rem',
-                          fontWeight: 700,
-                          color: '#0f172a',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        {svc.name}
-                      </h3>
-                      <span style={{ fontSize: '0.73rem', color: '#64748b', display: 'block' }}>
-                        {durationLabel(svc) || '2 Hari'} • {svc.description}
-                      </span>
-                    </div>
+
+                    <h3
+                      style={{
+                        margin: '0 0 4px',
+                        fontSize: '0.86rem',
+                        fontWeight: 700,
+                        color: '#0f172a',
+                        lineHeight: 1.3,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        minHeight: '2.4em',
+                      }}
+                    >
+                      {svc.name}
+                    </h3>
+
+                    <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block', marginBottom: '8px' }}>
+                      ⏱ {durationLabel(svc) || '2 Hari'}
+                    </span>
                   </div>
 
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <strong className="price" style={{ fontSize: '0.92rem', color: '#bf2f3b', display: 'block', fontVariantNumeric: 'tabular-nums' }}>
+                  <div style={{ paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
+                    <span style={{ fontSize: '0.64rem', color: '#94a3b8', display: 'block' }}>Mulai dari</span>
+                    <strong className="price" style={{ fontSize: '0.96rem', color: '#bf2f3b', display: 'block', fontVariantNumeric: 'tabular-nums' }}>
                       {priceLabel(svc)}
                     </strong>
-                    <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
-                      per pasang
-                    </span>
                   </div>
                 </article>
               ))}
             </div>
 
-            {/* Banner Ajakan Buka Full Pricelist Page */}
+            {/* Banner Ajakan ke Halaman Penuh */}
             <div
               style={{
-                marginTop: '14px',
-                padding: '12px 16px',
+                marginTop: '12px',
+                padding: '12px 14px',
                 background: '#f8fafc',
                 border: '1px solid #e2e8f0',
                 borderRadius: '12px',
@@ -481,19 +516,22 @@ export const HomePage: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 flexWrap: 'wrap',
-                gap: '10px',
+                gap: '8px',
               }}
             >
-              <span style={{ fontSize: '0.8rem', color: '#475569' }}>
-                Tersedia juga Cuci Tas, Topi, Helm, Unyellowing, serta Repaint &amp; Reglue lengkap.
+              <span style={{ fontSize: '0.78rem', color: '#475569' }}>
+                Tersedia juga Tas, Helm, Topi, Unyellowing, Repaint &amp; Reglue lengkap.
               </span>
               <Link
                 to="/layanan"
                 style={{
                   color: '#bf2f3b',
-                  fontWeight: 700,
+                  fontWeight: 800,
                   fontSize: '0.82rem',
                   textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
                 }}
               >
                 Buka Katalog Lengkap →
@@ -571,37 +609,36 @@ export const HomePage: React.FC = () => {
           </section>
 
           {/* ======================================================== */}
-          {/* 6. PILIHAN PARFUM SEPATU (GRATIS)                        */}
+          {/* 6. PILIHAN PARFUM SEPATU (GRATIS, IKON ELEGAN TANPA SPARKLE) */}
           {/* ======================================================== */}
           <section className="public-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <SparklesIllustration size={22} color="#bf2f3b" />
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '1.05rem', color: '#0f172a' }}>
-                    Pilihan Parfum Sepatu (Gratis)
-                  </h3>
-                  <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                    Setiap pengerjaan cuci sepatu sudah termasuk semprotan parfum higienis
-                  </span>
-                </div>
-              </div>
-              <span
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+              <div
                 style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '10px',
                   background: '#fef2f2',
-                  color: '#bf2f3b',
-                  fontSize: '0.7rem',
-                  fontWeight: 800,
-                  padding: '3px 8px',
-                  borderRadius: '999px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
                 }}
               >
-                Complimentary
-              </span>
+                <PerfumeBottleIllustration size={22} color="#bf2f3b" />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', color: '#0f172a' }}>
+                  Pilihan Parfum Sepatu (Gratis)
+                </h3>
+                <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                  Setiap pengerjaan cuci sepatu sudah termasuk semprotan parfum higienis
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-2" style={{ gap: '10px' }}>
-              {PARFUMS.map((p, idx) => (
+              {PARFUMS.map((p) => (
                 <article
                   key={p.name}
                   className="public-parfum-card"
@@ -609,7 +646,7 @@ export const HomePage: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
-                    padding: '12px',
+                    padding: '12px 14px',
                     background: '#ffffff',
                     borderRadius: '14px',
                     border: '1px solid #e2e8f0',
@@ -617,20 +654,18 @@ export const HomePage: React.FC = () => {
                 >
                   <div
                     style={{
-                      width: '40px',
-                      height: '40px',
+                      width: '42px',
+                      height: '42px',
                       borderRadius: '12px',
-                      background: '#f8fafc',
-                      border: '1px solid #e2e8f0',
+                      background: p.bg,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '1.25rem',
                       flexShrink: 0,
                     }}
                     aria-hidden="true"
                   >
-                    {idx === 0 ? '🍦' : idx === 1 ? '🍏' : idx === 2 ? '🍬' : '✨'}
+                    {p.icon}
                   </div>
                   <div>
                     <h4 style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: '#001b3a' }}>

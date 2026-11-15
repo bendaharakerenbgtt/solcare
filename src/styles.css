@@ -4246,6 +4246,82 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-wi
   box-shadow: 0 1px 4px rgba(0, 27, 58, 0.03);
 }
 
+/* Shopee-style Horizontal Scroll Rail for Services */
+.public-services-scroll-rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 2px 14px;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+.public-services-scroll-rail::-webkit-scrollbar {
+  height: 5px;
+}
+.public-services-scroll-rail::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 999px;
+}
+.public-services-scroll-rail::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.public-service-card-horizontal {
+  flex: 0 0 210px;
+  max-width: 220px;
+  scroll-snap-align: start;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 6px rgba(0, 27, 58, 0.03);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.public-service-card-horizontal:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 27, 58, 0.06);
+}
+
+/* Shopee-style Product Grid (2 columns on mobile, 3-4 on desktop) */
+.public-services-shopee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+}
+@media (max-width: 540px) {
+  .public-services-shopee-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .public-service-card-horizontal {
+    flex: 0 0 175px;
+    max-width: 185px;
+    padding: 12px;
+  }
+}
+
+.public-service-shopee-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(0, 27, 58, 0.03);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.public-service-shopee-card:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 27, 58, 0.06);
+}
+
 .public-simple-footer {
   background: #001b3a;
   color: #cbd5e1;

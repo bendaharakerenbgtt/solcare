@@ -376,6 +376,24 @@ export const SparklesIllustration: React.FC<{ size?: number; color?: string }> =
   </svg>
 );
 
+export const PerfumeBottleIllustration: React.FC<{ size?: number; color?: string }> = ({ size = 26, color = '#bf2f3b' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    {/* Cap / Atomizer button */}
+    <rect x="9" y="2" width="6" height="3" rx="1" fill={color} fillOpacity="0.15" />
+    <line x1="12" y1="5" x2="12" y2="7" />
+    {/* Bottle neck */}
+    <rect x="8.5" y="7" width="7" height="2" rx="0.5" />
+    {/* Bottle Body */}
+    <rect x="5" y="9" width="14" height="13" rx="4" />
+    {/* Fragrance liquid level */}
+    <path d="M6 16c2-1 4-1 6 0s4 1 6 0" />
+    {/* Spray mist droplets */}
+    <circle cx="17.5" cy="3.5" r="0.8" fill={color} />
+    <circle cx="20" cy="5" r="0.8" fill={color} />
+    <circle cx="18.5" cy="6.5" r="0.8" fill={color} />
+  </svg>
+);
+
 export const EmptyStateIllustration: React.FC<{ size?: number }> = ({ size = 130 }) => (
   <svg
     width={size}
