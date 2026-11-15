@@ -23,91 +23,6 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
   const [downloading, setDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
-  const handlePrint = () => {
-    if (!receiptRef.current) {
-      window.print();
-      return;
-    }
-
-    // Isolate receipt in an invisible iframe to guarantee 1 single page without parent page bleed
-    const existingIframe = document.getElementById('receipt-print-iframe');
-    if (existingIframe) existingIframe.remove();
-
-    const iframe = document.createElement('iframe');
-    iframe.id = 'receipt-print-iframe';
-    // Must have non-zero dimensions off-screen so Chromium renders it before print
-    iframe.style.position = 'fixed';
-    iframe.style.left = '-9999px';
-    iframe.style.top = '-9999px';
-    iframe.style.width = '400px';
-    iframe.style.height = '600px';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow?.document;
-    if (!doc) {
-      window.print();
-      return;
-    }
-
-    const receiptHtml = receiptRef.current.outerHTML;
-
-    doc.open();
-    doc.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>Nota - Soleful Soaks</title>
-          <style>
-            @page {
-              size: 80mm auto;
-              margin: 3mm 4mm;
-            }
-            * {
-              box-sizing: border-box;
-              margin: 0;
-              padding: 0;
-            }
-            html, body {
-              background: #ffffff;
-              width: 100%;
-              height: auto;
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-              font-size: 11px;
-              color: #000000;
-              page-break-after: avoid !important;
-              break-after: avoid !important;
-            }
-            .soleful-receipt-container {
-              width: 100% !important;
-              max-width: 380px !important;
-              margin: 0 auto !important;
-              padding: 4px 6px !important;
-              box-shadow: none !important;
-              page-break-after: avoid !important;
-              break-after: avoid !important;
-              page-break-inside: avoid !important;
-              break-inside: avoid !important;
-            }
-          </style>
-        </head>
-        <body>
-          ${receiptHtml}
-        </body>
-      </html>
-    `);
-    doc.close();
-
-    setTimeout(() => {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-      setTimeout(() => {
-        iframe.remove();
-      }, 3000);
-    }, 400);
-  };
-
   const handleDownloadPDF = async () => {
     if (!receiptRef.current) return;
     setDownloading(true);
@@ -267,34 +182,6 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
             flexWrap: 'wrap',
           }}
         >
-          <button
-            type="button"
-            className="btn"
-            onClick={handlePrint}
-            style={{
-              flex: '1 1 120px',
-              padding: '8px 12px',
-              fontSize: '0.84rem',
-              fontWeight: 700,
-              background: '#001b3a',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-            }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 6 2 18 2 18 9"/>
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-              <rect width="12" height="8" x="6" y="14"/>
-            </svg>
-            Cetak Nota
-          </button>
-
           <button
             type="button"
             className="btn"
