@@ -173,7 +173,9 @@ export const SlideCalendarDrawer: React.FC<SlideCalendarDrawerProps> = ({ isOpen
               <div className="stack" style={{ gap: '10px' }}>
                 {selectedDateOrders.map((o) => {
                   const late = isLate(o, now) && o.status !== 'diambil';
-                  const waUrl = whatsappLink(o.customerPhone, `Halo Kak ${o.customerName}, info pesanan ${displayCode(o.code)}`);
+                  const trackUrl = `${window.location.origin}/cek-pesanan?code=${o.code}`;
+                  const waText = `Halo Kak ${o.customerName}, info pesanan ${o.itemType || 'sepatu'} (${o.brand} ${o.model}) kode ${displayCode(o.code)} di Soleful Soaks! (${STATUS_LABEL[o.status]}).\n\nCek progres & nota pesanan Anda di: ${trackUrl}`;
+                  const waUrl = whatsappLink(o.customerPhone, waText);
                   return (
                     <div
                       key={o.id}

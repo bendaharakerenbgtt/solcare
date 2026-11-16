@@ -430,7 +430,9 @@ export const OrdersListPage: React.FC = () => {
         <div className="stack" style={{ gap: '12px' }}>
           {filtered.map((o: Order) => {
             const late = isLate(o, now) && o.status !== 'diambil';
-            const waUrl = whatsappLink(o.customerPhone, `Halo Kak ${o.customerName}, info pesanan ${o.code} di Soleful Soaks!`);
+            const trackUrl = `${window.location.origin}/cek-pesanan?code=${o.code}`;
+            const waText = `Halo Kak ${o.customerName}, info pesanan ${o.itemType || 'sepatu'} (${o.brand} ${o.model}) kode ${displayCode(o.code)} di Soleful Soaks! (${STATUS_LABEL[o.status]}).\n\nCek progres & nota pesanan Anda di: ${trackUrl}`;
+            const waUrl = whatsappLink(o.customerPhone, waText);
             const isPaid = o.payment?.status === 'lunas';
 
             return (

@@ -279,26 +279,35 @@ export const CustomersPage: React.FC = () => {
                 {/* Action Buttons: Chat WA, Panggil, & Edit Profil */}
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {selectedCustomer.phone && selectedCustomer.phone !== '-' ? (
-                    <a
-                      href={whatsappLink(selectedCustomer.phone, `Halo Kak ${selectedCustomer.name}, dari Soleful Soaks!`) || undefined}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        background: '#22c55e',
-                        color: '#ffffff',
-                        padding: '6px 12px',
-                        borderRadius: '8px',
-                        fontSize: '0.78rem',
-                        fontWeight: 700,
-                        textDecoration: 'none',
-                      }}
-                    >
-                      <WhatsAppIcon size={14} color="#ffffff" />
-                      <span>Chat WA</span>
-                    </a>
+                    (() => {
+                      const latestOrder = customerOrders && customerOrders.length > 0 ? customerOrders[0] : null;
+                      const trackUrl = latestOrder ? `${window.location.origin}/cek-pesanan?code=${latestOrder.code}` : `${window.location.origin}/cek-pesanan`;
+                      const waText = latestOrder
+                        ? `Halo Kak ${selectedCustomer.name}, dari Soleful Soaks! Shoes Care.\n\nInfo pesanan terakhir Anda (${latestOrder.brand} ${latestOrder.model}) dapat dicek online melalui tautan berikut:\n${trackUrl}\n\nAda yang bisa kami bantu?`
+                        : `Halo Kak ${selectedCustomer.name}, dari Soleful Soaks! Shoes Care. Cek promo dan layanan perawatan sepatu kami di:\n${window.location.origin}\n\nAda yang bisa kami bantu?`;
+                      return (
+                        <a
+                          href={whatsappLink(selectedCustomer.phone, waText) || undefined}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: '#22c55e',
+                            color: '#ffffff',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            textDecoration: 'none',
+                          }}
+                        >
+                          <WhatsAppIcon size={14} color="#ffffff" />
+                          <span>Chat WA</span>
+                        </a>
+                      );
+                    })()
                   ) : null}
 
                   {selectedCustomer.phone && selectedCustomer.phone !== '-' ? (
@@ -490,20 +499,52 @@ export const CustomersPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="stack" style={{ gap: '8px' }}>
-                      {customerOrders.map((o) => (
-                        <div key={o.id} style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div>
-                            <strong>{o.brand} {o.model}</strong>
-                            <div className="xs muted">{fmtDateTime(o.receivedAt)}</div>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <strong style={{ color: '#001b3a' }}>{rupiah(o.total)}</strong>
-                            <div className="xs" style={{ color: o.payment.status === 'lunas' ? '#15803d' : '#b45309' }}>
-                              {o.payment.status === 'lunas' ? 'LUNAS' : 'BELUM LUNAS'}
+                      {customerOrders.map((o) => {
+                        const trackUrl = `${window.location.origin}/cek-pesanan?code=${o.code}`;
+                        const waText = `Halo Kak ${selectedCustomer.name}, info pesanan (${o.brand} ${o.model}) kode TRX/${o.code} di Soleful Soaks! Status: ${o.status}.\n\nCek detail & nota pesanan di: ${trackUrl}`;
+                        const waHref = selectedCustomer.phone && selectedCustomer.phone !== '-' ? whatsappLink(selectedCustomer.phone, waText) : null;
+                        return (
+                          <div key={o.id} style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <strong style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{o.brand} {o.model}</strong>
+                              <div className="xs muted">{fmtDateTime(o.receivedAt)}</div>
+                            </div>
+                            <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div>
+                                <strong style={{ color: '#001b3a', display: 'block' }}>{rupiah(o.total)}</strong>
+                                <div className="xs" style={{ color: o.payment.status === 'lunas' ? '#15803d' : '#b45309' }}>
+                                  {o.payment.status === 'lunas' ? 'LUNAS' : 'BELUM LUNAS'}
+                                </div>
+                              </div>
+                              {waHref && (
+                                <a
+                                  href={waHref}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  title="Kirim info pesanan ke WA"
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: '#22c55e',
+                                    color: '#ffffff',
+                                    padding: '6px 8px',
+                                    borderRadius: '8px',
+                                    textDecoration: 'none',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    gap: '4px',
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <WhatsAppIcon size={13} color="#ffffff" />
+                                  <span>WA</span>
+                                </a>
+                              )}
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>

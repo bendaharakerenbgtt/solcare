@@ -213,8 +213,8 @@ export const OrderDetailPage: React.FC = () => {
   const trackUrl = `${window.location.origin}/cek-pesanan?code=${order.code}`;
   const waMessage =
     order.status === 'selesai'
-      ? `Halo Kak ${order.customerName}, pesanan ${order.itemType} (${order.brand} ${order.model}) dengan kode TRX/${displayCode(order.code)} di Solecare SUDAH SELESAI dan siap diambil. Total tagihan: ${rupiah(order.total)} (${order.payment.status === 'lunas' ? 'LUNAS' : 'Belum Lunas'}). Cek nota & detail di: ${trackUrl}`
-      : `Halo Kak ${order.customerName}, terima kasih telah mempercayakan perawatan di Solecare! Kode pesanan Anda: TRX/${displayCode(order.code)} (Status: ${BILAS_STAGE_LABEL[order.status]}). Pantau progres di: ${trackUrl}`;
+      ? `Halo Kak ${order.customerName}, pesanan ${order.itemType} (${order.brand} ${order.model}) dengan kode TRX/${displayCode(order.code)} di Soleful Soaks! SUDAH SELESAI dan siap diambil. Total tagihan: ${rupiah(order.total)} (${order.payment.status === 'lunas' ? 'LUNAS' : 'Belum Lunas'}).\n\nCek nota & detail di: ${trackUrl}`
+      : `Halo Kak ${order.customerName}, terima kasih telah mempercayakan perawatan di Soleful Soaks! Kode pesanan Anda: TRX/${displayCode(order.code)} (Status: ${BILAS_STAGE_LABEL[order.status]}).\n\nPantau progres & nota di: ${trackUrl}`;
 
   const waCustomer = order.customerPhone && order.customerPhone !== '-' ? whatsappLink(order.customerPhone, waMessage) : null;
   const isLunas = order.payment.status === 'lunas';
