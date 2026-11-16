@@ -57,30 +57,63 @@ export const ReportsPage: React.FC = () => {
 
   const handleExportCSV = () => {
     if (!orders || orders.length === 0) {
-      alert('Belum ada data transaksi untuk diekspor.');
+      alert('Belum ada data transaksi untuk diekspor pada periode ini.');
       return;
     }
-    const headers = ['Kode', 'Tanggal', 'Pelanggan', 'No WA', 'Barang', 'Layanan', 'Total', 'Status', 'Metode Bayar'];
+    const headers = [
+      'No Resi',
+      'Tanggal Masuk',
+      'Nama Pelanggan',
+      'Nomor WhatsApp',
+      'Jenis Barang',
+      'Merek',
+      'Model',
+      'Layanan',
+      'Parfum',
+      'Total Biaya (Rp)',
+      'Status Pembayaran',
+      'Metode Bayar',
+      'Status Pengerjaan',
+      'Estimasi Selesai',
+      'Catatan Kasir',
+    ];
+
+    const escapeCsv = (val: unknown) => {
+      if (val === null || val === undefined) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
     const rows = orders.map((o) => [
-      o.code,
-      new Date(o.receivedAt).toLocaleDateString('id-ID'),
-      `"${o.customerName}"`,
-      `"${o.customerPhone}"`,
-      `"${o.itemType} ${o.brand} ${o.model}"`,
-      `"${o.services.map((s) => s.name).join(', ')}"`,
-      o.total,
-      o.status,
-      o.payment.method,
+      escapeCsv(o.code),
+      escapeCsv(o.receivedAt ? new Date(o.receivedAt).toLocaleString('id-ID') : '-'),
+      escapeCsv(o.customerName || '-'),
+      escapeCsv(o.customerPhone || '-'),
+      escapeCsv(o.itemType || 'Sepatu'),
+      escapeCsv(o.brand || '-'),
+      escapeCsv(o.model || '-'),
+      escapeCsv((o.services || []).map((s) => s.name).join(', ') || '-'),
+      escapeCsv(o.fragranceName || '-'),
+      o.total || 0,
+      escapeCsv(o.payment?.status === 'lunas' ? 'LUNAS' : 'BELUM LUNAS'),
+      escapeCsv(o.payment?.method || '-'),
+      escapeCsv(o.status || '-'),
+      escapeCsv(o.estimatedAt ? new Date(o.estimatedAt).toLocaleString('id-ID') : '-'),
+      escapeCsv(o.internalNotes || '-'),
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    // Tambahkan UTF-8 BOM (\uFEFF) agar Microsoft Excel langsung membaca teks & format angka dengan sempurna
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `laporan_solecare_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.href = url;
+    const filterSuffix = timeFilter === 'semua' ? 'semua' : timeFilter === 'minggu' ? '7hari' : '30hari';
+    link.setAttribute('download', `laporan_transaksi_solecare_${filterSuffix}_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -398,8 +431,8 @@ export const ReportsPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <img src="/bilas_icons/icon_lap_export.webp" alt="Export Data" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
             <div style={{ flex: 1 }}>
-              <strong style={{ display: 'block', fontSize: '0.98rem', color: '#0f172a' }}>Export Data</strong>
-              <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Unduh laporan format XLS/Excel</span>
+              <strong style={{ display: 'block', fontSize: '0.98rem', color: '#0f172a' }}>Export Data Transaksi</strong>
+              <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Unduh laporan lengkap format CSV / Excel ({orders.length} transaksi)</span>
             </div>
             <button
               type="button"

@@ -29,7 +29,6 @@ export const CustomersPage: React.FC = () => {
   const { data: orders } = useAsync(() => repo.listOrders(), []);
 
   const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState<'semua' | 'offline' | 'online'>('semua');
   const [selectedCustomerId, setSelectedCustomerIdState] = useState<string | null>(
     searchParams.get('selectedId') || null
   );
@@ -178,21 +177,23 @@ export const CustomersPage: React.FC = () => {
       alert('Belum ada data pelanggan untuk diekspor.');
       return;
     }
-    const headers = ['Nama', 'Nomor Telepon', 'Catatan / Alamat', 'Terdaftar Pada'];
+    const headers = ['Nama Pelanggan', 'Nomor Telepon', 'Catatan / Alamat', 'Terdaftar Pada'];
     const rows = customers.map((c) => [
-      `"${c.name}"`,
-      `"${c.phone}"`,
-      `"${c.notes || ''}"`,
-      new Date(c.createdAt).toLocaleDateString('id-ID'),
+      `"${(c.name || '').replace(/"/g, '""')}"`,
+      `"${(c.phone || '').replace(/"/g, '""')}"`,
+      `"${(c.notes || '').replace(/"/g, '""')}"`,
+      `"${c.createdAt ? new Date(c.createdAt).toLocaleDateString('id-ID') : '-'}"`,
     ]);
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.href = url;
     link.setAttribute('download', `pelanggan_solecare_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const filteredCustomers = (customers || []).filter((c) => {
@@ -709,61 +710,10 @@ export const CustomersPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Filter Pills: Semua, Offline, Online, Sort A-Z */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => setFilterType('semua')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '999px',
-                  border: filterType === 'semua' ? 'none' : '1px solid #e2e8f0',
-                  background: filterType === 'semua' ? '#001b3a' : '#ffffff',
-                  color: filterType === 'semua' ? '#ffffff' : '#475569',
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                Semua
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterType('offline')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '999px',
-                  border: filterType === 'offline' ? 'none' : '1px solid #e2e8f0',
-                  background: filterType === 'offline' ? '#001b3a' : '#ffffff',
-                  color: filterType === 'offline' ? '#ffffff' : '#475569',
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                Offline
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterType('online')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '999px',
-                  border: filterType === 'online' ? 'none' : '1px solid #e2e8f0',
-                  background: filterType === 'online' ? '#001b3a' : '#ffffff',
-                  color: filterType === 'online' ? '#ffffff' : '#475569',
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                Online
-              </button>
-            </div>
-
+          {/* Subheader: Urutan A-Z */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '-4px' }}>
             <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>
-              A-Z ▾
+              Urutkan: A-Z ▾
             </span>
           </div>
 

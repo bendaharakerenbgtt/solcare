@@ -262,17 +262,6 @@ export const DashboardPage: React.FC = () => {
               Pintasan
             </h3>
             <div className="bilas-shortcut-list">
-              <Link to="/admin/services" className="bilas-shortcut-item">
-                <div className="bilas-shortcut-icon">
-                  <img src="/bilas_icons/icon_lap_mesin.webp" alt="Aktivitas Mesin" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
-                </div>
-                <div className="bilas-shortcut-info">
-                  <strong>Aktivitas Mesin</strong>
-                  <span>Status & jumlah load cycle per mesin</span>
-                </div>
-                <span className="bilas-shortcut-arrow">›</span>
-              </Link>
-
               <Link to="/admin/customers" className="bilas-shortcut-item">
                 <div className="bilas-shortcut-icon">
                   <UsersIcon size={20} color="#001b3a" />
