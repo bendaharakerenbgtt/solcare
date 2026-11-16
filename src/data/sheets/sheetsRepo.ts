@@ -222,8 +222,25 @@ export class SheetsRepo extends LocalRepo implements Repo {
         const res = await fetch(`${this.scriptUrl}?action=readAll`);
         const json = await res.json();
         if (json && json.ok && json.data) {
-          const { orders, services, staff, announcements, settings } = json.data;
+          const { orders, services, staff, announcements, settings, customers } = json.data;
           const nowIso = new Date().toISOString();
+
+          // Sinkronisasi data customers dari tab 'customers' jika tersedia
+          if (Array.isArray(customers) && customers.length > 0) {
+            const parsedCustomers: Customer[] = customers
+              .map((c: Record<string, unknown>, idx: number) => ({
+                id: String(c.id || `cust-${idx}`),
+                name: String(c.name || '').trim(),
+                phone: String(c.phone || '').trim() || '-',
+                notes: String(c.notes || '').trim(),
+                createdAt: String(c.createdAt || nowIso),
+                updatedAt: String(c.updatedAt || c.createdAt || nowIso),
+              }))
+              .filter((c) => c.name);
+            if (parsedCustomers.length > 0) {
+              this.sheetKv.set('customers', parsedCustomers);
+            }
+          }
 
           if (Array.isArray(orders) && orders.length > 0) {
             const parsedOrders = orders
@@ -512,6 +529,13 @@ export class SheetsRepo extends LocalRepo implements Repo {
   // -----------------------------------------------------------------
   // OVERRIDES: Customers
   // -----------------------------------------------------------------
+  override async listCustomers(): Promise<Customer[]> {
+    if (Date.now() - this.lastSyncAt > 15_000) {
+      void this.syncFromSheet();
+    }
+    return super.listCustomers();
+  }
+
   override async saveCustomer(c: SaveInput<Customer>): Promise<Customer> {
     const cust = await super.saveCustomer(c);
     this.lastSyncAt = Date.now();
