@@ -146,7 +146,12 @@ export const CustomersPage: React.FC = () => {
 
   const handleDeleteCustomer = async (cust: Customer) => {
     // Cek apakah ada order pelanggan ini
-    const hasOrders = (orders || []).some((o) => o.customerId === cust.id);
+    const hasOrders = (orders || []).some(
+      (o) =>
+        o.customerId === cust.id ||
+        (cust.phone !== '-' && o.customerPhone === cust.phone) ||
+        o.customerName.toLowerCase() === cust.name.toLowerCase(),
+    );
     if (hasOrders) {
       alert(`Pelanggan "${cust.name}" tidak dapat dihapus karena masih memiliki riwayat transaksi/pesanan.`);
       return;

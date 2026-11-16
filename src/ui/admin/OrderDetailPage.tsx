@@ -432,9 +432,10 @@ export const OrderDetailPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '12px' }}>
               <span style={{ color: '#64748b', flexShrink: 0 }}>Metode</span>
               <strong style={{ textAlign: 'right', wordBreak: 'break-word' }}>
-                {order.internalNotes?.includes('Antar-Jemput') || order.internalNotes?.includes('Antar Jemput')
-                  ? 'Layanan Antar-Jemput'
-                  : 'Drop-off di Outlet'}
+                {order.internalNotes?.match(/Layanan:\s*([^|]+)/i)?.[1]?.trim() ||
+                  (order.internalNotes?.includes('Antar-Jemput') || order.internalNotes?.includes('Antar Jemput')
+                    ? 'Layanan Antar-Jemput'
+                    : 'Drop-off di Outlet')}
               </strong>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

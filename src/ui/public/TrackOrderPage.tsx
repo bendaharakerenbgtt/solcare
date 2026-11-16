@@ -452,7 +452,7 @@ export const TrackOrderPage: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
                   <span style={{ color: '#64748b' }}>Info Pengantaran</span>
                   <strong style={{ color: '#0f172a', textAlign: 'right' }}>
-                    Drop-off / Antar Jemput via CS
+                    {order.deliveryInfo || 'Diantar Sendiri (Drop-off)'}
                   </strong>
                 </div>
                 <div

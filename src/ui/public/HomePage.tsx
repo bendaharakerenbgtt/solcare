@@ -68,7 +68,7 @@ const DELIVERY_TIERS = [
 
 const PARFUMS = [
   {
-    name: 'Vanilla Milk',
+    name: 'Vanilla Sweet Shoes',
     note: 'Manis lembut & tahan lama',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -81,7 +81,7 @@ const PARFUMS = [
     bg: '#fef3c7',
   },
   {
-    name: 'Apple Mint',
+    name: 'Fresh Apple Mint',
     note: 'Segar dingin & fruity',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -93,7 +93,7 @@ const PARFUMS = [
     bg: '#dcfce7',
   },
   {
-    name: 'Bubblegum',
+    name: 'Bubblegum Fresh',
     note: 'Manis permen ceria',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#db2777" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

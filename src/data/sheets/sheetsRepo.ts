@@ -30,6 +30,7 @@ import type {
 } from '../repo';
 import { LocalRepo } from '../local/localRepo';
 import type { BlobStore, KV } from '../local/storage';
+import { normalizePhone } from '../../lib/format';
 
 interface SheetPayload {
   action: string;
@@ -154,26 +155,44 @@ export class SheetsRepo extends LocalRepo implements Repo {
     };
   }
 
-  private reconstructOrderRelations(parsedOrders: Order[]) {
-    const existingCustomers = this.sheetKv.get<Customer[]>('customers') ?? [];
-    const custMap = new Map(existingCustomers.map((c) => [c.id, c]));
-    let custChanged = false;
+  private reconstructOrderRelations(parsedOrders: Order[], sheetCustomers?: Customer[]) {
+    const baseCustomers = sheetCustomers ?? [];
+    const byId = new Map<string, Customer>();
+    const byPhone = new Map<string, Customer>();
+
+    for (const c of baseCustomers) {
+      const normPhone = c.phone && c.phone !== '-' ? normalizePhone(c.phone) : '-';
+      const normalized: Customer = { ...c, phone: normPhone || '-' };
+      if (byId.has(normalized.id)) continue;
+      if (normalized.phone !== '-' && byPhone.has(normalized.phone)) continue;
+      byId.set(normalized.id, normalized);
+      if (normalized.phone !== '-') {
+        byPhone.set(normalized.phone, normalized);
+      }
+    }
+
     for (const ord of parsedOrders) {
-      if (ord.customerId && !custMap.has(ord.customerId)) {
-        custMap.set(ord.customerId, {
-          id: ord.customerId,
+      const normPhone = ord.customerPhone && ord.customerPhone !== '-' ? normalizePhone(ord.customerPhone) : '-';
+      const hasById = Boolean(ord.customerId && byId.has(ord.customerId));
+      const hasByPhone = Boolean(normPhone && normPhone !== '-' && byPhone.has(normPhone));
+      if (!hasById && !hasByPhone) {
+        const newCust: Customer = {
+          id: ord.customerId || `cust-${ord.id}`,
           name: ord.customerName,
-          phone: ord.customerPhone,
+          phone: normPhone || '-',
           notes: '',
           createdAt: ord.createdAt,
           updatedAt: ord.updatedAt,
-        });
-        custChanged = true;
+        };
+        byId.set(newCust.id, newCust);
+        if (newCust.phone !== '-') {
+          byPhone.set(newCust.phone, newCust);
+        }
+        void this.callScript({ action: 'saveCustomer', customer: newCust });
       }
     }
-    if (custChanged) {
-      this.sheetKv.set('customers', Array.from(custMap.values()));
-    }
+
+    this.sheetKv.set('customers', Array.from(byId.values()));
 
     const existingHistory = this.sheetKv.get<StatusHistoryEntry[]>('statusHistory') ?? [];
     const histOrderIds = new Set(existingHistory.map((h) => h.orderId));
@@ -225,34 +244,37 @@ export class SheetsRepo extends LocalRepo implements Repo {
           const { orders, services, staff, announcements, settings, customers } = json.data;
           const nowIso = new Date().toISOString();
 
-          // Sinkronisasi data customers dari tab 'customers' jika tersedia
-          if (Array.isArray(customers) && customers.length > 0) {
-            const parsedCustomers: Customer[] = customers
-              .map((c: Record<string, unknown>, idx: number) => ({
-                id: String(c.id || `cust-${idx}`),
-                name: String(c.name || '').trim(),
-                phone: String(c.phone || '').trim() || '-',
-                notes: String(c.notes || '').trim(),
-                createdAt: String(c.createdAt || nowIso),
-                updatedAt: String(c.updatedAt || c.createdAt || nowIso),
-              }))
-              .filter((c) => c.name);
-            if (parsedCustomers.length > 0) {
-              this.sheetKv.set('customers', parsedCustomers);
-            }
+          const parsedOrders: Order[] = Array.isArray(orders)
+            ? orders
+                .map((o: Record<string, unknown>) => this.normalizeOrderRow(o))
+                .filter((o): o is Order => o !== null)
+            : (this.sheetKv.get<Order[]>('orders') ?? []);
+
+          if (Array.isArray(orders)) {
+            this.sheetKv.set('orders', parsedOrders);
           }
 
-          if (Array.isArray(orders) && orders.length > 0) {
-            const parsedOrders = orders
-              .map((o: Record<string, unknown>) => this.normalizeOrderRow(o))
-              .filter((o): o is Order => o !== null);
-            if (parsedOrders.length > 0) {
-              this.sheetKv.set('orders', parsedOrders);
-              this.reconstructOrderRelations(parsedOrders);
-            }
+          if (Array.isArray(customers) || Array.isArray(orders)) {
+            const parsedCustomers: Customer[] = Array.isArray(customers)
+              ? customers
+                  .map((c: Record<string, unknown>, idx: number) => {
+                    const rawPh = c.phone != null ? String(c.phone).trim() : '';
+                    const phone = !rawPh || rawPh === '-' ? '-' : normalizePhone(rawPh);
+                    return {
+                      id: String(c.id || `cust-${idx}`),
+                      name: String(c.name || '').trim(),
+                      phone: phone || '-',
+                      notes: String(c.notes || '').trim(),
+                      createdAt: String(c.createdAt || nowIso),
+                      updatedAt: String(c.updatedAt || c.createdAt || nowIso),
+                    };
+                  })
+                  .filter((c) => c.name)
+              : [];
+            this.reconstructOrderRelations(parsedOrders, parsedCustomers);
           }
 
-          if (Array.isArray(services) && services.length >= 10) {
+          if (Array.isArray(services)) {
             const parsedServices: Service[] = services
               .map((s: Record<string, unknown>, idx: number) => ({
                 id: String(s.id || `svc-${idx}`),
@@ -275,6 +297,13 @@ export class SheetsRepo extends LocalRepo implements Repo {
               .filter((s) => s.id && s.name);
             if (parsedServices.length >= 10) {
               this.sheetKv.set('services', parsedServices);
+            } else {
+              void (async () => {
+                const fullServices = await super.listServices(true);
+                for (const s of fullServices) {
+                  await this.callScript({ action: 'saveService', service: s });
+                }
+              })();
             }
           }
 
@@ -305,7 +334,7 @@ export class SheetsRepo extends LocalRepo implements Repo {
             }
           }
 
-          if (Array.isArray(announcements) && announcements.length > 0) {
+          if (Array.isArray(announcements)) {
             const parsedAnnouncements: Announcement[] = announcements
               .map((a: Record<string, unknown>) => ({
                 id: String(a.id || '').trim(),
@@ -320,9 +349,7 @@ export class SheetsRepo extends LocalRepo implements Repo {
                 updatedAt: String(a.updatedAt || a.createdAt || nowIso),
               }))
               .filter((a) => a.id && a.title);
-            if (parsedAnnouncements.length > 0) {
-              this.sheetKv.set('announcements', parsedAnnouncements);
-            }
+            this.sheetKv.set('announcements', parsedAnnouncements);
           }
 
           if (settings && typeof settings === 'object' && Object.keys(settings).length > 0) {
@@ -463,9 +490,24 @@ export class SheetsRepo extends LocalRepo implements Repo {
     return super.listOrders();
   }
 
+  override async getOrder(id: ID): Promise<Order | null> {
+    if (Date.now() - this.lastSyncAt > 10_000) {
+      void this.syncFromSheet();
+    }
+    const local = await super.getOrder(id);
+    if (local) return local;
+    await this.syncFromSheet();
+    return super.getOrder(id);
+  }
+
   override async createOrder(input: OrderInput): Promise<Order> {
     const order = await super.createOrder(input);
     this.lastSyncAt = Date.now();
+    const customers = this.sheetKv.get<Customer[]>('customers') ?? [];
+    const cust = customers.find((c) => c.id === order.customerId);
+    if (cust) {
+      void this.callScript({ action: 'saveCustomer', customer: cust });
+    }
     void this.callScript({ action: 'saveOrder', order: this.formatOrderForSheet(order), code: order.code });
     return order;
   }
@@ -473,6 +515,11 @@ export class SheetsRepo extends LocalRepo implements Repo {
   override async updateOrder(id: ID, input: OrderInput): Promise<Order> {
     const order = await super.updateOrder(id, input);
     this.lastSyncAt = Date.now();
+    const customers = this.sheetKv.get<Customer[]>('customers') ?? [];
+    const cust = customers.find((c) => c.id === order.customerId);
+    if (cust) {
+      void this.callScript({ action: 'saveCustomer', customer: cust });
+    }
     void this.callScript({ action: 'saveOrder', order: this.formatOrderForSheet(order), code: order.code });
     return order;
   }
@@ -513,6 +560,13 @@ export class SheetsRepo extends LocalRepo implements Repo {
   // -----------------------------------------------------------------
   // OVERRIDES: Services
   // -----------------------------------------------------------------
+  override async listServices(includeInactive = false): Promise<Service[]> {
+    if (Date.now() - this.lastSyncAt > 15_000) {
+      void this.syncFromSheet();
+    }
+    return super.listServices(includeInactive);
+  }
+
   override async saveService(s: SaveInput<Service>): Promise<Service> {
     const svc = await super.saveService(s);
     this.lastSyncAt = Date.now();
@@ -552,6 +606,13 @@ export class SheetsRepo extends LocalRepo implements Repo {
   // -----------------------------------------------------------------
   // OVERRIDES: Staff & Password
   // -----------------------------------------------------------------
+  override async listStaff(): Promise<StaffUser[]> {
+    if (Date.now() - this.lastSyncAt > 15_000) {
+      void this.syncFromSheet();
+    }
+    return super.listStaff();
+  }
+
   override async createStaff(input: { name: string; email: string; password: string; role: Role }): Promise<StaffUser> {
     const user = await super.createStaff(input);
     this.lastSyncAt = Date.now();
@@ -578,6 +639,20 @@ export class SheetsRepo extends LocalRepo implements Repo {
   // -----------------------------------------------------------------
   // OVERRIDES: Announcements
   // -----------------------------------------------------------------
+  override async listAnnouncements(): Promise<Announcement[]> {
+    if (Date.now() - this.lastSyncAt > 15_000) {
+      void this.syncFromSheet();
+    }
+    return super.listAnnouncements();
+  }
+
+  override async listPublicAnnouncements(): Promise<Announcement[]> {
+    if (Date.now() - this.lastSyncAt > 15_000) {
+      void this.syncFromSheet();
+    }
+    return super.listPublicAnnouncements();
+  }
+
   override async saveAnnouncement(a: SaveInput<Announcement>): Promise<Announcement> {
     const ann = await super.saveAnnouncement(a);
     this.lastSyncAt = Date.now();
@@ -594,6 +669,13 @@ export class SheetsRepo extends LocalRepo implements Repo {
   // -----------------------------------------------------------------
   // OVERRIDES: Settings
   // -----------------------------------------------------------------
+  override async getSettings(): Promise<Settings> {
+    if (Date.now() - this.lastSyncAt > 15_000) {
+      void this.syncFromSheet();
+    }
+    return super.getSettings();
+  }
+
   override async updateSettings(patch: Partial<Settings>): Promise<Settings> {
     const s = await super.updateSettings(patch);
     this.lastSyncAt = Date.now();
@@ -605,11 +687,6 @@ export class SheetsRepo extends LocalRepo implements Repo {
   // OVERRIDES: Public Tracking
   // -----------------------------------------------------------------
   override async trackOrder(code: string, phoneSuffix?: string): Promise<TrackResult> {
-    // Fast path: try local first
-    const localRes = await super.trackOrder(code, phoneSuffix);
-    if (localRes.ok) return localRes;
-
-    // If not found locally, trigger quick sync from sheet and retry
     await this.syncFromSheet();
     return super.trackOrder(code, phoneSuffix);
   }

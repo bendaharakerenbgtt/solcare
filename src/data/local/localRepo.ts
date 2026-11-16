@@ -159,6 +159,28 @@ export class LocalRepo implements Repo {
       this.kv.set('capacity_migrated_v4', true);
     }
 
+    if (!this.kv.get('seeded_v4')) {
+      const legacyOrders = this.list<Order>('orders');
+      if (legacyOrders.length > 0) {
+        const cleanedOrders = legacyOrders.filter(
+          (o) => !['7K3QX9MPRA', '5MDPE73KZ6'].includes(o.code),
+        );
+        if (cleanedOrders.length !== legacyOrders.length) {
+          this.save('orders', cleanedOrders);
+        }
+      }
+      const legacyCustomers = this.list<Customer>('customers');
+      if (legacyCustomers.length > 0) {
+        const cleanedCustomers = legacyCustomers.filter(
+          (c) => !(c.name === 'Budi Santoso' && c.phone === '6281234567890'),
+        );
+        if (cleanedCustomers.length !== legacyCustomers.length) {
+          this.save('customers', cleanedCustomers);
+        }
+      }
+      this.kv.set('seeded_v4', true);
+    }
+
     if (this.kv.get('seeded_v3')) return;
     const now = this.now();
     this.kv.set('settings', {
@@ -170,7 +192,7 @@ export class LocalRepo implements Repo {
     });
     this.save<Service>(
       'services',
-      SEED_SERVICES.map((s, i) => ({ ...s, active: s.active ?? true, id: uid(), sortOrder: i, createdAt: now, updatedAt: now })),
+      SEED_SERVICES.map((s, i) => ({ ...s, active: s.active ?? true, id: `svc-seed-${i + 1}`, sortOrder: i, createdAt: now, updatedAt: now })),
     );
     this.save('products', [
       { id: uid(), name: 'Tali Sepatu Pipih 120cm (Hitam/Putih)', price: 15000, description: 'Bahan katun premium', active: true, createdAt: now, updatedAt: now },
@@ -182,200 +204,9 @@ export class LocalRepo implements Repo {
       { id: uid(), name: 'Vanilla Smooth', description: 'Aroma lembut menenangkan', active: true, createdAt: now, updatedAt: now }
     ]);
 
-    // Data Pelanggan Demo
-    const cust1Id = uid();
-    const cust2Id = uid();
-    this.save('customers', [
-      { id: cust1Id, name: 'Budi Santoso', phone: '6281234567890', notes: 'Pelanggan reguler, suka aroma Bubblegum', createdAt: now, updatedAt: now },
-      { id: cust2Id, name: 'Annisa Putri', phone: '6285712345678', notes: 'Hati-hati bahan suede jangan kena air banyak', createdAt: now, updatedAt: now }
-    ]);
-
-    // Sample Dummy Orders untuk Demonstrasi Langsung
-    const order1Id = uid();
-    const order2Id = uid();
-    const order3Id = uid();
-
-    const sampleOrders: Order[] = [
-      {
-        id: order1Id,
-        code: '7K3QX9MPRA',
-        customerId: cust1Id,
-        customerName: 'Budi Santoso',
-        customerPhone: '6281234567890',
-        itemType: 'Sepatu',
-        brand: 'Nike',
-        model: 'Air Jordan 1 High',
-        color: 'Chicago (Merah/Putih/Hitam)',
-        conditionNotes: 'Noda debu tebal pada midsole dan toebox, sol bawah kotoran tanah kering',
-        services: [
-          {
-            serviceId: null,
-            name: 'Deep Clean',
-            category: 'main',
-            price: 50000,
-            priceMin: 50000,
-            priceMax: null,
-            workloadWeight: 1.5,
-            durationMinDays: 2,
-            durationMaxDays: 2,
-            expressHours: null
-          },
-          {
-            serviceId: null,
-            name: 'Unyellowing',
-            category: 'additional',
-            price: 70000,
-            priceMin: 70000,
-            priceMax: null,
-            workloadWeight: 1,
-            durationMinDays: 2,
-            durationMaxDays: 3,
-            expressHours: null
-          }
-        ],
-        products: [],
-        fragranceId: null,
-        fragranceName: 'Bubblegum Fresh',
-        receivedAt: new Date(Date.now() - 36 * 3600_000).toISOString(),
-        estimatedEarliestAt: new Date(Date.now() + 12 * 3600_000).toISOString(),
-        estimatedAt: new Date(Date.now() + 24 * 3600_000).toISOString(),
-        estimateSource: 'auto',
-        completedAt: null,
-        pickedUpAt: null,
-        status: 'pengeringan',
-        total: 120000,
-        payment: {
-          method: 'qris',
-          status: 'lunas',
-          paidAt: new Date(Date.now() - 36 * 3600_000).toISOString(),
-          recordedById: null,
-          recordedByName: 'Kasir Utama'
-        },
-        internalNotes: 'Sepatu koleksi, tolong detailing ekstra di jahitan upper',
-        createdById: null,
-        createdAt: new Date(Date.now() - 36 * 3600_000).toISOString(),
-        updatedAt: now
-      },
-      {
-        id: order2Id,
-        code: '28YBN4VCFW',
-        customerId: cust2Id,
-        customerName: 'Annisa Putri',
-        customerPhone: '6285712345678',
-        itemType: 'Sepatu',
-        brand: 'Converse',
-        model: 'Chuck 70 Classic Canvas',
-        color: 'Parchment White',
-        conditionNotes: 'Kotor lumpur setelah kehujanan',
-        services: [
-          {
-            serviceId: null,
-            name: 'Basic Clean',
-            category: 'main',
-            price: 35000,
-            priceMin: 35000,
-            priceMax: null,
-            workloadWeight: 1,
-            durationMinDays: 2,
-            durationMaxDays: 2,
-            expressHours: null
-          }
-        ],
-        products: [
-          {
-            productId: null,
-            name: 'Tali Sepatu Pipih 120cm',
-            unitPrice: 15000,
-            qty: 1,
-            subtotal: 15000
-          }
-        ],
-        fragranceId: null,
-        fragranceName: 'Vanilla Smooth',
-        receivedAt: new Date(Date.now() - 48 * 3600_000).toISOString(),
-        estimatedEarliestAt: new Date(Date.now() - 4 * 3600_000).toISOString(),
-        estimatedAt: new Date(Date.now() - 2 * 3600_000).toISOString(),
-        estimateSource: 'auto',
-        completedAt: new Date(Date.now() - 1 * 3600_000).toISOString(),
-        pickedUpAt: null,
-        status: 'selesai',
-        total: 50000,
-        payment: {
-          method: 'tunai',
-          status: 'lunas',
-          paidAt: new Date(Date.now() - 48 * 3600_000).toISOString(),
-          recordedById: null,
-          recordedByName: 'Kasir Utama'
-        },
-        internalNotes: 'Rak C-04 siap diambil pelanggan',
-        createdById: null,
-        createdAt: new Date(Date.now() - 48 * 3600_000).toISOString(),
-        updatedAt: now
-      },
-      {
-        id: order3Id,
-        code: '5MDPE73KZ6',
-        customerId: cust1Id,
-        customerName: 'Budi Santoso',
-        customerPhone: '6281234567890',
-        itemType: 'Tas',
-        brand: 'Fjallraven',
-        model: 'Kanken Classic',
-        color: 'Navy Blue',
-        conditionNotes: 'Noda bolpoin di kantong samping',
-        services: [
-          {
-            serviceId: null,
-            name: 'Bag',
-            category: 'other',
-            price: 75000,
-            priceMin: 55000,
-            priceMax: 125000,
-            workloadWeight: 2,
-            durationMinDays: 2,
-            durationMaxDays: 4,
-            expressHours: null
-          }
-        ],
-        products: [],
-        fragranceId: null,
-        fragranceName: '',
-        receivedAt: new Date(Date.now() - 4 * 3600_000).toISOString(),
-        estimatedEarliestAt: new Date(Date.now() + 48 * 3600_000).toISOString(),
-        estimatedAt: new Date(Date.now() + 72 * 3600_000).toISOString(),
-        estimateSource: 'auto',
-        completedAt: null,
-        pickedUpAt: null,
-        status: 'menunggu',
-        total: 75000,
-        payment: {
-          method: 'qris',
-          status: 'lunas',
-          paidAt: new Date(Date.now() - 4 * 3600_000).toISOString(),
-          recordedById: null,
-          recordedByName: 'Kasir Utama'
-        },
-        internalNotes: 'Tunggu kering alami tanpa pengering panas',
-        createdById: null,
-        createdAt: new Date(Date.now() - 4 * 3600_000).toISOString(),
-        updatedAt: now
-      }
-    ];
-    this.save('orders', sampleOrders);
-
-    this.save('statusHistory', [
-      { id: uid(), orderId: order1Id, from: null, to: 'menunggu', note: 'Drop-off di toko', at: new Date(Date.now() - 36 * 3600_000).toISOString(), byId: null, byName: 'Kasir Utama' },
-      { id: uid(), orderId: order1Id, from: 'menunggu', to: 'pencucian', note: 'Mulai pembersihan mendalam & unyellowing', at: new Date(Date.now() - 24 * 3600_000).toISOString(), byId: null, byName: 'Tim Cuci' },
-      { id: uid(), orderId: order1Id, from: 'pencucian', to: 'pengeringan', note: 'Pengeringan bertahap dengan UV & dehumidifier', at: new Date(Date.now() - 8 * 3600_000).toISOString(), byId: null, byName: 'Tim Cuci' },
-      
-      { id: uid(), orderId: order2Id, from: null, to: 'menunggu', note: 'Drop-off sepatu', at: new Date(Date.now() - 48 * 3600_000).toISOString(), byId: null, byName: 'Kasir Utama' },
-      { id: uid(), orderId: order2Id, from: 'menunggu', to: 'pencucian', note: 'Pencucian bahan canvas', at: new Date(Date.now() - 30 * 3600_000).toISOString(), byId: null, byName: 'Tim Cuci' },
-      { id: uid(), orderId: order2Id, from: 'pencucian', to: 'finishing', note: 'Pemasangan tali baru dan pewangi Vanilla', at: new Date(Date.now() - 10 * 3600_000).toISOString(), byId: null, byName: 'Tim Detailing' },
-      { id: uid(), orderId: order2Id, from: 'finishing', to: 'selesai', note: 'Selesai & siap diambil di toko', at: new Date(Date.now() - 1 * 3600_000).toISOString(), byId: null, byName: 'Kasir Utama' },
-
-      { id: uid(), orderId: order3Id, from: null, to: 'menunggu', note: 'Drop-off tas masuk antrean', at: new Date(Date.now() - 4 * 3600_000).toISOString(), byId: null, byName: 'Kasir Utama' }
-    ]);
-
+    this.save('customers', []);
+    this.save('orders', []);
+    this.save('statusHistory', []);
     this.save('estimateHistory', []);
     this.save('photos', []);
     this.save('announcements', []);
@@ -384,6 +215,7 @@ export class LocalRepo implements Repo {
     this.save('credentials', []);
     this.kv.set('seeded', true);
     this.kv.set('seeded_v3', true);
+    this.kv.set('seeded_v4', true);
 
     // Sync official 5 fragrances: Orchid Breeze, Vanila Latte, Green Apple, Mandarin Orange, Coffe
     this.ensureOfficialFragrancesAndProducts();
@@ -734,7 +566,12 @@ export class LocalRepo implements Repo {
   }
   async deleteCustomer(id: ID) {
     const me = await this.requireStaff();
-    if (this.list<Order>('orders').some((o) => o.customerId === id))
+    const cust = this.list<Customer>('customers').find((c) => c.id === id);
+    if (
+      this.list<Order>('orders').some(
+        (o) => o.customerId === id || (cust && cust.phone !== '-' && o.customerPhone === cust.phone),
+      )
+    )
       throw new Error('Pelanggan memiliki riwayat pesanan sehingga tidak dapat dihapus.');
     this.remove('customers', id);
     this.audit(me, 'customer.delete', 'customer', id, '');
@@ -1233,6 +1070,12 @@ export class LocalRepo implements Repo {
     const photos = this.list<OrderPhoto>('photos')
       .filter((p) => p.orderId === o.id)
       .map((p) => ({ id: p.id, labels: p.labels, caption: p.caption, uploadedAt: p.uploadedAt, available: p.status === 'active' }));
+    const deliveryMatch = o.internalNotes?.match(/Layanan:\s*([^|]+)/i)?.[1]?.trim();
+    const deliveryInfo =
+      deliveryMatch ||
+      (o.internalNotes?.includes('Antar-Jemput') || o.internalNotes?.includes('Antar Jemput')
+        ? 'Layanan Antar-Jemput'
+        : 'Diantar Sendiri (Drop-off)');
     return {
       code: o.code,
       customerDisplayName: maskName(o.customerName),
@@ -1252,6 +1095,7 @@ export class LocalRepo implements Repo {
       services: o.services.map((s) => ({ name: s.name, category: s.category, price: s.price })),
       products: o.products.map((p) => ({ name: p.name, qty: p.qty, subtotal: p.subtotal })),
       fragranceName: o.fragranceName,
+      deliveryInfo,
       receivedAt: o.receivedAt,
       estimatedEarliestAt: o.estimatedEarliestAt,
       estimatedAt: o.estimatedAt,

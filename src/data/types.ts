@@ -298,6 +298,7 @@ export interface PublicOrderView {
   services: { name: string; category: ServiceCategory; price: number }[];
   products: { name: string; qty: number; subtotal: number }[];
   fragranceName: string;
+  deliveryInfo?: string;
   receivedAt: ISODateTime;
   estimatedEarliestAt: ISODateTime | null;
   estimatedAt: ISODateTime | null;
