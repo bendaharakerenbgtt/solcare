@@ -9,7 +9,6 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (user) {
@@ -30,28 +29,6 @@ export const LoginPage: React.FC = () => {
       setError(err instanceof Error ? err.message : 'Login gagal');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleQuickDemo = async () => {
-    setDemoLoading(true);
-    setError(null);
-    try {
-      // 1. Coba login otomatis dengan akun default admin
-      await signIn('admin@solefulsoaks.id', 'admin12345');
-    } catch {
-      try {
-        // 2. Fallback: panggil setup/quick demo bawaan jika belum terdaftar
-        await setupFirstAdmin({
-          name: 'Demo Admin (Portofolio)',
-          email: 'admin@solefulsoaks.id',
-          password: 'admin12345',
-        });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Login cepat demo gagal');
-      }
-    } finally {
-      setDemoLoading(false);
     }
   };
 
@@ -117,57 +94,10 @@ export const LoginPage: React.FC = () => {
             />
           </label>
 
-          <button type="submit" className="btn" disabled={loading || demoLoading} style={{ marginTop: '8px', height: '46px', fontSize: '1rem' }}>
+          <button type="submit" className="btn" disabled={loading} style={{ marginTop: '8px', height: '46px', fontSize: '1rem' }}>
             {loading ? 'Memproses…' : needsSetup ? 'Buat Akun Administrator' : 'Masuk Dashboard'}
           </button>
         </form>
-
-        {/* Tombol Login Cepat untuk Review Portofolio / Demo Showcase */}
-        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--line)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Mode Demo Portofolio
-            </span>
-            <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: 500 }}>
-              1-Klik Akses
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleQuickDemo}
-            disabled={loading || demoLoading}
-            style={{
-              width: '100%',
-              height: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              background: '#00264d',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '0.92rem',
-              fontWeight: 600,
-              cursor: loading || demoLoading ? 'not-allowed' : 'pointer',
-              boxShadow: '0 2px 6px rgba(0, 38, 77, 0.2)',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            {demoLoading ? (
-              'Menyiapkan Sesi Demo…'
-            ) : (
-              <>
-                <span>⚡</span>
-                <span>Masuk Cepat Demo (Akses Admin)</span>
-              </>
-            )}
-          </button>
-          <p className="small muted" style={{ fontSize: '0.75rem', textAlign: 'center', marginTop: '6px', marginBottom: 0 }}>
-            Untuk demonstrasi fitur &amp; review portofolio tanpa perlu input kredensial manual.
-          </p>
-        </div>
 
         <div style={{ textAlign: 'center', marginTop: '18px', paddingTop: '12px', borderTop: '1px solid var(--line)' }}>
           <Link to="/" className="small muted" style={{ textDecoration: 'none' }}>
